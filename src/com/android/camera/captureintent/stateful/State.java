@@ -26,8 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * operated by {@link StateMachine}.
  */
 @ParametersAreNonnullByDefault
-public interface State
-{
+public interface State {
 
     public static Optional<State> NO_CHANGE = Optional.absent();
 

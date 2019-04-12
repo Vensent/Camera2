@@ -34,8 +34,7 @@ import com.android.camera.session.CaptureSession;
  * {@link #stopBurst()} between {@link #initialize(SurfaceTexture)} and
  * {@link #release()} calls.
  */
-public interface BurstFacade
-{
+public interface BurstFacade {
 
     /**
      * Starts the burst.

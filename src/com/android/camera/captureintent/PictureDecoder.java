@@ -20,8 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 
-public class PictureDecoder
-{
+public class PictureDecoder {
     /**
      * Decodes a jpeg byte array into a Bitmap object.
      *
@@ -32,26 +31,22 @@ public class PictureDecoder
      * @return decoded and down-sampled bitmap
      */
     public static Bitmap decode(
-            byte[] data, int downSampleFactor, int pictureOrientation, boolean needMirror)
-    {
+            byte[] data, int downSampleFactor, int pictureOrientation, boolean needMirror) {
         // Downsample the image
         final BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inSampleSize = downSampleFactor;
         final Bitmap pictureBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
-        if (pictureOrientation == 0 && !needMirror)
-        {
+        if (pictureOrientation == 0 && !needMirror) {
             return pictureBitmap;
         }
 
         Matrix m = new Matrix();
         // Rotate if needed.
-        if (pictureOrientation != 0)
-        {
+        if (pictureOrientation != 0) {
             m.setRotate(pictureOrientation);
         }
         // Flip horizontally if needed.
-        if (needMirror)
-        {
+        if (needMirror) {
             m.postScale(-1f, 1f);
         }
         return Bitmap.createBitmap(

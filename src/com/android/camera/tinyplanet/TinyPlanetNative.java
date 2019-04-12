@@ -21,10 +21,8 @@ import android.graphics.Bitmap;
 /**
  * TinyPlanet native interface.
  */
-public class TinyPlanetNative
-{
-    static
-    {
+public class TinyPlanetNative {
+    static {
         System.loadLibrary("jni_tinyplanet");
     }
 

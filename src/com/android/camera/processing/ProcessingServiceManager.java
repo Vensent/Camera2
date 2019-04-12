@@ -33,51 +33,37 @@ import java.util.LinkedList;
  * Clients should only use this class and not the {@link ProcessingService}
  * directly.
  */
-public class ProcessingServiceManager implements ProcessingTaskConsumer
-{
+public class ProcessingServiceManager implements ProcessingTaskConsumer {
     private static final Log.Tag TAG = new Log.Tag("ProcessingSvcMgr");
-
-    private static class Singleton
-    {
-        private static final ProcessingServiceManager INSTANCE = new ProcessingServiceManager(
-                AndroidContext.instance().get());
-    }
-
-    public static ProcessingServiceManager instance()
-    {
-        return Singleton.INSTANCE;
-    }
-
     /**
      * The application context.
      */
     private final Context mAppContext;
-
     /**
      * Queue of tasks to be processed.
      */
     private final LinkedList<ProcessingTask> mQueue = new LinkedList<ProcessingTask>();
-
+    private final ImageBackend mImageBackend;
     /**
      * Whether a processing service is currently running.
      */
     private volatile boolean mServiceRunning = false;
-
     /**
      * Can be set to prevent tasks from being processed until released.
      */
     private boolean mHoldProcessing = false;
 
-    private final ImageBackend mImageBackend;
-
-    private ProcessingServiceManager(Context context)
-    {
+    private ProcessingServiceManager(Context context) {
         mAppContext = context;
 
         // Read and set the round thumbnail diameter value from resources.
         int tinyThumbnailSize = context.getResources()
                 .getDimensionPixelSize(R.dimen.rounded_thumbnail_diameter_max);
         mImageBackend = new ImageBackend(this, tinyThumbnailSize);
+    }
+
+    public static ProcessingServiceManager instance() {
+        return Singleton.INSTANCE;
     }
 
     /**
@@ -87,13 +73,11 @@ public class ProcessingServiceManager implements ProcessingTaskConsumer
      * @param task The task to be enqueued.
      */
     @Override
-    public synchronized void enqueueTask(ProcessingTask task)
-    {
+    public synchronized void enqueueTask(ProcessingTask task) {
         mQueue.add(task);
         Log.d(TAG, "Task added. Queue size now: " + mQueue.size());
 
-        if (!mServiceRunning && !mHoldProcessing)
-        {
+        if (!mServiceRunning && !mHoldProcessing) {
             startService();
         }
     }
@@ -106,14 +90,11 @@ public class ProcessingServiceManager implements ProcessingTaskConsumer
      * service is has to shut down as a new service is started if either
      * new items enter the queue or the processing is resumed.
      */
-    public synchronized ProcessingTask popNextSession()
-    {
-        if (!mQueue.isEmpty() && !mHoldProcessing)
-        {
+    public synchronized ProcessingTask popNextSession() {
+        if (!mQueue.isEmpty() && !mHoldProcessing) {
             Log.d(TAG, "Popping a session. Remaining: " + (mQueue.size() - 1));
             return mQueue.remove();
-        } else
-        {
+        } else {
             Log.d(TAG, "Popping null. On hold? " + mHoldProcessing);
             mServiceRunning = false;
             // Returning null will shut-down the service.
@@ -124,8 +105,7 @@ public class ProcessingServiceManager implements ProcessingTaskConsumer
     /**
      * @return Whether the service has queued items or is running.
      */
-    public synchronized boolean isRunningOrHasItems()
-    {
+    public synchronized boolean isRunningOrHasItems() {
         return mServiceRunning || !mQueue.isEmpty();
     }
 
@@ -137,15 +117,12 @@ public class ProcessingServiceManager implements ProcessingTaskConsumer
      *
      * @return Whether processing was suspended.
      */
-    public synchronized boolean suspendProcessing()
-    {
-        if (!isRunningOrHasItems())
-        {
+    public synchronized boolean suspendProcessing() {
+        if (!isRunningOrHasItems()) {
             Log.d(TAG, "Suspend processing");
             mHoldProcessing = true;
             return true;
-        } else
-        {
+        } else {
             Log.d(TAG, "Not able to suspend processing.");
             return false;
         }
@@ -154,14 +131,11 @@ public class ProcessingServiceManager implements ProcessingTaskConsumer
     /**
      * Releases an existing hold.
      */
-    public synchronized void resumeProcessing()
-    {
+    public synchronized void resumeProcessing() {
         Log.d(TAG, "Resume processing. Queue size: " + mQueue.size());
-        if (mHoldProcessing)
-        {
+        if (mHoldProcessing) {
             mHoldProcessing = false;
-            if (!mQueue.isEmpty())
-            {
+            if (!mQueue.isEmpty()) {
                 startService();
             }
         }
@@ -170,8 +144,7 @@ public class ProcessingServiceManager implements ProcessingTaskConsumer
     /**
      * @return the currently defined image backend for this service.
      */
-    public ImageBackend getImageBackend()
-    {
+    public ImageBackend getImageBackend() {
         return mImageBackend;
     }
 
@@ -180,9 +153,13 @@ public class ProcessingServiceManager implements ProcessingTaskConsumer
      * is empty {@link #popNextSession()} returns null), the task will kill
      * itself automatically and call #stitchingFinished().
      */
-    private void startService()
-    {
+    private void startService() {
         mAppContext.startService(new Intent(mAppContext, ProcessingService.class));
         mServiceRunning = true;
+    }
+
+    private static class Singleton {
+        private static final ProcessingServiceManager INSTANCE = new ProcessingServiceManager(
+                AndroidContext.instance().get());
     }
 }

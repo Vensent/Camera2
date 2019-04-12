@@ -24,8 +24,7 @@ import javax.annotation.Nonnull;
 /**
  * Holds metadata for images which have not yet been closed.
  */
-public interface MetadataPool
-{
+public interface MetadataPool {
     @Nonnull
     public ListenableFuture<TotalCaptureResultProxy> removeMetadataFuture(long timestamp);
 }

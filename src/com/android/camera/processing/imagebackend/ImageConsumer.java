@@ -16,14 +16,11 @@
 
 package com.android.camera.processing.imagebackend;
 
-import com.google.common.base.Optional;
-
 import com.android.camera.session.CaptureSession;
+import com.google.common.base.Optional;
 
 import java.util.Set;
 import java.util.concurrent.Executor;
-
-import javax.annotation.Nullable;
 
 /**
  * Defines interface between an ImageBackend object and a simplified camera
@@ -37,35 +34,7 @@ import javax.annotation.Nullable;
  * be executed when the set of events and any spawned events have completed
  * processing.
  */
-public interface ImageConsumer
-{
-
-    /**
-     * ImageTaskFlags specifies the current tasks that will be run with an
-     * image.
-     * <ol>
-     * <li>CREATE_EARLY_FILMSTRIP_PREVIEW: Subsamples a YUV Image and converts
-     * it to an ARGB Image with nearly similar aspect ratio. ONLY Valid when
-     * specified with COMPRESS_TO_JPEG_AND_WRITE_TO_DISK. Otherwise, ignored.</li>
-     * <li>COMPRESS_TO_JPEG_AND_WRITE_TO_DISK: Compresses an YUV/JPEG Image to
-     * JPEG (when necessary), delivers the compressed artifact via the listener,
-     * and writes it to disk.</li>
-     * <li>CONVERT_TO_RGB_PREVIEW: Subsamples a YUV Image and converts the
-     * uncompressed output to ARGB image inset within a circle</li>
-     * <li>BLOCK_UNTIL_ALL_TASKS_RELEASE: Block on ReceiveImage call until image
-     * is released.</li>
-     * <li>CLOSE_ON_ALL_TASKS_RELEASE: Close the ImageProxy on ReceiveImage Call
-     * when all tasks release their image</li>
-     * </ol>
-     */
-    public enum ImageTaskFlags
-    {
-        CREATE_EARLY_FILMSTRIP_PREVIEW,
-        COMPRESS_TO_JPEG_AND_WRITE_TO_DISK,
-        CONVERT_TO_RGB_PREVIEW,
-        BLOCK_UNTIL_ALL_TASKS_RELEASE,
-        CLOSE_ON_ALL_TASKS_RELEASE
-    }
+public interface ImageConsumer {
 
     /**
      * Provides the basic functionality of camera processing via an easy-to-use
@@ -90,23 +59,6 @@ public interface ImageConsumer
             throws InterruptedException;
 
     /**
-     * Provides the basic functionality of camera processing via an easy-to-use
-     * method call w/o a listener to be released.
-     *
-     * @param img image to be processed
-     * @param executor executor on which to execute events and image close
-     * @param processingFlags {@see ImageTaskFlags}
-     * @return Whether any tasks were actually added.
-     * @throws InterruptedException occurs when call is set to be blocking and
-     *             is interrupted.
-     */
-    /*
-    public boolean receiveImage(ImageToProcess img, Executor executor,
-            Set<ImageTaskFlags> processingFlags, CaptureSession captureSession)
-            throws InterruptedException;
-            */
-
-    /**
      * Provides the basic functionality of camera processing via a more general-
      * purpose method call. Tasks can be extended off of the TaskImageContainer,
      * or created from factory method provided by implementation.
@@ -129,6 +81,23 @@ public interface ImageConsumer
                                 boolean blockOnImageRelease, boolean closeOnImageRelease,
                                 Optional<Runnable> runnableWhenDone)
             throws InterruptedException;
+
+    /**
+     * Provides the basic functionality of camera processing via an easy-to-use
+     * method call w/o a listener to be released.
+     *
+     * @param img image to be processed
+     * @param executor executor on which to execute events and image close
+     * @param processingFlags {@see ImageTaskFlags}
+     * @return Whether any tasks were actually added.
+     * @throws InterruptedException occurs when call is set to be blocking and
+     *             is interrupted.
+     */
+    /*
+    public boolean receiveImage(ImageToProcess img, Executor executor,
+            Set<ImageTaskFlags> processingFlags, CaptureSession captureSession)
+            throws InterruptedException;
+            */
 
     /**
      * Provides the basic functionality of camera processing via a more general-
@@ -205,5 +174,31 @@ public interface ImageConsumer
      * to this object.
      */
     public ImageProcessorProxyListener getProxyListener();
+
+    /**
+     * ImageTaskFlags specifies the current tasks that will be run with an
+     * image.
+     * <ol>
+     * <li>CREATE_EARLY_FILMSTRIP_PREVIEW: Subsamples a YUV Image and converts
+     * it to an ARGB Image with nearly similar aspect ratio. ONLY Valid when
+     * specified with COMPRESS_TO_JPEG_AND_WRITE_TO_DISK. Otherwise, ignored.</li>
+     * <li>COMPRESS_TO_JPEG_AND_WRITE_TO_DISK: Compresses an YUV/JPEG Image to
+     * JPEG (when necessary), delivers the compressed artifact via the listener,
+     * and writes it to disk.</li>
+     * <li>CONVERT_TO_RGB_PREVIEW: Subsamples a YUV Image and converts the
+     * uncompressed output to ARGB image inset within a circle</li>
+     * <li>BLOCK_UNTIL_ALL_TASKS_RELEASE: Block on ReceiveImage call until image
+     * is released.</li>
+     * <li>CLOSE_ON_ALL_TASKS_RELEASE: Close the ImageProxy on ReceiveImage Call
+     * when all tasks release their image</li>
+     * </ol>
+     */
+    public enum ImageTaskFlags {
+        CREATE_EARLY_FILMSTRIP_PREVIEW,
+        COMPRESS_TO_JPEG_AND_WRITE_TO_DISK,
+        CONVERT_TO_RGB_PREVIEW,
+        BLOCK_UNTIL_ALL_TASKS_RELEASE,
+        CLOSE_ON_ALL_TASKS_RELEASE
+    }
 
 }

@@ -16,9 +16,6 @@
 
 package com.android.camera.functional;
 
-import com.android.camera.CameraActivity;
-import com.android.camera2.R;
-
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -33,68 +30,59 @@ import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import com.android.camera.CameraActivity;
+import com.android.camera2.R;
+
 import java.io.File;
 
-public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<CameraActivity>
-{
+public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<CameraActivity> {
     private static final String TAG = "VideoCaptureIntentTest";
     private Intent mIntent;
     private Uri mVideoUri;
     private File mFile, mFile2;
 
-    public VideoCaptureIntentTest()
-    {
+    public VideoCaptureIntentTest() {
         super(CameraActivity.class);
     }
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         mIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
     }
 
     @Override
-    protected void tearDown() throws Exception
-    {
-        if (mVideoUri != null)
-        {
+    protected void tearDown() throws Exception {
+        if (mVideoUri != null) {
             ContentResolver resolver = getActivity().getContentResolver();
             Uri query = mVideoUri.buildUpon().build();
             String[] projection = new String[]{VideoColumns.DATA};
 
             Cursor cursor = null;
-            try
-            {
+            try {
                 cursor = resolver.query(query, projection, null, null, null);
-                if (cursor != null && cursor.moveToFirst())
-                {
+                if (cursor != null && cursor.moveToFirst()) {
                     new File(cursor.getString(0)).delete();
                 }
-            } finally
-            {
-                if (cursor != null)
-                {
+            } finally {
+                if (cursor != null) {
                     cursor.close();
                 }
             }
 
             resolver.delete(mVideoUri, null, null);
         }
-        if (mFile != null)
-        {
+        if (mFile != null) {
             mFile.delete();
         }
-        if (mFile2 != null)
-        {
+        if (mFile2 != null) {
             mFile2.delete();
         }
         super.tearDown();
     }
 
     @LargeTest
-    public void testNoExtraOutput() throws Exception
-    {
+    public void testNoExtraOutput() throws Exception {
         setActivityIntent(mIntent);
         getActivity();
 
@@ -108,8 +96,7 @@ public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<Cam
     }
 
     @LargeTest
-    public void testExtraOutput() throws Exception
-    {
+    public void testExtraOutput() throws Exception {
         mFile = new File(Environment.getExternalStorageDirectory(), "video.tmp");
 
         Uri uri = Uri.fromFile(mFile);
@@ -124,8 +111,7 @@ public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<Cam
     }
 
     @LargeTest
-    public void testCancel() throws Exception
-    {
+    public void testCancel() throws Exception {
         setActivityIntent(mIntent);
         getActivity();
 
@@ -136,8 +122,7 @@ public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<Cam
     }
 
     @LargeTest
-    public void testRecordCancel() throws Exception
-    {
+    public void testRecordCancel() throws Exception {
         setActivityIntent(mIntent);
         getActivity();
 
@@ -149,8 +134,7 @@ public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<Cam
     }
 
     @LargeTest
-    public void testExtraSizeLimit() throws Exception
-    {
+    public void testExtraSizeLimit() throws Exception {
         mFile = new File(Environment.getExternalStorageDirectory(), "video.tmp");
         final long sizeLimit = 500000;  // bytes
 
@@ -172,8 +156,7 @@ public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<Cam
     }
 
     @LargeTest
-    public void testExtraDurationLimit() throws Exception
-    {
+    public void testExtraDurationLimit() throws Exception {
         mFile = new File(Environment.getExternalStorageDirectory(), "video.tmp");
         final int durationLimit = 2;  // seconds
 
@@ -195,8 +178,7 @@ public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<Cam
     }
 
     @LargeTest
-    public void testExtraVideoQuality() throws Exception
-    {
+    public void testExtraVideoQuality() throws Exception {
         mFile = new File(Environment.getExternalStorageDirectory(), "video.tmp");
         mFile2 = new File(Environment.getExternalStorageDirectory(), "video2.tmp");
 
@@ -226,8 +208,7 @@ public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<Cam
     }
 
     // Verify result code, result data, and the duration.
-    private int verify(CameraActivity activity, Uri uri) throws Exception
-    {
+    private int verify(CameraActivity activity, Uri uri) throws Exception {
         assertTrue(activity.isFinishing());
         assertEquals(Activity.RESULT_OK, activity.getResultCode());
 
@@ -243,50 +224,39 @@ public class VideoCaptureIntentTest extends ActivityInstrumentationTestCase2<Cam
         return durationValue;
     }
 
-    private void recordVideo(int ms) throws Exception
-    {
+    private void recordVideo(int ms) throws Exception {
         getInstrumentation().sendCharacterSync(KeyEvent.KEYCODE_CAMERA);
         Thread.sleep(ms);
-        getInstrumentation().runOnMainSync(new Runnable()
-        {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 // If recording is in progress, stop it. Run these atomically in
                 // UI thread.
                 CameraActivity activity = getActivity();
-                if (activity.isRecording())
-                {
+                if (activity.isRecording()) {
                     activity.findViewById(R.id.shutter_button).performClick();
                 }
             }
         });
     }
 
-    private void recordVideo() throws Exception
-    {
+    private void recordVideo() throws Exception {
         recordVideo(2000);
     }
 
-    private void pressDone()
-    {
-        getInstrumentation().runOnMainSync(new Runnable()
-        {
+    private void pressDone() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 getActivity().findViewById(R.id.btn_done).performClick();
             }
         });
     }
 
-    private void pressCancel()
-    {
-        getInstrumentation().runOnMainSync(new Runnable()
-        {
+    private void pressCancel() {
+        getInstrumentation().runOnMainSync(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 getActivity().findViewById(R.id.btn_cancel).performClick();
             }
         });

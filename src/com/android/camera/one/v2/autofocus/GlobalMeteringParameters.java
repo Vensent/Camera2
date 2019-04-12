@@ -22,8 +22,7 @@ import android.hardware.camera2.params.MeteringRectangle;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-final class GlobalMeteringParameters implements MeteringParameters
-{
+final class GlobalMeteringParameters implements MeteringParameters {
     /**
      * Zero weight 3A region, to reset regions per API.
      */
@@ -31,25 +30,21 @@ final class GlobalMeteringParameters implements MeteringParameters
             new MeteringRectangle(0, 0, 0, 0, 0)
     };
 
-    private static class Singleton
-    {
-        private static final GlobalMeteringParameters INSTANCE = new GlobalMeteringParameters();
-    }
-
-    public static MeteringParameters create()
-    {
+    public static MeteringParameters create() {
         return Singleton.INSTANCE;
     }
 
     @Override
-    public MeteringRectangle[] getAFRegions(Rect cropRegion)
-    {
+    public MeteringRectangle[] getAFRegions(Rect cropRegion) {
         return ZERO_WEIGHT_3A_REGION;
     }
 
     @Override
-    public MeteringRectangle[] getAERegions(Rect cropRegion)
-    {
+    public MeteringRectangle[] getAERegions(Rect cropRegion) {
         return ZERO_WEIGHT_3A_REGION;
+    }
+
+    private static class Singleton {
+        private static final GlobalMeteringParameters INSTANCE = new GlobalMeteringParameters();
     }
 }

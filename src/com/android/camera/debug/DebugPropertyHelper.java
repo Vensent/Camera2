@@ -18,8 +18,7 @@ package com.android.camera.debug;
 
 import com.android.camera.util.SystemProperties;
 
-public class DebugPropertyHelper
-{
+public class DebugPropertyHelper {
     private static final String OFF_VALUE = "0";
     private static final String ON_VALUE = "1";
 
@@ -48,28 +47,23 @@ public class DebugPropertyHelper
      */
     private static final String PROP_CAPTURE_DNG = PREFIX + ".capture_dng";
 
-    private static boolean isPropertyOn(String property)
-    {
+    private static boolean isPropertyOn(String property) {
         return ON_VALUE.equals(SystemProperties.get(property, OFF_VALUE));
     }
 
-    public static boolean showFrameDebugLog()
-    {
+    public static boolean showFrameDebugLog() {
         return isPropertyOn(PROP_FRAME_LOG);
     }
 
-    public static boolean showCaptureDebugUI()
-    {
+    public static boolean showCaptureDebugUI() {
         return isPropertyOn(PROP_CAPTURE_DEBUG_UI);
     }
 
-    public static boolean writeCaptureData()
-    {
+    public static boolean writeCaptureData() {
         return isPropertyOn(PROP_WRITE_CAPTURE_DATA);
     }
 
-    public static boolean isCaptureDngEnabled()
-    {
+    public static boolean isCaptureDngEnabled() {
         return isPropertyOn(PROP_CAPTURE_DNG);
     }
 }

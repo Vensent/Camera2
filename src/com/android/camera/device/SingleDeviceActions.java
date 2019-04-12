@@ -21,8 +21,7 @@ import com.android.camera.async.Lifetime;
 /**
  * Device specific actions for opening and closing a device.
  */
-public interface SingleDeviceActions<TDevice>
-{
+public interface SingleDeviceActions<TDevice> {
 
     /**
      * Open the device represented by this instance. This should only

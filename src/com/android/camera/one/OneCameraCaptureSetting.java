@@ -18,53 +18,56 @@ package com.android.camera.one;
 
 import com.android.camera.async.Observable;
 import com.android.camera.async.Observables;
-import com.android.camera.device.CameraId;
 import com.android.camera.hardware.HardwareSpec;
-import com.android.camera.one.OneCamera.Facing;
 import com.android.camera.settings.Keys;
-import com.android.camera.settings.ResolutionSetting;
 import com.android.camera.settings.SettingObserver;
 import com.android.camera.settings.SettingsManager;
 import com.android.camera.util.Size;
-import com.google.common.base.Function;
 
 /**
  * Contains related settings to configure a camera for a particular type of
  * capture.
  */
-public class OneCameraCaptureSetting
-{
+public class OneCameraCaptureSetting {
     private final Size mCaptureSize;
     private final Observable<OneCamera.PhotoCaptureParameters.Flash> mFlashSetting;
     private final Observable<Integer> mExposureSetting;
     private final Observable<Boolean> mHdrSceneSetting;
     private final boolean mIsHdrPlusEnabled;
 
+    private OneCameraCaptureSetting(
+            Size captureSize,
+            Observable<OneCamera.PhotoCaptureParameters.Flash> flashSetting,
+            Observable<Integer> exposureSetting,
+            Observable<Boolean> hdrSceneSetting,
+            boolean isHdrPlusEnabled) {
+        mCaptureSize = captureSize;
+        mFlashSetting = flashSetting;
+        mExposureSetting = exposureSetting;
+        mHdrSceneSetting = hdrSceneSetting;
+        mIsHdrPlusEnabled = isHdrPlusEnabled;
+    }
+
     public static OneCameraCaptureSetting create(
             Size pictureSize,
             SettingsManager settingsManager,
             final HardwareSpec hardwareSpec,
             String cameraSettingScope,
-            boolean isHdrPlusEnabled)
-    {
+            boolean isHdrPlusEnabled) {
         Observable<OneCamera.PhotoCaptureParameters.Flash> flashSetting;
-        if (hardwareSpec.isFlashSupported())
-        {
+        if (hardwareSpec.isFlashSupported()) {
             flashSetting = new FlashSetting(SettingObserver.ofString(
                     settingsManager, cameraSettingScope, Keys.KEY_FLASH_MODE));
-        } else
-        {
+        } else {
             flashSetting = new FlashSetting(Observables.of("off"));
         }
         Observable<Integer> exposureSetting = SettingObserver.ofInteger(
                 settingsManager, cameraSettingScope, Keys.KEY_EXPOSURE);
         Observable<Boolean> hdrSceneSetting;
-        if (hardwareSpec.isHdrSupported())
-        {
+        if (hardwareSpec.isHdrSupported()) {
             hdrSceneSetting = SettingObserver.ofBoolean(settingsManager,
                     SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_HDR);
-        } else
-        {
+        } else {
             hdrSceneSetting = Observables.of(false);
         }
         return new OneCameraCaptureSetting(
@@ -75,42 +78,23 @@ public class OneCameraCaptureSetting
                 isHdrPlusEnabled);
     }
 
-    private OneCameraCaptureSetting(
-            Size captureSize,
-            Observable<OneCamera.PhotoCaptureParameters.Flash> flashSetting,
-            Observable<Integer> exposureSetting,
-            Observable<Boolean> hdrSceneSetting,
-            boolean isHdrPlusEnabled)
-    {
-        mCaptureSize = captureSize;
-        mFlashSetting = flashSetting;
-        mExposureSetting = exposureSetting;
-        mHdrSceneSetting = hdrSceneSetting;
-        mIsHdrPlusEnabled = isHdrPlusEnabled;
-    }
-
-    public Size getCaptureSize()
-    {
+    public Size getCaptureSize() {
         return mCaptureSize;
     }
 
-    public Observable<OneCamera.PhotoCaptureParameters.Flash> getFlashSetting()
-    {
+    public Observable<OneCamera.PhotoCaptureParameters.Flash> getFlashSetting() {
         return mFlashSetting;
     }
 
-    public Observable<Integer> getExposureSetting()
-    {
+    public Observable<Integer> getExposureSetting() {
         return mExposureSetting;
     }
 
-    public Observable<Boolean> getHdrSceneSetting()
-    {
+    public Observable<Boolean> getHdrSceneSetting() {
         return mHdrSceneSetting;
     }
 
-    public boolean isHdrPlusEnabled()
-    {
+    public boolean isHdrPlusEnabled() {
         return mIsHdrPlusEnabled;
     }
 }

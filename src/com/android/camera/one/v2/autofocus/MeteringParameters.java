@@ -23,8 +23,7 @@ import android.hardware.camera2.params.MeteringRectangle;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public interface MeteringParameters
-{
+public interface MeteringParameters {
     /**
      * @param cropRegion The current crop region, see
      *                   {@link CaptureRequest#SCALER_CROP_REGION}.

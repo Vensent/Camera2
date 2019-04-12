@@ -25,8 +25,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  * An ImageProxy decorator that attaches a TotalCaptureResultProxy metadata to
  * an ImageProxy
  */
-public final class MetadataImage extends ForwardingImageProxy
-{
+public final class MetadataImage extends ForwardingImageProxy {
     private final ListenableFuture<TotalCaptureResultProxy> mMetadata;
 
     /**
@@ -35,8 +34,7 @@ public final class MetadataImage extends ForwardingImageProxy
      * @param image    The image.
      * @param metadata The TotalCaptureResultProxy metadata associated with image.
      */
-    public MetadataImage(ImageProxy image, ListenableFuture<TotalCaptureResultProxy> metadata)
-    {
+    public MetadataImage(ImageProxy image, ListenableFuture<TotalCaptureResultProxy> metadata) {
         super(image);
         mMetadata = metadata;
     }
@@ -44,8 +42,7 @@ public final class MetadataImage extends ForwardingImageProxy
     /**
      * @return The TotalCaptureResultProxy metadata associated with image.
      */
-    public ListenableFuture<TotalCaptureResultProxy> getMetadata()
-    {
+    public ListenableFuture<TotalCaptureResultProxy> getMetadata() {
         return mMetadata;
     }
 }

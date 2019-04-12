@@ -23,8 +23,7 @@ import java.util.concurrent.TimeoutException;
  * An input stream of objects which can be closed from either the producer or
  * the consumer.
  */
-public interface BufferQueue<T> extends SafeCloseable
-{
+public interface BufferQueue<T> extends SafeCloseable {
     @Override
     public void close();
 
@@ -35,7 +34,7 @@ public interface BufferQueue<T> extends SafeCloseable
      * @throws InterruptedException                                            If interrupted while waiting for the next
      *                                                                         value.
      * @throws com.android.camera.async.BufferQueue.BufferQueueClosedException If the stream is closed and no more
-     * values
+     *                                                                         values
      *                                                                         will be available.
      */
     public T getNext() throws InterruptedException, BufferQueueClosedException;
@@ -49,10 +48,10 @@ public interface BufferQueue<T> extends SafeCloseable
      * @throws InterruptedException                                            If interrupted while waiting for the next
      *                                                                         value.
      * @throws com.android.camera.async.BufferQueue.BufferQueueClosedException If the stream is closed and no more
-     * values
+     *                                                                         values
      *                                                                         will be available.
      * @throws TimeoutException                                                If no new value is made available
-     * within the
+     *                                                                         within the
      *                                                                         specified time limit.
      */
     public T getNext(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException,
@@ -81,7 +80,6 @@ public interface BufferQueue<T> extends SafeCloseable
     /**
      * Indicates that the stream is closed and no more results are available.
      */
-    public static class BufferQueueClosedException extends Exception
-    {
+    public static class BufferQueueClosedException extends Exception {
     }
 }

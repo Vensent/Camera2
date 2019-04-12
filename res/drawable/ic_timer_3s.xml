@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2014 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2014 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,26 +13,19 @@
      limitations under the License.
 -->
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android"
-          android:constantSize="true">
+<selector xmlns:android="http://schemas.android.com/apk/res/android" android:constantSize="true">
     <item android:state_enabled="false">
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/ic_timer_3s_disabled" />
+        <bitmap android:gravity="center" android:src="@drawable/ic_timer_3s_disabled" />
     </item>
     <item android:state_pressed="true">
         <layer-list>
-           <item android:drawable="@drawable/button_background_pressed_dark" />
-           <item>
-               <bitmap
-                    android:gravity="center"
-                    android:src="@drawable/ic_timer_3s_normal" />
-           </item>
+            <item android:drawable="@drawable/button_background_pressed_dark" />
+            <item>
+                <bitmap android:gravity="center" android:src="@drawable/ic_timer_3s_normal" />
+            </item>
         </layer-list>
     </item>
     <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/ic_timer_3s_normal" />
+        <bitmap android:gravity="center" android:src="@drawable/ic_timer_3s_normal" />
     </item>
 </selector>

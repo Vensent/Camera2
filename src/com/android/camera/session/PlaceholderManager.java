@@ -38,28 +38,12 @@ import java.io.IOException;
  * Handles placeholders in filmstrip that show up temporarily while a final
  * output media item is being produced.
  */
-public class PlaceholderManager
-{
+public class PlaceholderManager {
     private static final Log.Tag TAG = new Log.Tag("PlaceholderMgr");
 
     private final Context mContext;
 
-    public static class Placeholder
-    {
-        final String outputTitle;
-        final Uri outputUri;
-        final long time;
-
-        Placeholder(String title, Uri uri, long timestamp)
-        {
-            outputTitle = title;
-            outputUri = uri;
-            time = timestamp;
-        }
-    }
-
-    public PlaceholderManager(Context context)
-    {
+    public PlaceholderManager(Context context) {
         mContext = context;
     }
 
@@ -72,8 +56,7 @@ public class PlaceholderManager
      *                  within the filmstrip). Millis since epoch.
      * @return A session instance representing the new placeholder.
      */
-    public Placeholder insertEmptyPlaceholder(String title, Size size, long timestamp)
-    {
+    public Placeholder insertEmptyPlaceholder(String title, Size size, long timestamp) {
         Uri uri = Storage.addEmptyPlaceholder(size);
         return new Placeholder(title, uri, timestamp);
     }
@@ -87,30 +70,24 @@ public class PlaceholderManager
      *                    within the filmstrip). Millis since epoch.
      * @return A session instance representing the new placeholder.
      */
-    public Placeholder insertPlaceholder(String title, Bitmap placeholder, long timestamp)
-    {
-        if (title == null || placeholder == null)
-        {
+    public Placeholder insertPlaceholder(String title, Bitmap placeholder, long timestamp) {
+        if (title == null || placeholder == null) {
             throw new IllegalArgumentException("Null argument passed to insertPlaceholder");
         }
 
-        if (placeholder.getWidth() <= 0 || placeholder.getHeight() <= 0)
-        {
+        if (placeholder.getWidth() <= 0 || placeholder.getHeight() <= 0) {
             throw new IllegalArgumentException("Image had bad height/width");
         }
 
         Uri uri = Storage.addPlaceholder(placeholder);
-        if (uri == null)
-        {
+        if (uri == null) {
             return null;
         }
         return new Placeholder(title, uri, timestamp);
     }
 
-    public Placeholder insertPlaceholder(String title, byte[] placeholder, long timestamp)
-    {
-        if (title == null || placeholder == null)
-        {
+    public Placeholder insertPlaceholder(String title, byte[] placeholder, long timestamp) {
+        if (title == null || placeholder == null) {
             throw new IllegalArgumentException("Null argument passed to insertPlaceholder");
         }
 
@@ -126,8 +103,7 @@ public class PlaceholderManager
      * @return A session that can be used to update the progress of the new
      * session.
      */
-    public Placeholder convertToPlaceholder(Uri uri)
-    {
+    public Placeholder convertToPlaceholder(Uri uri) {
         return createSessionFromUri(uri);
     }
 
@@ -146,8 +122,7 @@ public class PlaceholderManager
      */
     public Uri finishPlaceholder(Placeholder placeholder, Location location, int orientation,
                                  ExifInterface exif, byte[] jpeg, int width, int height, String mimeType) throws
-            IOException
-    {
+            IOException {
         Uri resultUri = Storage.updateImage(placeholder.outputUri, mContext.getContentResolver(),
                 placeholder.outputTitle, placeholder.time, location, orientation, exif, jpeg, width,
                 height, mimeType);
@@ -161,8 +136,7 @@ public class PlaceholderManager
      * @param session     the session to update
      * @param placeholder the placeholder bitmap
      */
-    public void replacePlaceholder(Placeholder session, Bitmap placeholder)
-    {
+    public void replacePlaceholder(Placeholder session, Bitmap placeholder) {
         Storage.replacePlaceholder(session.outputUri, placeholder);
         CameraUtil.broadcastNewPicture(mContext, session.outputUri);
     }
@@ -172,8 +146,7 @@ public class PlaceholderManager
      *
      * @param placeholder the session for which to retrieve bitmap placeholder
      */
-    public Optional<Bitmap> getPlaceholder(Placeholder placeholder)
-    {
+    public Optional<Bitmap> getPlaceholder(Placeholder placeholder) {
         return Storage.getPlaceholderForSession(placeholder.outputUri);
     }
 
@@ -182,8 +155,7 @@ public class PlaceholderManager
      *
      * @param placeholder the session for which to remove the bitmap placeholder.
      */
-    public void removePlaceholder(Placeholder placeholder)
-    {
+    public void removePlaceholder(Placeholder placeholder) {
         Storage.removePlaceholder(placeholder.outputUri);
     }
 
@@ -193,8 +165,7 @@ public class PlaceholderManager
      * <p>
      * TODO: Make sure this works with types other than images when needed.
      */
-    private Placeholder createSessionFromUri(Uri uri)
-    {
+    private Placeholder createSessionFromUri(Uri uri) {
         ContentResolver resolver = mContext.getContentResolver();
 
         Cursor cursor = resolver.query(uri,
@@ -203,8 +174,7 @@ public class PlaceholderManager
                 }, null, null, null);
         // The count could be 0 if the original media item was deleted before
         // the session was created.
-        if (cursor == null || cursor.getCount() == 0)
-        {
+        if (cursor == null || cursor.getCount() == 0) {
             return null;
         }
         int dateIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN);
@@ -214,11 +184,22 @@ public class PlaceholderManager
         long date = cursor.getLong(dateIndex);
         String name = cursor.getString(nameIndex);
 
-        if (name.toLowerCase().endsWith(Storage.JPEG_POSTFIX))
-        {
+        if (name.toLowerCase().endsWith(Storage.JPEG_POSTFIX)) {
             name = name.substring(0, name.length() - Storage.JPEG_POSTFIX.length());
         }
 
         return new Placeholder(name, uri, date);
+    }
+
+    public static class Placeholder {
+        final String outputTitle;
+        final Uri outputUri;
+        final long time;
+
+        Placeholder(String title, Uri uri, long timestamp) {
+            outputTitle = title;
+            outputUri = uri;
+            time = timestamp;
+        }
     }
 }

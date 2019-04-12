@@ -28,43 +28,8 @@ import java.util.List;
  * The module manager which maintains the
  * {@link ModuleManagerImpl.ModuleAgent}.
  */
-public interface ModuleManager
-{
+public interface ModuleManager {
     public static int MODULE_INDEX_NONE = -1;
-
-    /**
-     * The module agent which is responsible for maintaining the static
-     * characteristics and the creation of the module.
-     */
-    public static interface ModuleAgent
-    {
-
-        /**
-         * @return The module ID.
-         */
-        public int getModuleId();
-
-        /**
-         * @return Whether the module will request the app for the camera.
-         */
-        public boolean requestAppForCamera();
-
-        /**
-         * @return A string which is used to get the namespace for settings in
-         * the module scope.
-         */
-        public String getScopeNamespace();
-
-        /**
-         * Creates the module.
-         *
-         * @param app    The {@link com.android.camera.app.AppController} which
-         *               creates this module.
-         * @param intent The {@link android.content.Intent} which starts the activity.
-         * @return The module.
-         */
-        public ModuleController createModule(AppController app, Intent intent);
-    }
 
     /**
      * Registers a module. A module will be available only if its agent is
@@ -134,4 +99,37 @@ public interface ModuleManager
      * the given mode id itself
      */
     int getQuickSwitchToModuleId(int moduleId, SettingsManager settingsManager, Context context);
+
+    /**
+     * The module agent which is responsible for maintaining the static
+     * characteristics and the creation of the module.
+     */
+    public static interface ModuleAgent {
+
+        /**
+         * @return The module ID.
+         */
+        public int getModuleId();
+
+        /**
+         * @return Whether the module will request the app for the camera.
+         */
+        public boolean requestAppForCamera();
+
+        /**
+         * @return A string which is used to get the namespace for settings in
+         * the module scope.
+         */
+        public String getScopeNamespace();
+
+        /**
+         * Creates the module.
+         *
+         * @param app    The {@link com.android.camera.app.AppController} which
+         *               creates this module.
+         * @param intent The {@link android.content.Intent} which starts the activity.
+         * @return The module.
+         */
+        public ModuleController createModule(AppController app, Intent intent);
+    }
 }

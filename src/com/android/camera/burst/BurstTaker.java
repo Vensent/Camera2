@@ -16,16 +16,13 @@
 
 package com.android.camera.burst;
 
-import com.android.camera.burst.EvictionHandler;
-
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Helper for taking bursts.
  */
 @ParametersAreNonnullByDefault
-public interface BurstTaker
-{
+public interface BurstTaker {
     /**
      * Start the burst.
      *

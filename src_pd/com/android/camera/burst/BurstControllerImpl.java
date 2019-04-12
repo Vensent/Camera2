@@ -18,10 +18,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 
-import com.android.camera.burst.BurstResultsListener;
-import com.android.camera.burst.EvictionHandler;
-import com.android.camera.burst.BurstController.ImageStreamProperties;
-import com.android.camera.one.v2.camera2proxy.ImageProxy;
 import com.android.camera.one.v2.imagesaver.MetadataImage;
 import com.android.camera.session.CaptureSession;
 
@@ -30,18 +26,15 @@ import java.util.List;
 /**
  * Stub implementation for burst controller.
  */
-class BurstControllerImpl implements BurstController
-{
+class BurstControllerImpl implements BurstController {
 
-    public BurstControllerImpl(Context context)
-    {
+    public BurstControllerImpl(Context context) {
     }
 
     /**
      * Returns true if burst mode is supported by camera.
      */
-    public static boolean isBurstModeSupported(ContentResolver contentResolver)
-    {
+    public static boolean isBurstModeSupported(ContentResolver contentResolver) {
         return false;
     }
 
@@ -49,14 +42,12 @@ class BurstControllerImpl implements BurstController
     public EvictionHandler startBurst(SurfaceTexture surfaceTexture,
                                       ImageStreamProperties imageStreamProperties,
                                       BurstResultsListener resultsListener,
-                                      CaptureSession captureSession)
-    {
+                                      CaptureSession captureSession) {
         return null;
     }
 
     @Override
-    public void processBurstResults(List<MetadataImage> capturedImages)
-    {
+    public void processBurstResults(List<MetadataImage> capturedImages) {
         // no op
     }
 }

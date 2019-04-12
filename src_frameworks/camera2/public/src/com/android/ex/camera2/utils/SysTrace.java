@@ -41,9 +41,8 @@ public final class SysTrace {
     /**
      * Writes trace message to indicate the value of a given counter.
      *
-     * @param counterName The counter name to appear in the trace.
+     * @param counterName  The counter name to appear in the trace.
      * @param counterValue The counter value.
-     *
      */
     public static void traceCounter(String counterName, int counterValue) {
         if (VERBOSE) {
@@ -60,7 +59,7 @@ public final class SysTrace {
      * these characters they will be replaced with a space character in the trace.
      *
      * @param sectionName The name of the code section to appear in the trace.  This may be at
-     * most 127 Unicode code units long.
+     *                    most 127 Unicode code units long.
      */
     public static void beginSection(String sectionName) {
         if (VERBOSE) {
@@ -97,7 +96,7 @@ public final class SysTrace {
      * begin an event must be used to end it.</p>
      *
      * @param methodName The method name to appear in the trace.
-     * @param cookie Unique identifier for distinguishing simultaneous events
+     * @param cookie     Unique identifier for distinguishing simultaneous events
      */
     public static void beginSectionAsync(String methodName, int cookie) {
         if (VERBOSE) {
@@ -111,7 +110,7 @@ public final class SysTrace {
      * using the same tag, name and cookie.
      *
      * @param methodName The method name to appear in the trace.
-     * @param cookie Unique identifier for distinguishing simultaneous events
+     * @param cookie     Unique identifier for distinguishing simultaneous events
      */
     public static void endSectionAsync(String methodName, int cookie) {
         if (VERBOSE) {

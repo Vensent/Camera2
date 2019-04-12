@@ -66,7 +66,6 @@ import com.android.camera.ui.CountDownView;
 import com.android.camera.ui.TouchCoordinate;
 import com.android.camera.ui.focus.FocusController;
 import com.android.camera.util.Size;
-
 import com.google.common.base.Optional;
 
 import javax.annotation.Nullable;
@@ -78,40 +77,143 @@ import javax.annotation.Nullable;
  * 2. tap on viewfinder to focus.
  * 3. switch between front and back camera.
  */
-public final class StateReadyForCapture extends StateImpl
-{
+public final class StateReadyForCapture extends StateImpl {
     private static final Log.Tag TAG = new Log.Tag("StateReadyCap");
 
     private final RefCountBase<ResourceCaptureTools> mResourceCaptureTools;
+    private final OneCamera.FocusStateListener mFocusStateListener =
+            new OneCamera.FocusStateListener() {
+                @Override
+                public void onFocusStatusUpdate(final OneCamera.AutoFocusState focusState,
+                                                final long frameNumber) {
+                    onFocusStateUpdated(focusState);
+                }
+            };
+    private final EventHandler<EventCameraBusy> mEventCameraBusyHandler =
+            new EventHandler<EventCameraBusy>() {
+                @Override
+                public Optional<State> processEvent(EventCameraBusy event) {
+                    mResourceCaptureTools.get().getMainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            mResourceCaptureTools.get().getModuleUI().setShutterButtonEnabled(
+                                    false);
+                        }
+                    });
+                    return NO_CHANGE;
+                }
+            };
+    private final EventHandler<EventCameraReady> mEventCameraReadyHandler =
+            new EventHandler<EventCameraReady>() {
+                @Override
+                public Optional<State> processEvent(EventCameraReady event) {
+                    mResourceCaptureTools.get().getMainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            mResourceCaptureTools.get().getModuleUI().setShutterButtonEnabled(true);
+                        }
+                    });
+                    return NO_CHANGE;
+                }
+            };
+    private final OneCamera.ReadyStateChangedListener mReadyStateChangedListener =
+            new OneCamera.ReadyStateChangedListener() {
+                /**
+                 * Called when the camera is either ready or not ready to take a picture
+                 * right now.
+                 */
+                @Override
+                public void onReadyStateChanged(final boolean readyForCapture) {
+                    if (readyForCapture) {
+                        getStateMachine().processEvent(new EventCameraReady());
+                    } else {
+                        getStateMachine().processEvent(new EventCameraBusy());
+                    }
+                }
+            };
+    private final OneCamera.PictureCallback mPictureCallback = new OneCamera.PictureCallback() {
+        @Override
+        public void onQuickExpose() {
+            getStateMachine().processEvent(new EventCameraQuickExpose());
+        }
 
+        @Override
+        public void onThumbnailResult(byte[] jpegData) {
+        }
+
+        @Override
+        public void onPictureTaken(CaptureSession session) {
+        }
+
+        @Override
+        public void onPictureSaved(Uri uri) {
+        }
+
+        @Override
+        public void onPictureTakingFailed() {
+        }
+
+        @Override
+        public void onTakePictureProgress(float progress) {
+        }
+    };
+    private final CaptureSessionManager.SessionListener mCaptureSessionListener =
+            new CaptureSessionManager.SessionListener() {
+                @Override
+                public void onSessionThumbnailUpdate(Bitmap thumbnailBitmap) {
+                    getStateMachine().processEvent(
+                            new EventFastPictureBitmapAvailable(thumbnailBitmap));
+                }
+
+                @Override
+                public void onSessionPictureDataUpdate(byte[] pictureData, int orientation) {
+                    getStateMachine().processEvent(
+                            new EventPictureCompressed(pictureData, orientation));
+                }
+
+                @Override
+                public void onSessionQueued(Uri sessionUri) {
+                }
+
+                @Override
+                public void onSessionUpdated(Uri sessionUri) {
+                }
+
+                @Override
+                public void onSessionCaptureIndicatorUpdate(Bitmap bitmap, int rotationDegrees) {
+                }
+
+                @Override
+                public void onSessionDone(Uri sessionUri) {
+                }
+
+                @Override
+                public void onSessionFailed(Uri sessionUri, int failureMessageId,
+                                            boolean removeFromFilmstrip) {
+                }
+
+                @Override
+                public void onSessionCanceled(Uri mediaUri) {
+                }
+
+                @Override
+                public void onSessionProgress(Uri sessionUri, int progress) {
+                }
+
+                @Override
+                public void onSessionProgressText(Uri sessionUri, int messageId) {
+                }
+            };
     private boolean mShouldUpdateTransformOnNextSurfaceTextureUpdate;
     private boolean mIsCountingDown;
     private boolean mIsTakingPicture;
     private boolean mIsDecodingPicture;
 
-    public static StateReadyForCapture from(
-            StateStartingPreview startingPreview,
-            RefCountBase<ResourceConstructed> resourceConstructed,
-            RefCountBase<ResourceSurfaceTexture> resourceSurfaceTexture,
-            RefCountBase<ResourceOpenedCamera> resourceOpenedCamera)
-    {
-        return new StateReadyForCapture(
-                startingPreview, resourceConstructed, resourceSurfaceTexture, resourceOpenedCamera);
-    }
-
-    public static StateReadyForCapture from(
-            StateReviewingPicture reviewingPicture,
-            RefCountBase<ResourceCaptureTools> resourceCaptureTools)
-    {
-        return new StateReadyForCapture(reviewingPicture, resourceCaptureTools);
-    }
-
     private StateReadyForCapture(
             State previousState,
             RefCountBase<ResourceConstructed> resourceConstructed,
             RefCountBase<ResourceSurfaceTexture> resourceSurfaceTexture,
-            RefCountBase<ResourceOpenedCamera> resourceOpenedCamera)
-    {
+            RefCountBase<ResourceOpenedCamera> resourceOpenedCamera) {
         super(previousState);
         mResourceCaptureTools = ResourceCaptureToolsImpl.create(
                 resourceConstructed, resourceSurfaceTexture, resourceOpenedCamera);
@@ -124,8 +226,7 @@ public final class StateReadyForCapture extends StateImpl
 
     private StateReadyForCapture(
             State previousState,
-            RefCountBase<ResourceCaptureTools> resourceCaptureTools)
-    {
+            RefCountBase<ResourceCaptureTools> resourceCaptureTools) {
         super(previousState);
         mResourceCaptureTools = resourceCaptureTools;
         mResourceCaptureTools.addRef();  // Will be balanced in onLeave().
@@ -136,8 +237,22 @@ public final class StateReadyForCapture extends StateImpl
         registerEventHandlers();
     }
 
-    private void takePicture(@Nullable final TouchCoordinate touchPointInsideShutterButton)
-    {
+    public static StateReadyForCapture from(
+            StateStartingPreview startingPreview,
+            RefCountBase<ResourceConstructed> resourceConstructed,
+            RefCountBase<ResourceSurfaceTexture> resourceSurfaceTexture,
+            RefCountBase<ResourceOpenedCamera> resourceOpenedCamera) {
+        return new StateReadyForCapture(
+                startingPreview, resourceConstructed, resourceSurfaceTexture, resourceOpenedCamera);
+    }
+
+    public static StateReadyForCapture from(
+            StateReviewingPicture reviewingPicture,
+            RefCountBase<ResourceCaptureTools> resourceCaptureTools) {
+        return new StateReadyForCapture(reviewingPicture, resourceCaptureTools);
+    }
+
+    private void takePicture(@Nullable final TouchCoordinate touchPointInsideShutterButton) {
         final int countDownDuration =
                 mResourceCaptureTools.get().getResourceConstructed().get()
                         .getSettingsManager().getInteger(
@@ -145,27 +260,22 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Prepare a CaptureLoggingInfo object. */
         final ResourceCaptureTools.CaptureLoggingInfo captureLoggingInfo
-                = new ResourceCaptureTools.CaptureLoggingInfo()
-        {
+                = new ResourceCaptureTools.CaptureLoggingInfo() {
             @Override
-            public TouchCoordinate getTouchPointInsideShutterButton()
-            {
+            public TouchCoordinate getTouchPointInsideShutterButton() {
                 return touchPointInsideShutterButton;
             }
 
             @Override
-            public int getCountDownDuration()
-            {
+            public int getCountDownDuration() {
                 return countDownDuration;
             }
         };
 
         /** Start counting down if the duration is not zero. */
-        if (countDownDuration > 0)
-        {
+        if (countDownDuration > 0) {
             startCountDown(countDownDuration, captureLoggingInfo);
-        } else
-        {
+        } else {
             /** Otherwise, just take a picture immediately. */
             takePictureNow(captureLoggingInfo);
         }
@@ -173,29 +283,23 @@ public final class StateReadyForCapture extends StateImpl
 
     private void startCountDown(
             final int countDownDuration,
-            final ResourceCaptureTools.CaptureLoggingInfo captureLoggingInfo)
-    {
+            final ResourceCaptureTools.CaptureLoggingInfo captureLoggingInfo) {
         mIsCountingDown = true;
-        mResourceCaptureTools.get().getMainThread().execute(new Runnable()
-        {
+        mResourceCaptureTools.get().getMainThread().execute(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 CaptureIntentModuleUI moduleUI = mResourceCaptureTools.get().getModuleUI();
                 moduleUI.setCountdownFinishedListener(
-                        new CountDownView.OnCountDownStatusListener()
-                        {
+                        new CountDownView.OnCountDownStatusListener() {
                             @Override
                             public void onRemainingSecondsChanged(
-                                    int remainingSeconds)
-                            {
+                                    int remainingSeconds) {
                                 mResourceCaptureTools.get()
                                         .playCountDownSound(remainingSeconds);
                             }
 
                             @Override
-                            public void onCountDownFinished()
-                            {
+                            public void onCountDownFinished() {
                                 getStateMachine().processEvent(
                                         new EventTimerCountDownToZero(
                                                 captureLoggingInfo));
@@ -206,35 +310,28 @@ public final class StateReadyForCapture extends StateImpl
         });
     }
 
-    private void cancelCountDown()
-    {
+    private void cancelCountDown() {
         // Cancel in this state means that the countdown was cancelled.
         mIsCountingDown = false;
-        mResourceCaptureTools.get().getMainThread().execute(new Runnable()
-        {
+        mResourceCaptureTools.get().getMainThread().execute(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 mResourceCaptureTools.get().getModuleUI().cancelCountDown();
                 mResourceCaptureTools.get().getModuleUI().showPictureCaptureUI();
             }
         });
     }
 
-    private void takePictureNow(ResourceCaptureTools.CaptureLoggingInfo captureLoggingInfo)
-    {
+    private void takePictureNow(ResourceCaptureTools.CaptureLoggingInfo captureLoggingInfo) {
         mIsTakingPicture = true;
         mResourceCaptureTools.get().takePictureNow(mPictureCallback, captureLoggingInfo);
     }
 
-    private void registerEventHandlers()
-    {
+    private void registerEventHandlers() {
         /** Handles EventPause. */
-        EventHandler<EventPause> pauseHandler = new EventHandler<EventPause>()
-        {
+        EventHandler<EventPause> pauseHandler = new EventHandler<EventPause>() {
             @Override
-            public Optional<State> processEvent(EventPause event)
-            {
+            public Optional<State> processEvent(EventPause event) {
                 return Optional.of((State) StateBackgroundWithSurfaceTexture.from(
                         StateReadyForCapture.this,
                         mResourceCaptureTools.get().getResourceConstructed(),
@@ -245,13 +342,10 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventOnSurfaceTextureUpdated. */
         EventHandler<EventOnSurfaceTextureUpdated> onSurfaceTextureUpdatedHandler =
-                new EventHandler<EventOnSurfaceTextureUpdated>()
-                {
+                new EventHandler<EventOnSurfaceTextureUpdated>() {
                     @Override
-                    public Optional<State> processEvent(EventOnSurfaceTextureUpdated event)
-                    {
-                        if (mShouldUpdateTransformOnNextSurfaceTextureUpdate)
-                        {
+                    public Optional<State> processEvent(EventOnSurfaceTextureUpdated event) {
+                        if (mShouldUpdateTransformOnNextSurfaceTextureUpdate) {
                             mShouldUpdateTransformOnNextSurfaceTextureUpdate = false;
 
                             // We have to provide a preview layout size to
@@ -271,11 +365,9 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventOnTextureViewLayoutChanged. */
         EventHandler<EventOnTextureViewLayoutChanged> onTextureViewLayoutChangedHandler =
-                new EventHandler<EventOnTextureViewLayoutChanged>()
-                {
+                new EventHandler<EventOnTextureViewLayoutChanged>() {
                     @Override
-                    public Optional<State> processEvent(EventOnTextureViewLayoutChanged event)
-                    {
+                    public Optional<State> processEvent(EventOnTextureViewLayoutChanged event) {
                         mResourceCaptureTools.get().getResourceSurfaceTexture().get()
                                 .setPreviewLayoutSize(event.getLayoutSize());
                         return NO_CHANGE;
@@ -294,11 +386,9 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventTapOnShutterButton. */
         EventHandler<EventTapOnShutterButton> tapOnShutterButtonHandler =
-                new EventHandler<EventTapOnShutterButton>()
-                {
+                new EventHandler<EventTapOnShutterButton>() {
                     @Override
-                    public Optional<State> processEvent(final EventTapOnShutterButton event)
-                    {
+                    public Optional<State> processEvent(final EventTapOnShutterButton event) {
                         takePicture(event.getTouchCoordinate());
                         return NO_CHANGE;
                     }
@@ -307,13 +397,10 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventClickOnCameraKey */
         EventHandler<EventClickOnCameraKey> clickOnVolumeKeyHandler =
-                new EventHandler<EventClickOnCameraKey>()
-                {
+                new EventHandler<EventClickOnCameraKey>() {
                     @Override
-                    public Optional<State> processEvent(EventClickOnCameraKey event)
-                    {
-                        if (mIsCountingDown)
-                        {
+                    public Optional<State> processEvent(EventClickOnCameraKey event) {
+                        if (mIsCountingDown) {
                             cancelCountDown();
                             return NO_CHANGE;
                         }
@@ -325,13 +412,10 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventTimerCountDownToZero. */
         EventHandler<EventTimerCountDownToZero> timerCountDownToZeroHandler =
-                new EventHandler<EventTimerCountDownToZero>()
-                {
+                new EventHandler<EventTimerCountDownToZero>() {
                     @Override
-                    public Optional<State> processEvent(EventTimerCountDownToZero event)
-                    {
-                        if (mIsCountingDown)
-                        {
+                    public Optional<State> processEvent(EventTimerCountDownToZero event) {
+                        if (mIsCountingDown) {
                             mIsCountingDown = false;
                             takePictureNow(event.getCaptureLoggingInfo());
                         }
@@ -342,20 +426,16 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventTapOnSwitchCameraButton. */
         EventHandler<EventTapOnSwitchCameraButton> tapOnSwitchCameraButtonHandler =
-                new EventHandler<EventTapOnSwitchCameraButton>()
-                {
+                new EventHandler<EventTapOnSwitchCameraButton>() {
                     @Override
-                    public Optional<State> processEvent(EventTapOnSwitchCameraButton event)
-                    {
+                    public Optional<State> processEvent(EventTapOnSwitchCameraButton event) {
                         final ResourceConstructed resourceConstructed =
                                 mResourceCaptureTools.get().getResourceConstructed().get();
 
                         // Freeze the screen.
-                        mResourceCaptureTools.get().getMainThread().execute(new Runnable()
-                        {
+                        mResourceCaptureTools.get().getMainThread().execute(new Runnable() {
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 resourceConstructed.getModuleUI().freezeScreenUntilPreviewReady();
                             }
                         });
@@ -365,12 +445,10 @@ public final class StateReadyForCapture extends StateImpl
                         CameraId cameraId = resourceConstructed.getOneCameraManager()
                                 .findFirstCameraFacing(cameraFacing);
                         OneCameraCharacteristics characteristics;
-                        try
-                        {
+                        try {
                             characteristics = resourceConstructed.getOneCameraManager()
                                     .getOneCameraCharacteristics(cameraId);
-                        } catch (OneCameraAccessException ex)
-                        {
+                        } catch (OneCameraAccessException ex) {
                             return Optional.of((State) StateFatal.from(
                                     StateReadyForCapture.this,
                                     mResourceCaptureTools.get().getResourceConstructed()));
@@ -388,16 +466,13 @@ public final class StateReadyForCapture extends StateImpl
         setEventHandler(EventTapOnSwitchCameraButton.class, tapOnSwitchCameraButtonHandler);
 
         /** Handles EventTapOnPreview. */
-        EventHandler<EventTapOnPreview> tapOnPreviewHandler = new EventHandler<EventTapOnPreview>()
-        {
+        EventHandler<EventTapOnPreview> tapOnPreviewHandler = new EventHandler<EventTapOnPreview>() {
             @Override
-            public Optional<State> processEvent(EventTapOnPreview event)
-            {
+            public Optional<State> processEvent(EventTapOnPreview event) {
                 OneCameraCharacteristics cameraCharacteristics = mResourceCaptureTools.get()
                         .getResourceOpenedCamera().get().getCameraCharacteristics();
                 if (cameraCharacteristics.isAutoExposureSupported() ||
-                        cameraCharacteristics.isAutoFocusSupported())
-                {
+                        cameraCharacteristics.isAutoFocusSupported()) {
                     final Point tapPoint = event.getTapPoint();
                     mResourceCaptureTools.get().getFocusController().showActiveFocusAt(
                             tapPoint.x, tapPoint.y);
@@ -417,8 +492,7 @@ public final class StateReadyForCapture extends StateImpl
                     rotationMatrix.mapPoints(points);
 
                     // Invert X coordinate on front camera since the display is mirrored.
-                    if (cameraCharacteristics.getCameraDirection() == Facing.FRONT)
-                    {
+                    if (cameraCharacteristics.getCameraDirection() == Facing.FRONT) {
                         points[0] = 1 - points[0];
                     }
 
@@ -434,11 +508,9 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventZoomRatioChanged. */
         EventHandler<EventZoomRatioChanged> zoomRatioChangedHandler =
-                new EventHandler<EventZoomRatioChanged>()
-                {
+                new EventHandler<EventZoomRatioChanged>() {
                     @Override
-                    public Optional<State> processEvent(EventZoomRatioChanged event)
-                    {
+                    public Optional<State> processEvent(EventZoomRatioChanged event) {
                         mResourceCaptureTools.get().getResourceOpenedCamera().get().setZoomRatio(
                                 event.getZoomRatio());
                         return NO_CHANGE;
@@ -448,24 +520,19 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventPictureCompressed. */
         EventHandler<EventPictureCompressed> pictureCompressedHandler =
-                new EventHandler<EventPictureCompressed>()
-                {
+                new EventHandler<EventPictureCompressed>() {
                     @Override
-                    public Optional<State> processEvent(EventPictureCompressed event)
-                    {
-                        if (mIsTakingPicture)
-                        {
+                    public Optional<State> processEvent(EventPictureCompressed event) {
+                        if (mIsTakingPicture) {
                             mIsTakingPicture = false;
                             mIsDecodingPicture = true;
 
                             final byte[] pictureData = event.getPictureData();
                             final int pictureOrientation = event.getOrientation();
                             mResourceCaptureTools.get().getResourceConstructed().get().getCameraHandler().post(
-                                    new Runnable()
-                                    {
+                                    new Runnable() {
                                         @Override
-                                        public void run()
-                                        {
+                                        public void run() {
                                             final Bitmap pictureBitmap = PictureDecoder.decode(
                                                     pictureData,
                                                     CaptureIntentConfig.DOWN_SAMPLE_FACTOR,
@@ -483,17 +550,14 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventPictureDecoded. */
         EventHandler<EventPictureDecoded> pictureDecodedHandler =
-                new EventHandler<EventPictureDecoded>()
-                {
+                new EventHandler<EventPictureDecoded>() {
                     @Override
-                    public Optional<State> processEvent(EventPictureDecoded event)
-                    {
+                    public Optional<State> processEvent(EventPictureDecoded event) {
                         // Do nothing if we are not in the decoding image sub-state. There is a
                         // chance that EventPictureDecoded for an old image might come after people
                         // hitting retake button. We have to ignore it or it will take us to
                         // StateReviewingPicture.
-                        if (!mIsDecodingPicture)
-                        {
+                        if (!mIsDecodingPicture) {
                             return NO_CHANGE;
                         }
 
@@ -507,13 +571,10 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventFastPictureBitmapAvailable. */
         EventHandler<EventFastPictureBitmapAvailable> fastPictureBitmapAvailableHandler =
-                new EventHandler<EventFastPictureBitmapAvailable>()
-                {
+                new EventHandler<EventFastPictureBitmapAvailable>() {
                     @Override
-                    public Optional<State> processEvent(EventFastPictureBitmapAvailable event)
-                    {
-                        if (mIsTakingPicture && !mIsDecodingPicture)
-                        {
+                    public Optional<State> processEvent(EventFastPictureBitmapAvailable event) {
+                        if (mIsTakingPicture && !mIsDecodingPicture) {
                             return Optional.of((State) StateReviewingPicture.from(
                                     StateReadyForCapture.this, mResourceCaptureTools,
                                     event.getThumbnailBitmap(), Optional.<byte[]>absent()));
@@ -525,18 +586,13 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventCameraQuickExpose. */
         EventHandler<EventCameraQuickExpose> cameraQuickExposeHandler =
-                new EventHandler<EventCameraQuickExpose>()
-                {
+                new EventHandler<EventCameraQuickExpose>() {
                     @Override
-                    public Optional<State> processEvent(EventCameraQuickExpose event)
-                    {
-                        if (mIsTakingPicture)
-                        {
-                            mResourceCaptureTools.get().getMainThread().execute(new Runnable()
-                            {
+                    public Optional<State> processEvent(EventCameraQuickExpose event) {
+                        if (mIsTakingPicture) {
+                            mResourceCaptureTools.get().getMainThread().execute(new Runnable() {
                                 @Override
-                                public void run()
-                                {
+                                public void run() {
 
                                     ResourceConstructed resourceConstructed =
                                             mResourceCaptureTools.get().getResourceConstructed()
@@ -562,11 +618,9 @@ public final class StateReadyForCapture extends StateImpl
 
         /** Handles EventTapOnCancelShutterButton. */
         EventHandler<EventTapOnCancelShutterButton> tapOnCancelShutterButtonHandler =
-                new EventHandler<EventTapOnCancelShutterButton>()
-                {
+                new EventHandler<EventTapOnCancelShutterButton>() {
                     @Override
-                    public Optional<State> processEvent(EventTapOnCancelShutterButton event)
-                    {
+                    public Optional<State> processEvent(EventTapOnCancelShutterButton event) {
                         cancelCountDown();
                         return NO_CHANGE;
                     }
@@ -575,8 +629,7 @@ public final class StateReadyForCapture extends StateImpl
     }
 
     @Override
-    public Optional<State> onEnter()
-    {
+    public Optional<State> onEnter() {
         // Register various listeners. These will be unregistered in onLeave().
         final OneCamera camera =
                 mResourceCaptureTools.get().getResourceOpenedCamera().get().getCamera();
@@ -587,11 +640,9 @@ public final class StateReadyForCapture extends StateImpl
                 .addSessionListener(mCaptureSessionListener);
 
         // Display capture UI.
-        mResourceCaptureTools.get().getMainThread().execute(new Runnable()
-        {
+        mResourceCaptureTools.get().getMainThread().execute(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 mResourceCaptureTools.get().getModuleUI().cancelCountDown();
                 mResourceCaptureTools.get().getModuleUI().showPictureCaptureUI();
                 mResourceCaptureTools.get().getModuleUI().initializeZoom(
@@ -602,8 +653,7 @@ public final class StateReadyForCapture extends StateImpl
     }
 
     @Override
-    public void onLeave()
-    {
+    public void onLeave() {
         final OneCamera camera =
                 mResourceCaptureTools.get().getResourceOpenedCamera().get().getCamera();
         camera.setFocusDistanceListener(null);
@@ -615,11 +665,9 @@ public final class StateReadyForCapture extends StateImpl
         mResourceCaptureTools.close();
     }
 
-    private void onFocusStateUpdated(OneCamera.AutoFocusState focusState)
-    {
+    private void onFocusStateUpdated(OneCamera.AutoFocusState focusState) {
         final FocusController focusController = mResourceCaptureTools.get().getFocusController();
-        switch (focusState)
-        {
+        switch (focusState) {
             case PASSIVE_SCAN:
                 focusController.showPassiveFocusAtCenter();
                 break;
@@ -635,165 +683,4 @@ public final class StateReadyForCapture extends StateImpl
                 break;
         }
     }
-
-    private final OneCamera.FocusStateListener mFocusStateListener =
-            new OneCamera.FocusStateListener()
-            {
-                @Override
-                public void onFocusStatusUpdate(final OneCamera.AutoFocusState focusState,
-                                                final long frameNumber)
-                {
-                    onFocusStateUpdated(focusState);
-                }
-            };
-
-    private final EventHandler<EventCameraBusy> mEventCameraBusyHandler =
-            new EventHandler<EventCameraBusy>()
-            {
-                @Override
-                public Optional<State> processEvent(EventCameraBusy event)
-                {
-                    mResourceCaptureTools.get().getMainThread().execute(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            mResourceCaptureTools.get().getModuleUI().setShutterButtonEnabled(
-                                    false);
-                        }
-                    });
-                    return NO_CHANGE;
-                }
-            };
-
-    private final EventHandler<EventCameraReady> mEventCameraReadyHandler =
-            new EventHandler<EventCameraReady>()
-            {
-                @Override
-                public Optional<State> processEvent(EventCameraReady event)
-                {
-                    mResourceCaptureTools.get().getMainThread().execute(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            mResourceCaptureTools.get().getModuleUI().setShutterButtonEnabled(true);
-                        }
-                    });
-                    return NO_CHANGE;
-                }
-            };
-
-    private final OneCamera.ReadyStateChangedListener mReadyStateChangedListener =
-            new OneCamera.ReadyStateChangedListener()
-            {
-                /**
-                 * Called when the camera is either ready or not ready to take a picture
-                 * right now.
-                 */
-                @Override
-                public void onReadyStateChanged(final boolean readyForCapture)
-                {
-                    if (readyForCapture)
-                    {
-                        getStateMachine().processEvent(new EventCameraReady());
-                    } else
-                    {
-                        getStateMachine().processEvent(new EventCameraBusy());
-                    }
-                }
-            };
-
-    private final OneCamera.PictureCallback mPictureCallback = new OneCamera.PictureCallback()
-    {
-        @Override
-        public void onQuickExpose()
-        {
-            getStateMachine().processEvent(new EventCameraQuickExpose());
-        }
-
-        @Override
-        public void onThumbnailResult(byte[] jpegData)
-        {
-        }
-
-        @Override
-        public void onPictureTaken(CaptureSession session)
-        {
-        }
-
-        @Override
-        public void onPictureSaved(Uri uri)
-        {
-        }
-
-        @Override
-        public void onPictureTakingFailed()
-        {
-        }
-
-        @Override
-        public void onTakePictureProgress(float progress)
-        {
-        }
-    };
-
-    private final CaptureSessionManager.SessionListener mCaptureSessionListener =
-            new CaptureSessionManager.SessionListener()
-            {
-                @Override
-                public void onSessionThumbnailUpdate(Bitmap thumbnailBitmap)
-                {
-                    getStateMachine().processEvent(
-                            new EventFastPictureBitmapAvailable(thumbnailBitmap));
-                }
-
-                @Override
-                public void onSessionPictureDataUpdate(byte[] pictureData, int orientation)
-                {
-                    getStateMachine().processEvent(
-                            new EventPictureCompressed(pictureData, orientation));
-                }
-
-                @Override
-                public void onSessionQueued(Uri sessionUri)
-                {
-                }
-
-                @Override
-                public void onSessionUpdated(Uri sessionUri)
-                {
-                }
-
-                @Override
-                public void onSessionCaptureIndicatorUpdate(Bitmap bitmap, int rotationDegrees)
-                {
-                }
-
-                @Override
-                public void onSessionDone(Uri sessionUri)
-                {
-                }
-
-                @Override
-                public void onSessionFailed(Uri sessionUri, int failureMessageId,
-                                            boolean removeFromFilmstrip)
-                {
-                }
-
-                @Override
-                public void onSessionCanceled(Uri mediaUri)
-                {
-                }
-
-                @Override
-                public void onSessionProgress(Uri sessionUri, int progress)
-                {
-                }
-
-                @Override
-                public void onSessionProgressText(Uri sessionUri, int messageId)
-                {
-                }
-            };
 }

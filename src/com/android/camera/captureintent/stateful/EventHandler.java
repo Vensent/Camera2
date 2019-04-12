@@ -25,8 +25,7 @@ import com.google.common.base.Optional;
  *
  * @param <T> The particular type of event.
  */
-public interface EventHandler<T extends Event>
-{
+public interface EventHandler<T extends Event> {
 
     /**
      * Process a single event.

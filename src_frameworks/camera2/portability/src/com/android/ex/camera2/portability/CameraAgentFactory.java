@@ -32,7 +32,9 @@ import com.android.ex.camera2.portability.util.SystemProperties;
 public class CameraAgentFactory {
     private static final Log.Tag TAG = new Log.Tag("CamAgntFact");
 
-    /** Android release replacing the Camera class with the camera2 package. */
+    /**
+     * Android release replacing the Camera class with the camera2 package.
+     */
     private static final int FIRST_SDK_WITH_API_2 = 21;
 
     // The debugging override, which overrides *all* API level selections if set
@@ -51,20 +53,6 @@ public class CameraAgentFactory {
     private static int sAndroidCameraAgentClientCount;
     private static int sAndroidCamera2AgentClientCount;
 
-    /**
-     * Used to indicate which camera framework should be used.
-     */
-    public static enum CameraApi {
-        /** Automatically select based on the device's SDK level. */
-        AUTO,
-
-        /** Use the {@link android.hardware.Camera} class. */
-        API_1,
-
-        /** Use the {@link android.hardware.camera2} package. */
-        API_2
-    };
-
     private static CameraApi highestSupportedApi() {
         // TODO: Check SDK_INT instead of RELEASE before L launch
         if (Build.VERSION.SDK_INT >= FIRST_SDK_WITH_API_2 || Build.VERSION.CODENAME.equals("L")) {
@@ -73,6 +61,8 @@ public class CameraAgentFactory {
             return CameraApi.API_1;
         }
     }
+
+    ;
 
     private static CameraApi validateApiChoice(CameraApi choice) {
         if (API_LEVEL_OVERRIDE_VALUE.equals(API_LEVEL_OVERRIDE_API1)) {
@@ -103,9 +93,8 @@ public class CameraAgentFactory {
      * here.</p>
      *
      * @param context The application context.
-     * @param api Which camera framework to use.
+     * @param api     Which camera framework to use.
      * @return The {@link CameraAgent} to control the camera device.
-     *
      * @throws UnsupportedOperationException If {@code CameraApi.API_2} was
      *                                       requested on an unsupported device.
      */
@@ -140,7 +129,6 @@ public class CameraAgentFactory {
      * stopped.
      *
      * @param api Which camera framework handle to recycle.
-     *
      * @throws UnsupportedOperationException If {@code CameraApi.API_2} was
      *                                       requested on an unsupported device.
      */
@@ -162,5 +150,25 @@ public class CameraAgentFactory {
                 sAndroidCamera2Agent = null;
             }
         }
+    }
+
+    /**
+     * Used to indicate which camera framework should be used.
+     */
+    public static enum CameraApi {
+        /**
+         * Automatically select based on the device's SDK level.
+         */
+        AUTO,
+
+        /**
+         * Use the {@link android.hardware.Camera} class.
+         */
+        API_1,
+
+        /**
+         * Use the {@link android.hardware.camera2} package.
+         */
+        API_2
     }
 }

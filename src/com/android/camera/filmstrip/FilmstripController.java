@@ -46,8 +46,7 @@ import com.android.camera.data.FilmstripItem;
  * Upon entering/leaving each of the states, the
  * {@link com.android.camera.filmstrip.FilmstripController.FilmstripListener} will be notified.
  */
-public interface FilmstripController
-{
+public interface FilmstripController {
 
     /**
      * Sets the listener for filmstrip events.
@@ -173,8 +172,7 @@ public interface FilmstripController
     /**
      * An interface which defines the FilmStripView UI action listener.
      */
-    interface FilmstripListener
-    {
+    interface FilmstripListener {
 
         /**
          * Callback when the data item is promoted. A data is promoted if the user

@@ -29,8 +29,7 @@ import java.util.concurrent.Executor;
  * Implements the conversion of a YUV_420_888 image to subsampled image
  * inscribed in a circle.
  */
-public class TaskPreviewChainedJpeg extends TaskConvertImageToRGBPreview
-{
+public class TaskPreviewChainedJpeg extends TaskConvertImageToRGBPreview {
     private final LruResourcePool<Integer, ByteBuffer> mByteBufferDirectPool;
 
     /**
@@ -49,22 +48,19 @@ public class TaskPreviewChainedJpeg extends TaskConvertImageToRGBPreview
                            ImageTaskManager imageTaskManager,
                            CaptureSession captureSession,
                            Size targetSize,
-                           LruResourcePool<Integer, ByteBuffer> byteBufferResourcePool)
-    {
+                           LruResourcePool<Integer, ByteBuffer> byteBufferResourcePool) {
         super(image, executor, imageTaskManager, ProcessingPriority.AVERAGE, captureSession,
                 targetSize, ThumbnailShape.MAINTAIN_ASPECT_NO_INSET);
         mByteBufferDirectPool = byteBufferResourcePool;
     }
 
-    public void logWrapper(String message)
-    {
+    public void logWrapper(String message) {
         // final Log.Tag TAG = new Log.Tag("TaskPreviewChainedJpeg");
         // Log.v(TAG, message);
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         ImageToProcess img = mImage;
         Rect safeCrop = guaranteedSafeCrop(img.proxy, img.crop);
 
@@ -75,8 +71,7 @@ public class TaskPreviewChainedJpeg extends TaskConvertImageToRGBPreview
         final TaskImage resultImage = calculateResultImage(img, subsample);
         final int[] convertedImage;
 
-        try
-        {
+        try {
             onStart(mId, inputImage, resultImage, TaskInfo.Destination.INTERMEDIATE_THUMBNAIL);
 
             logWrapper("TIMER_END Rendering preview YUV buffer available, w=" + img.proxy.getWidth()
@@ -89,8 +84,7 @@ public class TaskPreviewChainedJpeg extends TaskConvertImageToRGBPreview
             TaskImageContainer jpegTask = new TaskCompressImageToJpeg(img, mExecutor,
                     mImageTaskManager, mSession, mByteBufferDirectPool);
             mImageTaskManager.appendTasks(img, jpegTask);
-        } finally
-        {
+        } finally {
             // Signal backend that reference has been released
             mImageTaskManager.releaseSemaphoreReference(img, mExecutor);
         }

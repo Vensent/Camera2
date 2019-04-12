@@ -28,84 +28,56 @@ import java.util.concurrent.locks.Lock;
 /**
  * Shows a preview of the TinyPlanet on the screen while editing.
  */
-public class TinyPlanetPreview extends View
-{
-    /**
-     * Classes implementing this interface get informed about changes to the
-     * preview size.
-     */
-    public static interface PreviewSizeListener
-    {
-        /**
-         * Called when the preview size has changed.
-         *
-         * @param sizePx the size in pixels of the square preview area
-         */
-        public void onSizeChanged(int sizePx);
-    }
-
+public class TinyPlanetPreview extends View {
     private Paint mPaint = new Paint();
     private Bitmap mPreview;
     private Lock mLock;
     private PreviewSizeListener mPreviewSizeListener;
     private int mSize = 0;
-
-    public TinyPlanetPreview(Context context)
-    {
+    public TinyPlanetPreview(Context context) {
         super(context);
     }
 
-    public TinyPlanetPreview(Context context, AttributeSet attrs)
-    {
+    public TinyPlanetPreview(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public TinyPlanetPreview(Context context, AttributeSet attrs, int defStyle)
-    {
+    public TinyPlanetPreview(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
     /**
      * Sets the bitmap and waits for a draw to happen before returning.
      */
-    public void setBitmap(Bitmap preview, Lock lock)
-    {
+    public void setBitmap(Bitmap preview, Lock lock) {
         mPreview = preview;
         mLock = lock;
         invalidate();
     }
 
-    public void setPreviewSizeChangeListener(PreviewSizeListener listener)
-    {
+    public void setPreviewSizeChangeListener(PreviewSizeListener listener) {
         mPreviewSizeListener = listener;
-        if (mSize > 0)
-        {
+        if (mSize > 0) {
             mPreviewSizeListener.onSizeChanged(mSize);
         }
     }
 
     @Override
-    protected void onDraw(Canvas canvas)
-    {
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (mLock != null && mLock.tryLock())
-        {
-            try
-            {
-                if (mPreview != null && !mPreview.isRecycled())
-                {
+        if (mLock != null && mLock.tryLock()) {
+            try {
+                if (mPreview != null && !mPreview.isRecycled()) {
                     canvas.drawBitmap(mPreview, 0, 0, mPaint);
                 }
-            } finally
-            {
+            } finally {
                 mLock.unlock();
             }
         }
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-    {
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         // Make sure the view is square
@@ -114,11 +86,9 @@ public class TinyPlanetPreview extends View
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom)
-    {
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        if (changed && mPreviewSizeListener != null)
-        {
+        if (changed && mPreviewSizeListener != null) {
             int width = right - left;
             int height = bottom - top;
 
@@ -127,10 +97,22 @@ public class TinyPlanetPreview extends View
             int mSize = Math.min(width, height);
 
             // Tell the listener about our new size so the renderer can adapt.
-            if (mSize > 0 && mPreviewSizeListener != null)
-            {
+            if (mSize > 0 && mPreviewSizeListener != null) {
                 mPreviewSizeListener.onSizeChanged(mSize);
             }
         }
+    }
+
+    /**
+     * Classes implementing this interface get informed about changes to the
+     * preview size.
+     */
+    public static interface PreviewSizeListener {
+        /**
+         * Called when the preview size has changed.
+         *
+         * @param sizePx the size in pixels of the square preview area
+         */
+        public void onSizeChanged(int sizePx);
     }
 }

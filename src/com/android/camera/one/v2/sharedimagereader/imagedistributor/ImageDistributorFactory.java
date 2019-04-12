@@ -25,8 +25,7 @@ import com.android.camera.async.Updatable;
 import com.android.camera.debug.Loggers;
 import com.android.camera.one.v2.camera2proxy.ImageReaderProxy;
 
-public class ImageDistributorFactory
-{
+public class ImageDistributorFactory {
     private final ImageDistributorImpl mImageDistributor;
     private final Updatable<Long> mTimestampStream;
 
@@ -40,8 +39,7 @@ public class ImageDistributorFactory
      *                       registered with the platform.
      */
     public ImageDistributorFactory(Lifetime lifetime, ImageReaderProxy imageReader,
-                                   HandlerFactory handlerFactory)
-    {
+                                   HandlerFactory handlerFactory) {
         ConcurrentBufferQueue<Long> globalTimestampStream = new ConcurrentBufferQueue<>();
         mTimestampStream = globalTimestampStream;
         lifetime.add(globalTimestampStream);
@@ -58,13 +56,11 @@ public class ImageDistributorFactory
                 imageReaderHandler);
     }
 
-    public ImageDistributor provideImageDistributor()
-    {
+    public ImageDistributor provideImageDistributor() {
         return mImageDistributor;
     }
 
-    public Updatable<Long> provideGlobalTimestampCallback()
-    {
+    public Updatable<Long> provideGlobalTimestampCallback() {
         return mTimestampStream;
     }
 }

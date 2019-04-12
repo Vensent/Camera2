@@ -17,7 +17,6 @@
 package com.android.camera.one.v2.camera2proxy;
 
 import android.graphics.Rect;
-import android.media.Image;
 
 import com.google.common.base.Objects;
 
@@ -29,12 +28,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * Forwards all {@link ImageProxy} methods.
  */
 @ThreadSafe
-public abstract class ForwardingImageProxy implements ImageProxy
-{
+public abstract class ForwardingImageProxy implements ImageProxy {
     private final ImageProxy mImpl;
 
-    public ForwardingImageProxy(ImageProxy proxy)
-    {
+    public ForwardingImageProxy(ImageProxy proxy) {
         mImpl = proxy;
     }
 
@@ -42,8 +39,7 @@ public abstract class ForwardingImageProxy implements ImageProxy
      * @see {@link android.media.Image#getCropRect}
      */
     @Override
-    public Rect getCropRect()
-    {
+    public Rect getCropRect() {
         return mImpl.getCropRect();
     }
 
@@ -51,8 +47,7 @@ public abstract class ForwardingImageProxy implements ImageProxy
      * @see {@link android.media.Image#setCropRect}
      */
     @Override
-    public void setCropRect(Rect cropRect)
-    {
+    public void setCropRect(Rect cropRect) {
         mImpl.setCropRect(cropRect);
     }
 
@@ -60,8 +55,7 @@ public abstract class ForwardingImageProxy implements ImageProxy
      * @see {@link android.media.Image#getFormat}
      */
     @Override
-    public int getFormat()
-    {
+    public int getFormat() {
         return mImpl.getFormat();
     }
 
@@ -69,8 +63,7 @@ public abstract class ForwardingImageProxy implements ImageProxy
      * @see {@link android.media.Image#getHeight}
      */
     @Override
-    public int getHeight()
-    {
+    public int getHeight() {
         return mImpl.getHeight();
     }
 
@@ -78,8 +71,7 @@ public abstract class ForwardingImageProxy implements ImageProxy
      * @see {@link android.media.Image#getPlanes}
      */
     @Override
-    public List<Plane> getPlanes()
-    {
+    public List<Plane> getPlanes() {
         return mImpl.getPlanes();
     }
 
@@ -87,8 +79,7 @@ public abstract class ForwardingImageProxy implements ImageProxy
      * @see {@link android.media.Image#getTimestamp}
      */
     @Override
-    public long getTimestamp()
-    {
+    public long getTimestamp() {
         return mImpl.getTimestamp();
     }
 
@@ -96,8 +87,7 @@ public abstract class ForwardingImageProxy implements ImageProxy
      * @see {@link android.media.Image#getWidth}
      */
     @Override
-    public int getWidth()
-    {
+    public int getWidth() {
         return mImpl.getWidth();
     }
 
@@ -105,14 +95,12 @@ public abstract class ForwardingImageProxy implements ImageProxy
      * @see {@link android.media.Image#close}
      */
     @Override
-    public void close()
-    {
+    public void close() {
         mImpl.close();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return Objects.toStringHelper(this)
                 .add("timestamp", getTimestamp())
                 .add("width", getWidth())
@@ -121,14 +109,11 @@ public abstract class ForwardingImageProxy implements ImageProxy
     }
 
     @Override
-    public boolean equals(Object other)
-    {
-        if (other == null)
-        {
+    public boolean equals(Object other) {
+        if (other == null) {
             return false;
         }
-        if (!(other instanceof ImageProxy))
-        {
+        if (!(other instanceof ImageProxy)) {
             return false;
         }
         ImageProxy otherImage = (ImageProxy) other;
@@ -139,8 +124,7 @@ public abstract class ForwardingImageProxy implements ImageProxy
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hashCode(getFormat(), getWidth(), getHeight(), getTimestamp());
     }
 }

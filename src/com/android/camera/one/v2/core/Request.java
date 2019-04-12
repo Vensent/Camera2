@@ -26,8 +26,7 @@ import com.android.camera.one.v2.camera2proxy.CaptureRequestBuilderProxy;
  *
  * @See {@link RequestBuilder}
  */
-public interface Request
-{
+public interface Request {
     /**
      * Implementations must allocate/acquire all resources necessary for this
      * request and block until acquisition is complete.

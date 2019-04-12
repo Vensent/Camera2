@@ -29,8 +29,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
-import android.widget.Button;
-
 import com.android.camera.debug.Log;
 import com.android.camera2.R;
 
@@ -49,8 +47,7 @@ import java.util.List;
  * this class.
  */
 public class PreviewOverlay extends View
-        implements PreviewStatusListener.PreviewAreaChangedListener
-{
+        implements PreviewStatusListener.PreviewAreaChangedListener {
 
     public static final float ZOOM_MIN_RATIO = 1.0f;
     private static final int NUM_ZOOM_LEVELS = 7;
@@ -62,13 +59,12 @@ public class PreviewOverlay extends View
      * Minimum time between calls to zoom listener.
      */
     private static final long ZOOM_MINIMUM_WAIT_MILLIS = 33;
-
+    private final ZoomGestureDetector mScaleDetector;
+    private final ZoomProcessor mZoomProcessor = new ZoomProcessor();
     /**
      * Next time zoom change should be sent to listener.
      */
     private long mDelayZoomCallUntilMillis = 0;
-    private final ZoomGestureDetector mScaleDetector;
-    private final ZoomProcessor mZoomProcessor = new ZoomProcessor();
     private GestureDetector mGestureDetector = null;
     private View.OnTouchListener mTouchListener = null;
     private OnZoomChangedListener mZoomListener = null;
@@ -89,8 +85,141 @@ public class PreviewOverlay extends View
      */
     private int mCurrA11yZoomLevel = 1;
 
-    public interface OnZoomChangedListener
-    {
+    public PreviewOverlay(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        mScaleDetector = new ZoomGestureDetector();
+    }
+
+    /**
+     * This sets up the zoom listener and zoom related parameters when
+     * the range of zoom ratios is continuous.
+     *
+     * @param zoomMaxRatio       max zoom ratio, [1.0f,+Inf)
+     * @param zoom               current zoom ratio, [1.0f,zoomMaxRatio]
+     * @param zoomChangeListener a listener that receives callbacks when zoom changes
+     */
+    public void setupZoom(float zoomMaxRatio, float zoom,
+                          OnZoomChangedListener zoomChangeListener) {
+        mZoomListener = zoomChangeListener;
+        mZoomProcessor.setupZoom(zoomMaxRatio, zoom);
+    }
+
+    /**
+     * uZooms camera in when in accessibility mode.
+     *
+     * @param view    is the current view
+     * @param maxZoom is the maximum zoom value on the given device
+     * @return float representing the current zoom value
+     */
+    public float zoomIn(View view, float maxZoom) {
+        mCurrA11yZoomLevel++;
+        mMaxZoom = maxZoom;
+        mCurrA11yZoom = getZoomAtLevel(mCurrA11yZoomLevel);
+        mZoomListener.onZoomValueChanged(mCurrA11yZoom);
+        view.announceForAccessibility(String.format(
+                view.getResources().
+                        getString(R.string.accessibility_zoom_announcement), mCurrA11yZoom));
+        return mCurrA11yZoom;
+    }
+
+    /**
+     * Zooms camera out when in accessibility mode.
+     *
+     * @param view    is the current view
+     * @param maxZoom is the maximum zoom value on the given device
+     * @return float representing the current zoom value
+     */
+    public float zoomOut(View view, float maxZoom) {
+        mCurrA11yZoomLevel--;
+        mMaxZoom = maxZoom;
+        mCurrA11yZoom = getZoomAtLevel(mCurrA11yZoomLevel);
+        mZoomListener.onZoomValueChanged(mCurrA11yZoom);
+        view.announceForAccessibility(String.format(
+                view.getResources().
+                        getString(R.string.accessibility_zoom_announcement), mCurrA11yZoom));
+        return mCurrA11yZoom;
+    }
+
+    /**
+     * Method used in accessibility mode. Ensures that there are evenly spaced
+     * zoom values ranging from MIN_ZOOM to NUM_ZOOM_LEVELS
+     *
+     * @param level is the zoom level being computed in the range
+     * @return the zoom value at the given level
+     */
+    private float getZoomAtLevel(int level) {
+        return (MIN_ZOOM + ((level - 1) * ((mMaxZoom - MIN_ZOOM) / (NUM_ZOOM_LEVELS - 1))));
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent m) {
+        // Pass the touch events to scale detector and gesture detector
+        if (mGestureDetector != null) {
+            mGestureDetector.onTouchEvent(m);
+        }
+        if (mTouchListener != null) {
+            mTouchListener.onTouch(this, m);
+        }
+        mScaleDetector.onTouchEvent(m);
+        if (mOnPreviewTouchedListener != null) {
+            mOnPreviewTouchedListener.onPreviewTouched(m);
+        }
+        return true;
+    }
+
+    /**
+     * Set an {@link OnPreviewTouchedListener} to be executed on any preview
+     * touch event.
+     */
+    public void setOnPreviewTouchedListener(OnPreviewTouchedListener listener) {
+        mOnPreviewTouchedListener = listener;
+    }
+
+    @Override
+    public void onPreviewAreaChanged(RectF previewArea) {
+        mZoomProcessor.layout((int) previewArea.left, (int) previewArea.top,
+                (int) previewArea.right, (int) previewArea.bottom);
+    }
+
+    @Override
+    public void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        mZoomProcessor.draw(canvas);
+    }
+
+    /**
+     * Each module can pass in their own gesture listener through App UI. When a gesture
+     * is detected, the {@link GestureDetector.OnGestureListener} will be notified of
+     * the gesture.
+     *
+     * @param gestureListener a listener from a module that defines how to handle gestures
+     */
+    public void setGestureListener(GestureDetector.OnGestureListener gestureListener) {
+        if (gestureListener != null) {
+            mGestureDetector = new GestureDetector(getContext(), gestureListener);
+        }
+    }
+
+    /**
+     * Set a touch listener on the preview overlay.  When a module doesn't support a
+     * {@link GestureDetector.OnGestureListener}, this can be used instead.
+     */
+    public void setTouchListener(View.OnTouchListener touchListener) {
+        mTouchListener = touchListener;
+    }
+
+    /**
+     * During module switch, connections to the previous module should be cleared.
+     */
+    public void reset() {
+        mZoomListener = null;
+        mGestureDetector = null;
+        mTouchListener = null;
+        mCurrA11yZoomLevel = 1;
+        mCurrA11yZoom = MIN_ZOOM;
+    }
+
+    public interface OnZoomChangedListener {
         /**
          * This gets called when a zoom is detected and started.
          */
@@ -109,162 +238,11 @@ public class PreviewOverlay extends View
         void onZoomValueChanged(float ratio);  // only for immediate zoom
     }
 
-    public interface OnPreviewTouchedListener
-    {
+    public interface OnPreviewTouchedListener {
         /**
          * This gets called on any preview touch event.
          */
         public void onPreviewTouched(MotionEvent ev);
-    }
-
-    public PreviewOverlay(Context context, AttributeSet attrs)
-    {
-        super(context, attrs);
-        mScaleDetector = new ZoomGestureDetector();
-    }
-
-    /**
-     * This sets up the zoom listener and zoom related parameters when
-     * the range of zoom ratios is continuous.
-     *
-     * @param zoomMaxRatio       max zoom ratio, [1.0f,+Inf)
-     * @param zoom               current zoom ratio, [1.0f,zoomMaxRatio]
-     * @param zoomChangeListener a listener that receives callbacks when zoom changes
-     */
-    public void setupZoom(float zoomMaxRatio, float zoom,
-                          OnZoomChangedListener zoomChangeListener)
-    {
-        mZoomListener = zoomChangeListener;
-        mZoomProcessor.setupZoom(zoomMaxRatio, zoom);
-    }
-
-    /**
-     * uZooms camera in when in accessibility mode.
-     *
-     * @param view    is the current view
-     * @param maxZoom is the maximum zoom value on the given device
-     * @return float representing the current zoom value
-     */
-    public float zoomIn(View view, float maxZoom)
-    {
-        mCurrA11yZoomLevel++;
-        mMaxZoom = maxZoom;
-        mCurrA11yZoom = getZoomAtLevel(mCurrA11yZoomLevel);
-        mZoomListener.onZoomValueChanged(mCurrA11yZoom);
-        view.announceForAccessibility(String.format(
-                view.getResources().
-                        getString(R.string.accessibility_zoom_announcement), mCurrA11yZoom));
-        return mCurrA11yZoom;
-    }
-
-    /**
-     * Zooms camera out when in accessibility mode.
-     *
-     * @param view    is the current view
-     * @param maxZoom is the maximum zoom value on the given device
-     * @return float representing the current zoom value
-     */
-    public float zoomOut(View view, float maxZoom)
-    {
-        mCurrA11yZoomLevel--;
-        mMaxZoom = maxZoom;
-        mCurrA11yZoom = getZoomAtLevel(mCurrA11yZoomLevel);
-        mZoomListener.onZoomValueChanged(mCurrA11yZoom);
-        view.announceForAccessibility(String.format(
-                view.getResources().
-                        getString(R.string.accessibility_zoom_announcement), mCurrA11yZoom));
-        return mCurrA11yZoom;
-    }
-
-    /**
-     * Method used in accessibility mode. Ensures that there are evenly spaced
-     * zoom values ranging from MIN_ZOOM to NUM_ZOOM_LEVELS
-     *
-     * @param level is the zoom level being computed in the range
-     * @return the zoom value at the given level
-     */
-    private float getZoomAtLevel(int level)
-    {
-        return (MIN_ZOOM + ((level - 1) * ((mMaxZoom - MIN_ZOOM) / (NUM_ZOOM_LEVELS - 1))));
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent m)
-    {
-        // Pass the touch events to scale detector and gesture detector
-        if (mGestureDetector != null)
-        {
-            mGestureDetector.onTouchEvent(m);
-        }
-        if (mTouchListener != null)
-        {
-            mTouchListener.onTouch(this, m);
-        }
-        mScaleDetector.onTouchEvent(m);
-        if (mOnPreviewTouchedListener != null)
-        {
-            mOnPreviewTouchedListener.onPreviewTouched(m);
-        }
-        return true;
-    }
-
-    /**
-     * Set an {@link OnPreviewTouchedListener} to be executed on any preview
-     * touch event.
-     */
-    public void setOnPreviewTouchedListener(OnPreviewTouchedListener listener)
-    {
-        mOnPreviewTouchedListener = listener;
-    }
-
-    @Override
-    public void onPreviewAreaChanged(RectF previewArea)
-    {
-        mZoomProcessor.layout((int) previewArea.left, (int) previewArea.top,
-                (int) previewArea.right, (int) previewArea.bottom);
-    }
-
-    @Override
-    public void onDraw(Canvas canvas)
-    {
-        super.onDraw(canvas);
-        mZoomProcessor.draw(canvas);
-    }
-
-    /**
-     * Each module can pass in their own gesture listener through App UI. When a gesture
-     * is detected, the {@link GestureDetector.OnGestureListener} will be notified of
-     * the gesture.
-     *
-     * @param gestureListener a listener from a module that defines how to handle gestures
-     */
-    public void setGestureListener(GestureDetector.OnGestureListener gestureListener)
-    {
-        if (gestureListener != null)
-        {
-            mGestureDetector = new GestureDetector(getContext(), gestureListener);
-        }
-    }
-
-    /**
-     * Set a touch listener on the preview overlay.  When a module doesn't support a
-     * {@link GestureDetector.OnGestureListener}, this can be used instead.
-     */
-    public void setTouchListener(View.OnTouchListener touchListener)
-    {
-        mTouchListener = touchListener;
-    }
-
-    /**
-     * During module switch, connections to the previous module should be cleared.
-     */
-    public void reset()
-    {
-        mZoomListener = null;
-        mGestureDetector = null;
-        mTouchListener = null;
-        mCurrA11yZoomLevel = 1;
-        mCurrA11yZoom = MIN_ZOOM;
     }
 
     /**
@@ -272,27 +250,21 @@ public class PreviewOverlay extends View
      * {@link OnZoomChangedListener} is set. Otherwise, it calculates the real-time
      * angle between two fingers in a scale gesture.
      */
-    private class ZoomGestureDetector extends ScaleGestureDetector
-    {
+    private class ZoomGestureDetector extends ScaleGestureDetector {
         private float mDeltaX;
         private float mDeltaY;
 
-        public ZoomGestureDetector()
-        {
+        public ZoomGestureDetector() {
             super(getContext(), mZoomProcessor);
         }
 
         @Override
-        public boolean onTouchEvent(MotionEvent ev)
-        {
-            if (mZoomListener == null)
-            {
+        public boolean onTouchEvent(MotionEvent ev) {
+            if (mZoomListener == null) {
                 return false;
-            } else
-            {
+            } else {
                 boolean handled = super.onTouchEvent(ev);
-                if (ev.getPointerCount() > 1)
-                {
+                if (ev.getPointerCount() > 1) {
                     mDeltaX = ev.getX(1) - ev.getX(0);
                     mDeltaY = ev.getY(1) - ev.getY(0);
                 }
@@ -303,8 +275,7 @@ public class PreviewOverlay extends View
         /**
          * Calculate the angle between two fingers. Range: [-pi, pi]
          */
-        public float getAngle()
-        {
+        public float getAngle() {
             return (float) Math.atan2(-mDeltaY, mDeltaX);
         }
     }
@@ -313,31 +284,27 @@ public class PreviewOverlay extends View
      * This class processes recognized scale gestures, notifies {@link OnZoomChangedListener}
      * of any change in scale, and draw the zoom UI on screen.
      */
-    private class ZoomProcessor implements ScaleGestureDetector.OnScaleGestureListener
-    {
-        private final Log.Tag TAG = new Log.Tag("ZoomProcessor");
-
+    private class ZoomProcessor implements ScaleGestureDetector.OnScaleGestureListener {
         // Diameter of Zoom UI as fraction of maximum possible without clipping.
         private static final float ZOOM_UI_SIZE = 0.8f;
         // Diameter of Zoom UI donut hole as fraction of Zoom UI diameter.
         private static final float ZOOM_UI_DONUT = 0.25f;
-
+        private final Log.Tag TAG = new Log.Tag("ZoomProcessor");
         private final float mMinRatio = 1.0f;
+        private final Paint mPaint;
+        private final int mZoomStroke;
         private float mMaxRatio;
         // Continuous Zoom level [0,1].
         private float mCurrentRatio;
         private double mFingerAngle;  // in radians.
-        private final Paint mPaint;
         private int mCenterX;
         private int mCenterY;
         private float mOuterRadius;
         private float mInnerRadius;
-        private final int mZoomStroke;
         private boolean mVisible = false;
         private List<Integer> mZoomRatios;
 
-        public ZoomProcessor()
-        {
+        public ZoomProcessor() {
             Resources res = getResources();
             mZoomStroke = res.getDimensionPixelSize(R.dimen.zoom_stroke);
             mPaint = new Paint();
@@ -349,19 +316,16 @@ public class PreviewOverlay extends View
         }
 
         // Set maximum zoom ratio from Module.
-        public void setZoomMax(float zoomMaxRatio)
-        {
+        public void setZoomMax(float zoomMaxRatio) {
             mMaxRatio = zoomMaxRatio;
         }
 
         // Set current zoom ratio from Module.
-        public void setZoom(float ratio)
-        {
+        public void setZoom(float ratio) {
             mCurrentRatio = ratio;
         }
 
-        public void layout(int l, int t, int r, int b)
-        {
+        public void layout(int l, int t, int r, int b) {
             mCenterX = (r + l) / 2;
             mCenterY = (b + t) / 2;
             // UI will extend from 20% to 80% of maximum inset circle.
@@ -370,10 +334,8 @@ public class PreviewOverlay extends View
             mInnerRadius = mOuterRadius * ZOOM_UI_DONUT;
         }
 
-        public void draw(Canvas canvas)
-        {
-            if (!mVisible)
-            {
+        public void draw(Canvas canvas) {
+            if (!mVisible) {
                 return;
             }
             // Draw background.
@@ -401,16 +363,13 @@ public class PreviewOverlay extends View
         }
 
         @Override
-        public boolean onScale(ScaleGestureDetector detector)
-        {
+        public boolean onScale(ScaleGestureDetector detector) {
             final float sf = detector.getScaleFactor();
             mCurrentRatio = (0.33f + mCurrentRatio) * sf * sf - 0.33f;
-            if (mCurrentRatio < mMinRatio)
-            {
+            if (mCurrentRatio < mMinRatio) {
                 mCurrentRatio = mMinRatio;
             }
-            if (mCurrentRatio > mMaxRatio)
-            {
+            if (mCurrentRatio > mMaxRatio) {
                 mCurrentRatio = mMaxRatio;
             }
 
@@ -420,10 +379,8 @@ public class PreviewOverlay extends View
             // too often can back up its handler and result in visible lag in
             // updating the zoom level and other controls.
             long now = SystemClock.uptimeMillis();
-            if (now > mDelayZoomCallUntilMillis)
-            {
-                if (mZoomListener != null)
-                {
+            if (now > mDelayZoomCallUntilMillis) {
+                if (mZoomListener != null) {
                     mZoomListener.onZoomValueChanged(mCurrentRatio);
                 }
                 mDelayZoomCallUntilMillis = now + ZOOM_MINIMUM_WAIT_MILLIS;
@@ -434,15 +391,12 @@ public class PreviewOverlay extends View
         }
 
         @Override
-        public boolean onScaleBegin(ScaleGestureDetector detector)
-        {
+        public boolean onScaleBegin(ScaleGestureDetector detector) {
             mZoomProcessor.showZoomUI();
-            if (mZoomListener == null)
-            {
+            if (mZoomListener == null) {
                 return false;
             }
-            if (mZoomListener != null)
-            {
+            if (mZoomListener != null) {
                 mZoomListener.onZoomStart();
             }
             mFingerAngle = mScaleDetector.getAngle();
@@ -451,25 +405,20 @@ public class PreviewOverlay extends View
         }
 
         @Override
-        public void onScaleEnd(ScaleGestureDetector detector)
-        {
+        public void onScaleEnd(ScaleGestureDetector detector) {
             mZoomProcessor.hideZoomUI();
-            if (mZoomListener != null)
-            {
+            if (mZoomListener != null) {
                 mZoomListener.onZoomEnd();
             }
             invalidate();
         }
 
-        public boolean isVisible()
-        {
+        public boolean isVisible() {
             return mVisible;
         }
 
-        public void showZoomUI()
-        {
-            if (mZoomListener == null)
-            {
+        public void showZoomUI() {
+            if (mZoomListener == null) {
                 return;
             }
             mVisible = true;
@@ -477,18 +426,15 @@ public class PreviewOverlay extends View
             invalidate();
         }
 
-        public void hideZoomUI()
-        {
-            if (mZoomListener == null)
-            {
+        public void hideZoomUI() {
+            if (mZoomListener == null) {
                 return;
             }
             mVisible = false;
             invalidate();
         }
 
-        private void setupZoom(float zoomMax, float zoom)
-        {
+        private void setupZoom(float zoomMax, float zoom) {
             setZoomMax(zoomMax);
             setZoom(zoom);
         }

@@ -18,7 +18,6 @@ package com.android.camera.settings;
 
 import android.content.Context;
 
-import com.android.camera.app.LocationManager;
 import com.android.camera.util.ApiHelper;
 import com.android.camera2.R;
 
@@ -31,8 +30,7 @@ import com.android.camera2.R;
  * on lookup.  This step is optional, and it can be done anytime before
  * a setting is accessed by the SettingsManager API.
  */
-public class Keys
-{
+public class Keys {
 
     public static final String KEY_RECORD_LOCATION = "pref_camera_recordlocation_key";
     public static final String KEY_VIDEO_QUALITY_BACK = "pref_video_quality_back_key";
@@ -87,8 +85,7 @@ public class Keys
      * Set some number of defaults for the defined keys.
      * It's not necessary to set all defaults.
      */
-    public static void setDefaults(SettingsManager settingsManager, Context context)
-    {
+    public static void setDefaults(SettingsManager settingsManager, Context context) {
         settingsManager.setDefaults(KEY_COUNTDOWN_DURATION, 0,
                 context.getResources().getIntArray(R.array.pref_countdown_duration));
 
@@ -123,16 +120,14 @@ public class Keys
         // |CamcorderProfile.hasProfile| needs camera id info. We need a way to provide camera id to
         // this method. b/17445274
         // Don't set the default resolution to be large if the device supports 4k video.
-        if (ApiHelper.IS_NEXUS_6)
-        {
+        if (ApiHelper.IS_NEXUS_6) {
             videoQualityBackDefaultValue = context.getString(R.string.pref_video_quality_medium);
         }
         settingsManager.setDefaults(
                 KEY_VIDEO_QUALITY_BACK,
                 videoQualityBackDefaultValue,
                 context.getResources().getStringArray(R.array.pref_video_quality_entryvalues));
-        if (!settingsManager.isSet(SettingsManager.SCOPE_GLOBAL, Keys.KEY_VIDEO_QUALITY_BACK))
-        {
+        if (!settingsManager.isSet(SettingsManager.SCOPE_GLOBAL, Keys.KEY_VIDEO_QUALITY_BACK)) {
             settingsManager.setToDefault(SettingsManager.SCOPE_GLOBAL,
                     Keys.KEY_VIDEO_QUALITY_BACK);
         }
@@ -140,8 +135,7 @@ public class Keys
         settingsManager.setDefaults(KEY_VIDEO_QUALITY_FRONT,
                 context.getString(R.string.pref_video_quality_large),
                 context.getResources().getStringArray(R.array.pref_video_quality_entryvalues));
-        if (!settingsManager.isSet(SettingsManager.SCOPE_GLOBAL, Keys.KEY_VIDEO_QUALITY_FRONT))
-        {
+        if (!settingsManager.isSet(SettingsManager.SCOPE_GLOBAL, Keys.KEY_VIDEO_QUALITY_FRONT)) {
             settingsManager.setToDefault(SettingsManager.SCOPE_GLOBAL,
                     Keys.KEY_VIDEO_QUALITY_FRONT);
         }
@@ -193,16 +187,14 @@ public class Keys
      * Returns whether the camera has been set to back facing in settings.
      */
     public static boolean isCameraBackFacing(SettingsManager settingsManager,
-                                             String moduleScope)
-    {
+                                             String moduleScope) {
         return settingsManager.isDefault(moduleScope, KEY_CAMERA_ID);
     }
 
     /**
      * Returns whether hdr plus mode is set on.
      */
-    public static boolean isHdrPlusOn(SettingsManager settingsManager)
-    {
+    public static boolean isHdrPlusOn(SettingsManager settingsManager) {
         return settingsManager.getBoolean(SettingsManager.SCOPE_GLOBAL,
                 KEY_CAMERA_HDR_PLUS);
     }
@@ -210,8 +202,7 @@ public class Keys
     /**
      * Returns whether hdr mode is set on.
      */
-    public static boolean isHdrOn(SettingsManager settingsManager)
-    {
+    public static boolean isHdrOn(SettingsManager settingsManager) {
         return settingsManager.getBoolean(SettingsManager.SCOPE_GLOBAL,
                 KEY_CAMERA_HDR);
     }
@@ -220,16 +211,14 @@ public class Keys
      * Returns whether the app should return to hdr plus mode if possible.
      */
     public static boolean requestsReturnToHdrPlus(SettingsManager settingsManager,
-                                                  String moduleScope)
-    {
+                                                  String moduleScope) {
         return settingsManager.getBoolean(moduleScope, KEY_REQUEST_RETURN_HDR_PLUS);
     }
 
     /**
      * Returns whether grid lines are set on.
      */
-    public static boolean areGridLinesOn(SettingsManager settingsManager)
-    {
+    public static boolean areGridLinesOn(SettingsManager settingsManager) {
         return settingsManager.getBoolean(SettingsManager.SCOPE_GLOBAL,
                 KEY_CAMERA_GRID_LINES);
     }

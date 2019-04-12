@@ -28,17 +28,7 @@ import javax.annotation.Nullable;
  * Stores a collection of {@link Ticket}s. Tickets may be acquired from the
  * pool. When closed, tickets return themselves to the pool.
  */
-public interface TicketPool extends TicketProvider
-{
-    /**
-     * Indicates that the requested number of tickets will never be available,
-     * possibly because the Pool has been closed, or because the request exceeds
-     * the maximum number of tickets which exist in the context of the pool.
-     */
-    public static class NoCapacityAvailableException extends Exception
-    {
-    }
-
+public interface TicketPool extends TicketProvider {
     /**
      * Acquires and returns the specified number of tickets. The caller owns all
      * returned tickets and is responsible for eventually closing them.
@@ -68,4 +58,12 @@ public interface TicketPool extends TicketProvider
     @Nullable
     @CheckReturnValue
     public Ticket tryAcquire();
+
+    /**
+     * Indicates that the requested number of tickets will never be available,
+     * possibly because the Pool has been closed, or because the request exceeds
+     * the maximum number of tickets which exist in the context of the pool.
+     */
+    public static class NoCapacityAvailableException extends Exception {
+    }
 }

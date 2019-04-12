@@ -16,8 +16,6 @@
 
 package com.android.camera.ui;
 
-import java.util.Locale;
-
 import android.content.Context;
 import android.graphics.RectF;
 import android.os.Handler;
@@ -30,83 +28,56 @@ import android.widget.TextView;
 import com.android.camera.debug.Log;
 import com.android.camera2.R;
 
+import java.util.Locale;
+
 /**
  * This class manages the looks of the countdown.
  */
-public class CountDownView extends FrameLayout
-{
+public class CountDownView extends FrameLayout {
 
     private static final Log.Tag TAG = new Log.Tag("CountDownView");
     private static final int SET_TIMER_TEXT = 1;
     private static final long ANIMATION_DURATION_MS = 800;
+    private final Handler mHandler = new MainHandler();
+    private final RectF mPreviewArea = new RectF();
     private TextView mRemainingSecondsView;
     private int mRemainingSecs = 0;
     private OnCountDownStatusListener mListener;
-    private final Handler mHandler = new MainHandler();
-    private final RectF mPreviewArea = new RectF();
 
-    /**
-     * Listener that gets notified when the countdown status has
-     * been updated (i.e. remaining seconds changed, or finished).
-     */
-    public interface OnCountDownStatusListener
-    {
-        /**
-         * Gets notified when the remaining seconds for the countdown
-         * has changed.
-         *
-         * @param remainingSeconds seconds remained for countdown
-         */
-        public void onRemainingSecondsChanged(int remainingSeconds);
-
-        /**
-         * Gets called when countdown is finished.
-         */
-        public void onCountDownFinished();
-    }
-
-    public CountDownView(Context context, AttributeSet attrs)
-    {
+    public CountDownView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     /**
      * Returns whether countdown is on-going.
      */
-    public boolean isCountingDown()
-    {
+    public boolean isCountingDown() {
         return mRemainingSecs > 0;
     }
-
-    ;
 
     /**
      * Responds to preview area change by centering th countdown UI in the new
      * preview area.
      */
-    public void onPreviewAreaChanged(RectF previewArea)
-    {
+    public void onPreviewAreaChanged(RectF previewArea) {
         mPreviewArea.set(previewArea);
     }
 
-    private void remainingSecondsChanged(int newVal)
-    {
+    ;
+
+    private void remainingSecondsChanged(int newVal) {
         mRemainingSecs = newVal;
-        if (mListener != null)
-        {
+        if (mListener != null) {
             mListener.onRemainingSecondsChanged(mRemainingSecs);
         }
 
-        if (newVal == 0)
-        {
+        if (newVal == 0) {
             // Countdown has finished.
             setVisibility(View.INVISIBLE);
-            if (mListener != null)
-            {
+            if (mListener != null) {
                 mListener.onCountDownFinished();
             }
-        } else
-        {
+        } else {
             Locale locale = getResources().getConfiguration().locale;
             String localizedValue = String.format(locale, "%d", newVal);
             mRemainingSecondsView.setText(localizedValue);
@@ -117,8 +88,7 @@ public class CountDownView extends FrameLayout
         }
     }
 
-    private void startFadeOutAnimation()
-    {
+    private void startFadeOutAnimation() {
         int textWidth = mRemainingSecondsView.getMeasuredWidth();
         int textHeight = mRemainingSecondsView.getMeasuredHeight();
         mRemainingSecondsView.setScaleX(1f);
@@ -134,8 +104,7 @@ public class CountDownView extends FrameLayout
     }
 
     @Override
-    protected void onFinishInflate()
-    {
+    protected void onFinishInflate() {
         super.onFinishInflate();
         mRemainingSecondsView = (TextView) findViewById(R.id.remaining_seconds);
     }
@@ -143,8 +112,7 @@ public class CountDownView extends FrameLayout
     /**
      * Sets a listener that gets notified when the status of countdown has changed.
      */
-    public void setCountDownStatusListener(OnCountDownStatusListener listener)
-    {
+    public void setCountDownStatusListener(OnCountDownStatusListener listener) {
         mListener = listener;
     }
 
@@ -153,15 +121,12 @@ public class CountDownView extends FrameLayout
      *
      * @param sec duration of the countdown, in seconds
      */
-    public void startCountDown(int sec)
-    {
-        if (sec <= 0)
-        {
+    public void startCountDown(int sec) {
+        if (sec <= 0) {
             Log.w(TAG, "Invalid input for countdown timer: " + sec + " seconds");
             return;
         }
-        if (isCountingDown())
-        {
+        if (isCountingDown()) {
             cancelCountDown();
         }
         setVisibility(View.VISIBLE);
@@ -171,23 +136,37 @@ public class CountDownView extends FrameLayout
     /**
      * Cancels the on-going countdown in the UI, if any.
      */
-    public void cancelCountDown()
-    {
-        if (mRemainingSecs > 0)
-        {
+    public void cancelCountDown() {
+        if (mRemainingSecs > 0) {
             mRemainingSecs = 0;
             mHandler.removeMessages(SET_TIMER_TEXT);
             setVisibility(View.INVISIBLE);
         }
     }
 
-    private class MainHandler extends Handler
-    {
+    /**
+     * Listener that gets notified when the countdown status has
+     * been updated (i.e. remaining seconds changed, or finished).
+     */
+    public interface OnCountDownStatusListener {
+        /**
+         * Gets notified when the remaining seconds for the countdown
+         * has changed.
+         *
+         * @param remainingSeconds seconds remained for countdown
+         */
+        public void onRemainingSecondsChanged(int remainingSeconds);
+
+        /**
+         * Gets called when countdown is finished.
+         */
+        public void onCountDownFinished();
+    }
+
+    private class MainHandler extends Handler {
         @Override
-        public void handleMessage(Message message)
-        {
-            if (message.what == SET_TIMER_TEXT)
-            {
+        public void handleMessage(Message message) {
+            if (message.what == SET_TIMER_TEXT) {
                 remainingSecondsChanged(mRemainingSecs - 1);
             }
         }

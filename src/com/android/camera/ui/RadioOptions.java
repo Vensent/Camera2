@@ -28,34 +28,9 @@ import com.android.camera2.R;
  * A LienearLayout for a set of {@link android.view.View}s,
  * one of which can be selected at any time.
  */
-public class RadioOptions extends TopRightWeightedLayout
-{
-    /**
-     * Listener for responding to {@link android.view.View} click events.
-     */
-    public interface OnOptionClickListener
-    {
-        /**
-         * Override to respond to  {@link android.view.View} click events.
-         *
-         * @param v {@link android.view.View} that was clicked.
-         */
-        public void onOptionClicked(View v);
-    }
-
+public class RadioOptions extends TopRightWeightedLayout {
     private Drawable mBackground;
     private OnOptionClickListener mOnOptionClickListener;
-
-    /**
-     * Set the OnOptionClickListener.
-     *
-     * @params listener The listener to set.
-     */
-    public void setOnOptionClickListener(OnOptionClickListener listener)
-    {
-        mOnOptionClickListener = listener;
-    }
-
     /**
      * Constructor that is called when inflating a view from XML.
      *
@@ -63,8 +38,7 @@ public class RadioOptions extends TopRightWeightedLayout
      * etc.
      * @params attrs The attributes of the XML tag that is inflating the view.
      */
-    public RadioOptions(Context context, AttributeSet attrs)
-    {
+    public RadioOptions(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
@@ -72,16 +46,23 @@ public class RadioOptions extends TopRightWeightedLayout
                 R.styleable.RadioOptions,
                 0, 0);
         int drawableId = a.getResourceId(R.styleable.RadioOptions_selected_drawable, 0);
-        if (drawableId > 0)
-        {
+        if (drawableId > 0) {
             mBackground = context.getResources()
                     .getDrawable(drawableId);
         }
     }
 
+    /**
+     * Set the OnOptionClickListener.
+     *
+     * @params listener The listener to set.
+     */
+    public void setOnOptionClickListener(OnOptionClickListener listener) {
+        mOnOptionClickListener = listener;
+    }
+
     @Override
-    public void onFinishInflate()
-    {
+    public void onFinishInflate() {
         super.onFinishInflate();
         updateListeners();
     }
@@ -91,19 +72,15 @@ public class RadioOptions extends TopRightWeightedLayout
      * Call this if the child views are added after the OnOptionClickListener,
      * e.g. if the child views are added programatically.
      */
-    public void updateListeners()
-    {
-        View.OnClickListener onClickListener = new View.OnClickListener()
-        {
+    public void updateListeners() {
+        View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
-            public void onClick(View button)
-            {
+            public void onClick(View button) {
                 setSelectedOptionByView(button);
             }
         };
 
-        for (int i = 0; i < getChildCount(); i++)
-        {
+        for (int i = 0; i < getChildCount(); i++) {
             View button = getChildAt(i);
             button.setOnClickListener(onClickListener);
         }
@@ -114,8 +91,7 @@ public class RadioOptions extends TopRightWeightedLayout
      *
      * @param tag Tag that identifies a child {@link android.view.View}. No effect if view not found.
      */
-    public void setSelectedOptionByTag(Object tag)
-    {
+    public void setSelectedOptionByTag(Object tag) {
         View button = findViewWithTag(tag);
         setSelectedOptionByView(button);
     }
@@ -125,28 +101,35 @@ public class RadioOptions extends TopRightWeightedLayout
      *
      * @param id Resource ID  that identifies a child {@link android.view.View}. No effect if view not found.
      */
-    public void setSeletedOptionById(int id)
-    {
+    public void setSeletedOptionById(int id) {
         View button = findViewById(id);
         setSelectedOptionByView(button);
     }
 
-    private void setSelectedOptionByView(View view)
-    {
-        if (view != null)
-        {
+    private void setSelectedOptionByView(View view) {
+        if (view != null) {
             // Reset all button states.
-            for (int i = 0; i < getChildCount(); i++)
-            {
+            for (int i = 0; i < getChildCount(); i++) {
                 getChildAt(i).setBackground(null);
             }
 
             // Highlight the appropriate button.
             view.setBackground(mBackground);
-            if (mOnOptionClickListener != null)
-            {
+            if (mOnOptionClickListener != null) {
                 mOnOptionClickListener.onOptionClicked(view);
             }
         }
+    }
+
+    /**
+     * Listener for responding to {@link android.view.View} click events.
+     */
+    public interface OnOptionClickListener {
+        /**
+         * Override to respond to  {@link android.view.View} click events.
+         *
+         * @param v {@link android.view.View} that was clicked.
+         */
+        public void onOptionClicked(View v);
     }
 }

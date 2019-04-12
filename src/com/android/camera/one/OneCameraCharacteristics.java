@@ -29,18 +29,7 @@ import java.util.List;
  * The properties describing a OneCamera device. These properties are fixed for
  * a given OneCamera device.
  */
-public interface OneCameraCharacteristics
-{
-    public enum SupportedHardwareLevel
-    {
-        FULL, LIMITED, LEGACY
-    }
-
-    public enum FaceDetectMode
-    {
-        FULL, SIMPLE, NONE
-    }
-
+public interface OneCameraCharacteristics {
     /**
      * Gets the supported picture sizes for the given image format.
      *
@@ -141,4 +130,12 @@ public interface OneCameraCharacteristics
      * @return true if this camera supports custom AutoExposure regions.
      */
     public boolean isAutoExposureSupported();
+
+    public enum SupportedHardwareLevel {
+        FULL, LIMITED, LEGACY
+    }
+
+    public enum FaceDetectMode {
+        FULL, SIMPLE, NONE
+    }
 }

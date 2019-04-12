@@ -23,8 +23,7 @@ import com.android.camera.settings.SettingsManager;
 /**
  * Functionality available to all modules and services.
  */
-public interface CameraServices
-{
+public interface CameraServices {
 
     /**
      * Returns the capture session manager instance that modules use to store

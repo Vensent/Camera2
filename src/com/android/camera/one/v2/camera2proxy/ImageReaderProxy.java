@@ -30,19 +30,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * Interface for {@link android.media.ImageReader}.
  */
 @ThreadSafe
-public interface ImageReaderProxy extends SafeCloseable
-{
-    /**
-     * See {@link ImageReader.OnImageAvailableListener}
-     */
-    public interface OnImageAvailableListener
-    {
-        /**
-         * See {@link ImageReader.OnImageAvailableListener#onImageAvailable}
-         */
-        public void onImageAvailable();
-    }
-
+public interface ImageReaderProxy extends SafeCloseable {
     /**
      * @See {@link ImageReader#getWidth}.
      */
@@ -93,4 +81,14 @@ public interface ImageReaderProxy extends SafeCloseable
      */
     @Override
     public void close();
+
+    /**
+     * See {@link ImageReader.OnImageAvailableListener}
+     */
+    public interface OnImageAvailableListener {
+        /**
+         * See {@link ImageReader.OnImageAvailableListener#onImageAvailable}
+         */
+        public void onImageAvailable();
+    }
 }

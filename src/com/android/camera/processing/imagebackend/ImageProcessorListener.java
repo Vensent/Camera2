@@ -22,8 +22,7 @@ import android.net.Uri;
  * Defines the interactions between the Tasks that are running on ImageBackend and other subsystems
  * (such as UI) which need to update and listen for said event (such as preview completition).
  */
-public interface ImageProcessorListener
-{
+public interface ImageProcessorListener {
 
     /*
      * !!!!PLACEHOLDER IMPLEMENTATION!!!! Unclear what the best pattern for listeners, given the

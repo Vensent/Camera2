@@ -29,8 +29,7 @@ import com.android.camera.one.v2.core.ResourceAcquisitionFailedException;
  * When shutting down, it is critical that commands gracefully exit when these
  * resources are no longer available.
  */
-public interface CameraCommand
-{
+public interface CameraCommand {
     /**
      * @throws InterruptedException                If interrupted while executing the command.
      * @throws CameraAccessException               If the camera is not available when

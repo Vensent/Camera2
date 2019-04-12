@@ -16,18 +16,16 @@
 
 package com.android.camera.stress;
 
-import com.android.camera.CameraActivity;
-import com.android.camera.stress.TestUtil;
-
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.provider.MediaStore;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.LargeTest;
 import android.view.KeyEvent;
 
+import com.android.camera.CameraActivity;
 import com.android.camera.stress.CameraStressTestRunner;
+import com.android.camera.stress.TestUtil;
 
 /**
  * Junit / Instrumentation test case for camera test
@@ -39,8 +37,7 @@ import com.android.camera.stress.CameraStressTestRunner;
  * -w com.google.android.camera.tests/android.test.InstrumentationTestRunner
  */
 
-public class VideoCapture extends ActivityInstrumentationTestCase2<CameraActivity>
-{
+public class VideoCapture extends ActivityInstrumentationTestCase2<CameraActivity> {
     private static final long WAIT_FOR_PREVIEW = 1500; //1.5 seconds
     private static final long WAIT_FOR_SWITCH_CAMERA = 3000; //2 seconds
 
@@ -50,34 +47,29 @@ public class VideoCapture extends ActivityInstrumentationTestCase2<CameraActivit
 
     private TestUtil testUtil = new TestUtil();
 
-    public VideoCapture()
-    {
+    public VideoCapture() {
         super(CameraActivity.class);
     }
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         testUtil.prepareOutputFile();
         super.setUp();
     }
 
     @Override
-    protected void tearDown() throws Exception
-    {
+    protected void tearDown() throws Exception {
         testUtil.closeOutputFile();
         super.tearDown();
     }
 
-    public void captureVideos(String reportTag, Instrumentation inst) throws Exception
-    {
+    public void captureVideos(String reportTag, Instrumentation inst) throws Exception {
         boolean memoryResult = false;
         int total_num_of_videos = CameraStressTestRunner.mVideoIterations;
         int video_duration = CameraStressTestRunner.mVideoDuration;
         testUtil.writeReportHeader(reportTag, total_num_of_videos);
 
-        for (int i = 0; i < total_num_of_videos; i++)
-        {
+        for (int i = 0; i < total_num_of_videos; i++) {
             Thread.sleep(WAIT_FOR_PREVIEW);
             // record a video
             inst.sendCharacterSync(KeyEvent.KEYCODE_CAMERA);
@@ -87,8 +79,7 @@ public class VideoCapture extends ActivityInstrumentationTestCase2<CameraActivit
         }
     }
 
-    public void testBackVideoCapture() throws Exception
-    {
+    public void testBackVideoCapture() throws Exception {
         Instrumentation inst = getInstrumentation();
         Intent intent = new Intent(MediaStore.INTENT_ACTION_VIDEO_CAMERA);
 
@@ -102,8 +93,7 @@ public class VideoCapture extends ActivityInstrumentationTestCase2<CameraActivit
         act.finish();
     }
 
-    public void testFrontVideoCapture() throws Exception
-    {
+    public void testFrontVideoCapture() throws Exception {
         Instrumentation inst = getInstrumentation();
         Intent intent = new Intent(MediaStore.INTENT_ACTION_VIDEO_CAMERA);
 

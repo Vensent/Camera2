@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--  Copyright (C) 2007 The Android Open Source Project
+<?xml version="1.0" encoding="UTF-8"?><!--  Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,8 +13,7 @@
      limitations under the License.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name" msgid="1175086483881127797">"กล้องถ่ายรูป"</string>
     <string name="video_camera_label" msgid="1723708322021743770">"กล้องวิดีโอ"</string>
     <string name="details_ms" msgid="6618163484662724641">"%1$02d:%2$02d"</string>
@@ -71,9 +69,9 @@
     <string name="error_permissions" msgid="3454167403425651254">"แอปไม่มีสิทธิ์ที่จำเป็นในการเรียกใช้ โปรดตรวจสอบการตั้งค่าสิทธิ์ของคุณ"</string>
     <string name="reason_storage_failure" msgid="6818898304774654969">"การจัดเก็บรูปภาพล้มเหลว"</string>
     <string name="wait" msgid="765601745709933047">"โปรดรอสักครู่…"</string>
-    <string name="no_storage" product="default" msgid="5922012950780548098">"ใส่การ์ด SD ก่อนใช้กล้องถ่ายรูป"</string>
-    <string name="preparing_sd" product="default" msgid="7435693655017362767">"กำลังเตรียมการ์ด SD…"</string>
-    <string name="access_sd_fail" product="default" msgid="2634861611082499811">"ไม่สามารถเข้าถึงการ์ด SD"</string>
+    <string name="no_storage" msgid="5922012950780548098" product="default">"ใส่การ์ด SD ก่อนใช้กล้องถ่ายรูป"</string>
+    <string name="preparing_sd" msgid="7435693655017362767" product="default">"กำลังเตรียมการ์ด SD…"</string>
+    <string name="access_sd_fail" msgid="2634861611082499811" product="default">"ไม่สามารถเข้าถึงการ์ด SD"</string>
     <string name="time_lapse_title" msgid="3267978566401228497">"การบันทึกเป็นช่วงเวลา"</string>
     <string name="feedback_description_camera_access" msgid="419090951070170132">"แอปไม่สามารถเชื่อมต่อกล้องถ่ายรูป"</string>
     <string name="feedback_description_save_photo" msgid="8658767358989083228">"ไม่ได้บันทึกรูปภาพหรือวิดีโอลงในอุปกรณ์นี้"</string>
@@ -160,7 +158,7 @@
     <string name="dialog_cancel" msgid="692365061128351656">"ยกเลิก"</string>
     <string name="dialog_report" msgid="7616428760369876209">"รายงาน"</string>
     <string name="dialog_dismiss" msgid="1382550604990470119">"ปิด"</string>
-    <string name="spaceIsLow_content" product="default" msgid="4522771065344332702">"การ์ด SD ของคุณมีพื้นที่เหลือน้อยแล้ว ให้เปลี่ยนการตั้งค่าคุณภาพหรือลบบางภาพหรือไฟล์อื่นๆ ออก"</string>
+    <string name="spaceIsLow_content" msgid="4522771065344332702" product="default">"การ์ด SD ของคุณมีพื้นที่เหลือน้อยแล้ว ให้เปลี่ยนการตั้งค่าคุณภาพหรือลบบางภาพหรือไฟล์อื่นๆ ออก"</string>
     <string name="video_reach_size_limit" msgid="9196836111505731836">"ขนาดถึงขีดจำกัดแล้ว"</string>
     <string name="pano_too_fast_prompt" msgid="2503148095578052177">"เร็วเกินไป"</string>
     <string name="pano_dialog_prepare_preview" msgid="4445235163599534263">"กำลังสร้างภาพพาโนรามา"</string>

@@ -36,8 +36,7 @@ import java.util.concurrent.TimeoutException;
  * like a ring-buffer and automatically drop the oldest image when a new image
  * arrives. Others may close new images immediately if no capacity is available.
  */
-public interface ImageStream extends BufferQueue<ImageProxy>, CaptureStream
-{
+public interface ImageStream extends BufferQueue<ImageProxy>, CaptureStream {
     /**
      * Closes the ImageStream. After being closed, no more images will be
      * available and any images left in the stream are closed.
@@ -52,7 +51,7 @@ public interface ImageStream extends BufferQueue<ImageProxy>, CaptureStream
      * @throws InterruptedException                                            If interrupted while waiting for the next
      *                                                                         image.
      * @throws com.android.camera.async.BufferQueue.BufferQueueClosedException If the stream is closed and no more
-     * images will be available.
+     *                                                                         images will be available.
      */
     @Override
     public ImageProxy getNext() throws InterruptedException, BufferQueueClosedException;
@@ -66,9 +65,9 @@ public interface ImageStream extends BufferQueue<ImageProxy>, CaptureStream
      * @throws InterruptedException                                            If interrupted while waiting for the next
      *                                                                         image.
      * @throws com.android.camera.async.BufferQueue.BufferQueueClosedException If the stream is closed and no more
-     * images will be available.
+     *                                                                         images will be available.
      * @throws TimeoutException                                                If no new image is made available
-     * within the
+     *                                                                         within the
      *                                                                         specified time limit.
      */
     @Override

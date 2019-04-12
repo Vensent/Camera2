@@ -35,6 +35,8 @@ public class Camera2DeviceTester {
     private static HandlerThread sThread;
 
     private static Handler sHandler;
+    public Context mContext = InstrumentationRegistry.getTargetContext();
+    protected CameraDevice mCamera;
 
     @BeforeClass
     public static void setupBackgroundHandler() {
@@ -49,7 +51,15 @@ public class Camera2DeviceTester {
         sThread.join();
     }
 
-    public Context mContext = InstrumentationRegistry.getTargetContext();
+    @Before
+    public void obtainCameraCaptureRequestBuilderFactory() throws Exception {
+        mCamera = new DeviceCapturer().captureCameraDevice();
+    }
+
+    @After
+    public void releaseCameraCaptureRequestBuilderFactory() {
+        mCamera.close();
+    }
 
     private class DeviceCapturer extends CameraDevice.StateCallback {
         private CameraDevice mCamera;
@@ -72,21 +82,11 @@ public class Camera2DeviceTester {
         }
 
         @Override
-        public void onDisconnected(CameraDevice camera) {}
+        public void onDisconnected(CameraDevice camera) {
+        }
 
         @Override
-        public void onError(CameraDevice camera, int error) {}
-    }
-
-    protected CameraDevice mCamera;
-
-    @Before
-    public void obtainCameraCaptureRequestBuilderFactory() throws Exception {
-        mCamera = new DeviceCapturer().captureCameraDevice();
-    }
-
-    @After
-    public void releaseCameraCaptureRequestBuilderFactory() {
-        mCamera.close();
+        public void onError(CameraDevice camera, int error) {
+        }
     }
 }

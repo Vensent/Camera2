@@ -20,7 +20,6 @@ import android.net.Uri;
 
 import com.android.camera.debug.Log;
 import com.android.camera.one.v2.camera2proxy.ImageProxy;
-
 import com.google.common.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
@@ -37,14 +36,18 @@ import javax.annotation.Nullable;
  * TODO: Replace this object with a more generic listener class. TODO: Replace
  * the image filter code with something more efficient.
  */
-public class ImageProcessorProxyListener implements ImageProcessorListener
-{
+public class ImageProcessorProxyListener implements ImageProcessorListener {
 
     private final static Log.Tag TAG = new Log.Tag("IProxyListener");
 
     private final List<ImageProcessorListener> mRegisteredListeners;
 
     private final HashMap<ImageProcessorListener, Long> mImageFilter;
+
+    ImageProcessorProxyListener() {
+        mRegisteredListeners = new ArrayList<ImageProcessorListener>();
+        mImageFilter = new HashMap<ImageProcessorListener, Long>();
+    }
 
     /**
      * Wrapper for the log to avoid direct references to Android Log objects
@@ -53,16 +56,9 @@ public class ImageProcessorProxyListener implements ImageProcessorListener
      *
      * @param message
      */
-    protected void logWrapper(String message)
-    {
+    protected void logWrapper(String message) {
         // Uncomment for more verbose messaging.
         // Log.v(TAG, message);
-    }
-
-    ImageProcessorProxyListener()
-    {
-        mRegisteredListeners = new ArrayList<ImageProcessorListener>();
-        mImageFilter = new HashMap<ImageProcessorListener, Long>();
     }
 
     /**
@@ -73,10 +69,8 @@ public class ImageProcessorProxyListener implements ImageProcessorListener
      * ImageProcessorListener and their ids.
      */
     @VisibleForTesting
-    public int getMapSize()
-    {
-        synchronized (mRegisteredListeners)
-        {
+    public int getMapSize() {
+        synchronized (mRegisteredListeners) {
             return mImageFilter.size();
         }
     }
@@ -88,10 +82,8 @@ public class ImageProcessorProxyListener implements ImageProcessorListener
      * @return the number of registered ImageProcessorListener
      */
     @VisibleForTesting
-    public int getNumRegisteredListeners()
-    {
-        synchronized (mRegisteredListeners)
-        {
+    public int getNumRegisteredListeners() {
+        synchronized (mRegisteredListeners) {
             return mRegisteredListeners.size();
         }
     }
@@ -107,23 +99,18 @@ public class ImageProcessorProxyListener implements ImageProcessorListener
      *                 are being processed.
      */
     public void registerListener(ImageProcessorListener listener,
-                                 @Nullable ImageProxy image)
-    {
-        synchronized (mRegisteredListeners)
-        {
+                                 @Nullable ImageProxy image) {
+        synchronized (mRegisteredListeners) {
             logWrapper("There are " + mRegisteredListeners.size()
                     + " listeners before addition");
-            if (!mRegisteredListeners.contains(listener))
-            {
+            if (!mRegisteredListeners.contains(listener)) {
                 mRegisteredListeners.add(listener);
                 logWrapper("Listener will be overwritten.");
             }
 
-            if (image == null)
-            {
+            if (image == null) {
                 mImageFilter.put(listener, null);
-            } else
-            {
+            } else {
                 mImageFilter.put(listener, image.getTimestamp());
             }
             logWrapper("There are " + mRegisteredListeners.size()
@@ -133,14 +120,11 @@ public class ImageProcessorProxyListener implements ImageProcessorListener
         return;
     }
 
-    private List<ImageProcessorListener> filteredListeners(long imageId)
-    {
+    private List<ImageProcessorListener> filteredListeners(long imageId) {
         List<ImageProcessorListener> filteredList = new ArrayList<ImageProcessorListener>();
 
-        for (ImageProcessorListener l : mRegisteredListeners)
-        {
-            if (mImageFilter.get(l) == null || mImageFilter.get(l) == imageId)
-            {
+        for (ImageProcessorListener l : mRegisteredListeners) {
+            if (mImageFilter.get(l) == null || mImageFilter.get(l) == imageId) {
                 filteredList.add(l);
             }
         }
@@ -148,78 +132,62 @@ public class ImageProcessorProxyListener implements ImageProcessorListener
         return filteredList;
     }
 
-    public void unregisterListener(ImageProcessorListener listener)
-    {
-        synchronized (mRegisteredListeners)
-        {
-            if (mRegisteredListeners.contains(listener))
-            {
+    public void unregisterListener(ImageProcessorListener listener) {
+        synchronized (mRegisteredListeners) {
+            if (mRegisteredListeners.contains(listener)) {
                 mRegisteredListeners.remove(listener);
                 mImageFilter.remove(listener);
                 logWrapper("There are " + mRegisteredListeners.size()
                         + " listeners after removal");
-            } else
-            {
+            } else {
                 logWrapper("Couldn't find listener.  There are " + mRegisteredListeners.size()
                         + " listeners after removal");
             }
         }
     }
 
-    public void onStart(TaskImageContainer.TaskInfo job)
-    {
+    public void onStart(TaskImageContainer.TaskInfo job) {
         final List<ImageProcessorListener> listeners;
-        synchronized (mRegisteredListeners)
-        {
+        synchronized (mRegisteredListeners) {
             listeners = filteredListeners(job.contentId);
         }
 
-        for (ImageProcessorListener l : listeners)
-        {
+        for (ImageProcessorListener l : listeners) {
             l.onStart(job);
         }
     }
 
     public void onResultCompressed(TaskImageContainer.TaskInfo job,
-                                   TaskImageContainer.CompressedPayload payload)
-    {
+                                   TaskImageContainer.CompressedPayload payload) {
         final List<ImageProcessorListener> listeners;
-        synchronized (mRegisteredListeners)
-        {
+        synchronized (mRegisteredListeners) {
             listeners = filteredListeners(job.contentId);
         }
 
-        for (ImageProcessorListener l : listeners)
-        {
+        for (ImageProcessorListener l : listeners) {
             l.onResultCompressed(job, payload);
         }
     }
 
     public void onResultUncompressed(TaskImageContainer.TaskInfo job,
-                                     TaskImageContainer.UncompressedPayload payload)
-    {
+                                     TaskImageContainer.UncompressedPayload payload) {
         final List<ImageProcessorListener> listeners;
-        synchronized (mRegisteredListeners)
-        {
+        synchronized (mRegisteredListeners) {
             listeners = filteredListeners(job.contentId);
         }
 
-        for (ImageProcessorListener l : listeners)
-        {
+        for (ImageProcessorListener l : listeners) {
             l.onResultUncompressed(job, payload);
         }
     }
 
-    public void onResultUri(TaskImageContainer.TaskInfo job, Uri uri)
-    {
+    public void onResultUri(TaskImageContainer.TaskInfo job, Uri uri) {
         final List<ImageProcessorListener> listeners;
-        synchronized (mRegisteredListeners)
-        {
+        synchronized (mRegisteredListeners) {
             listeners = filteredListeners(job.contentId);
         }
 
-        for (ImageProcessorListener l : listeners)
-        {
+        for (ImageProcessorListener l : listeners) {
             l.onResultUri(job, uri);
         }
     }

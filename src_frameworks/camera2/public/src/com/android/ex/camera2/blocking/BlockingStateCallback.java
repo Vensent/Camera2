@@ -16,7 +16,6 @@
 package com.android.ex.camera2.blocking;
 
 import android.hardware.camera2.CameraDevice;
-import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -37,67 +36,47 @@ import java.util.concurrent.TimeUnit;
  * future.</p>
  *
  * <p>Pass-through all StateCallback changes to the proxy.</p>
- *
  */
 public class BlockingStateCallback extends CameraDevice.StateCallback {
-    private static final String TAG = "BlockingStateCallback";
-    private static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
-
-    private final CameraDevice.StateCallback mProxy;
-
-    // Guards mWaiting
-    private final Object mLock = new Object();
-    private boolean mWaiting = false;
-
-    private final LinkedBlockingQueue<Integer> mRecentStates =
-            new LinkedBlockingQueue<Integer>();
-
-    private void setCurrentState(int state) {
-        if (VERBOSE) Log.v(TAG, "Camera device state now " + stateToString(state));
-        try {
-            mRecentStates.put(state);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to set device state", e);
-        }
-    }
-
-    private static final String[] mStateNames = {
-        "STATE_UNINITIALIZED",
-        "STATE_OPENED",
-        "STATE_CLOSED",
-        "STATE_DISCONNECTED",
-        "STATE_ERROR"
-    };
-
     /**
      * Device has not reported any state yet
      */
     public static final int STATE_UNINITIALIZED = -1;
-
     /**
      * Device is in the first-opened state (transitory)
      */
     public static final int STATE_OPENED = 0;
-
     /**
      * Device is closed
      */
     public static final int STATE_CLOSED = 1;
-
     /**
      * Device is disconnected
      */
     public static final int STATE_DISCONNECTED = 2;
-
     /**
      * Device has encountered a fatal error
      */
     public static final int STATE_ERROR = 3;
-
+    private static final String TAG = "BlockingStateCallback";
+    private static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
+    private static final String[] mStateNames = {
+            "STATE_UNINITIALIZED",
+            "STATE_OPENED",
+            "STATE_CLOSED",
+            "STATE_DISCONNECTED",
+            "STATE_ERROR"
+    };
     /**
      * Total number of reachable states
      */
     private static final int NUM_STATES = 4;
+    private final CameraDevice.StateCallback mProxy;
+    // Guards mWaiting
+    private final Object mLock = new Object();
+    private final LinkedBlockingQueue<Integer> mRecentStates =
+            new LinkedBlockingQueue<Integer>();
+    private boolean mWaiting = false;
 
     public BlockingStateCallback() {
         mProxy = null;
@@ -105,6 +84,38 @@ public class BlockingStateCallback extends CameraDevice.StateCallback {
 
     public BlockingStateCallback(CameraDevice.StateCallback listener) {
         mProxy = listener;
+    }
+
+    /**
+     * Convert state integer to a String
+     */
+    public static String stateToString(int state) {
+        return mStateNames[state + 1];
+    }
+
+    /**
+     * Append all states to string
+     */
+    public static void appendStates(StringBuilder s, Collection<Integer> states) {
+        boolean start = true;
+        for (Integer state : states) {
+            if (!start) {
+                s.append(" ");
+            }
+            s.append(stateToString(state));
+            start = false;
+        }
+    }
+
+    private void setCurrentState(int state) {
+        if (VERBOSE) {
+            Log.v(TAG, "Camera device state now " + stateToString(state));
+        }
+        try {
+            mRecentStates.put(state);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Unable to set device state", e);
+        }
     }
 
     @Override
@@ -145,13 +156,12 @@ public class BlockingStateCallback extends CameraDevice.StateCallback {
      *
      * <p>Note: Only one waiter allowed at a time!</p>
      *
-     * @param state state to observe a transition to
+     * @param state   state to observe a transition to
      * @param timeout how long to wait in milliseconds
-     *
      * @throws TimeoutRuntimeException if the desired state is not observed before timeout.
      */
     public void waitForState(int state, long timeout) {
-        Integer[] stateArray = { state };
+        Integer[] stateArray = {state};
 
         waitForAnyOfStates(Arrays.asList(stateArray), timeout);
     }
@@ -162,12 +172,10 @@ public class BlockingStateCallback extends CameraDevice.StateCallback {
      *
      * <p>Note: Only one waiter allowed at a time!</p>
      *
-     * @param states Set of desired states to observe a transition to.
+     * @param states  Set of desired states to observe a transition to.
      * @param timeout how long to wait in milliseconds
-     *
      * @return the state reached
      * @throws TimeoutRuntimeException if none of the states is observed before timeout.
-     *
      */
     public int waitForAnyOfStates(Collection<Integer> states, final long timeout) {
         synchronized (mLock) {
@@ -191,7 +199,9 @@ public class BlockingStateCallback extends CameraDevice.StateCallback {
                 if (VERBOSE) {
                     Log.v(TAG, "  Saw transition to " + stateToString(nextState));
                 }
-                if (states.contains(nextState)) break;
+                if (states.contains(nextState)) {
+                    break;
+                }
                 long endMs = SystemClock.elapsedRealtime();
                 timeoutLeft -= (endMs - startMs);
                 startMs = endMs;
@@ -214,24 +224,5 @@ public class BlockingStateCallback extends CameraDevice.StateCallback {
         }
 
         return nextState;
-    }
-
-    /**
-     * Convert state integer to a String
-     */
-    public static String stateToString(int state) {
-        return mStateNames[state + 1];
-    }
-
-    /**
-     * Append all states to string
-     */
-    public static void appendStates(StringBuilder s, Collection<Integer> states) {
-        boolean start = true;
-        for (Integer state : states) {
-            if (!start) s.append(" ");
-            s.append(stateToString(state));
-            start = false;
-        }
     }
 }

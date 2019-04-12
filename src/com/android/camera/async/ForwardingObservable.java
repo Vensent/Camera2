@@ -16,8 +16,6 @@
 
 package com.android.camera.async;
 
-import com.android.camera.util.Callback;
-
 import java.util.concurrent.Executor;
 
 import javax.annotation.CheckReturnValue;
@@ -25,27 +23,23 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public abstract class ForwardingObservable<T> implements Observable<T>
-{
+public abstract class ForwardingObservable<T> implements Observable<T> {
     private final Observable<T> mDelegate;
 
-    public ForwardingObservable(Observable<T> delegate)
-    {
+    public ForwardingObservable(Observable<T> delegate) {
         mDelegate = delegate;
     }
 
     @Nonnull
     @Override
     @CheckReturnValue
-    public SafeCloseable addCallback(Runnable callback, Executor executor)
-    {
+    public SafeCloseable addCallback(Runnable callback, Executor executor) {
         return mDelegate.addCallback(callback, executor);
     }
 
     @Nonnull
     @Override
-    public T get()
-    {
+    public T get() {
         return mDelegate.get();
     }
 }

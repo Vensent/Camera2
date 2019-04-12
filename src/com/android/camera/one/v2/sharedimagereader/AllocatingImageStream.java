@@ -32,8 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * An ImageQueueCaptureStream with a fixed-capacity which can reserve space
  * ahead of time via {@link #allocate}.
  */
-class AllocatingImageStream extends ImageStreamImpl
-{
+class AllocatingImageStream extends ImageStreamImpl {
     private final int mCapacity;
     private final ReservableTicketPool mTicketPool;
     /**
@@ -56,8 +55,7 @@ class AllocatingImageStream extends ImageStreamImpl
             int capacity, ReservableTicketPool ticketPool,
             BufferQueue<ImageProxy> imageStream,
             BufferQueueController<ImageProxy> imageStreamController,
-            ImageDistributor imageDistributor, Surface surface)
-    {
+            ImageDistributor imageDistributor, Surface surface) {
         super(imageStream, imageStreamController, imageDistributor, surface);
         mCapacity = capacity;
         mTicketPool = ticketPool;
@@ -65,15 +63,11 @@ class AllocatingImageStream extends ImageStreamImpl
         mClosed = new AtomicBoolean(false);
     }
 
-    public void allocate() throws InterruptedException, ResourceAcquisitionFailedException
-    {
-        if (!mAllocated.getAndSet(true))
-        {
-            try
-            {
+    public void allocate() throws InterruptedException, ResourceAcquisitionFailedException {
+        if (!mAllocated.getAndSet(true)) {
+            try {
                 mTicketPool.reserveCapacity(mCapacity);
-            } catch (TicketPool.NoCapacityAvailableException e)
-            {
+            } catch (TicketPool.NoCapacityAvailableException e) {
                 throw new ResourceAcquisitionFailedException(e);
             }
         }
@@ -81,17 +75,14 @@ class AllocatingImageStream extends ImageStreamImpl
 
     @Override
     public Surface bind(BufferQueue<Long> timestamps) throws InterruptedException,
-            ResourceAcquisitionFailedException
-    {
+            ResourceAcquisitionFailedException {
         allocate();
         return super.bind(timestamps);
     }
 
     @Override
-    public void close()
-    {
-        if (mClosed.getAndSet(true))
-        {
+    public void close() {
+        if (mClosed.getAndSet(true)) {
             return;
         }
         mTicketPool.close();

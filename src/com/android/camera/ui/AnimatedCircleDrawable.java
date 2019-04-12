@@ -25,8 +25,7 @@ import android.graphics.drawable.Drawable;
 
 import com.android.camera.util.Gusterpolator;
 
-public class AnimatedCircleDrawable extends Drawable
-{
+public class AnimatedCircleDrawable extends Drawable {
     private static final int CIRCLE_ANIM_DURATION_MS = 300;
     private static int DRAWABLE_MAX_LEVEL = 10000;
 
@@ -39,105 +38,10 @@ public class AnimatedCircleDrawable extends Drawable
     private int mRadius;
     private int mSmallRadiusTarget;
 
-    public AnimatedCircleDrawable(int smallRadiusTarget)
-    {
+    public AnimatedCircleDrawable(int smallRadiusTarget) {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mSmallRadiusTarget = smallRadiusTarget;
-    }
-
-    public void setColor(int color)
-    {
-        mColor = color;
-        updatePaintColor();
-    }
-
-    private void updatePaintColor()
-    {
-        int paintColor = (mAlpha << 24) | (mColor & 0x00ffffff);
-        mPaint.setColor(paintColor);
-        invalidateSelf();
-    }
-
-    // abstract overrides
-    @Override
-    public int getOpacity()
-    {
-        return PixelFormat.TRANSLUCENT;
-    }
-
-    @Override
-    public void setAlpha(int alpha)
-    {
-        mAlpha = alpha;
-        updatePaintColor();
-    }
-
-    @Override
-    public void setColorFilter(ColorFilter cf)
-    {
-        //TODO support this?
-    }
-    // end abstract overrides
-
-    @Override
-    public boolean onLevelChange(int level)
-    {
-        if (level != getLevel())
-        {
-            invalidateSelf();
-            return true;
-        }
-        return false;
-    }
-
-    public void animateToSmallRadius()
-    {
-        int smallLevel = map(mSmallRadiusTarget,
-                0, diagonalLength(mCanvasWidth, mCanvasHeight) / 2,
-                0, DRAWABLE_MAX_LEVEL);
-        final ValueAnimator animator =
-                ValueAnimator.ofInt(getLevel(), smallLevel);
-        animator.setDuration(CIRCLE_ANIM_DURATION_MS);
-        animator.setInterpolator(Gusterpolator.INSTANCE);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
-        {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation)
-            {
-                setLevel((Integer) animation.getAnimatedValue());
-            }
-        });
-        animator.start();
-    }
-
-    public void animateToFullSize()
-    {
-        final ValueAnimator animator =
-                ValueAnimator.ofInt(getLevel(), DRAWABLE_MAX_LEVEL);
-        animator.setDuration(CIRCLE_ANIM_DURATION_MS);
-        animator.setInterpolator(Gusterpolator.INSTANCE);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
-        {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation)
-            {
-                setLevel((Integer) animation.getAnimatedValue());
-            }
-        });
-        animator.start();
-    }
-
-    @Override
-    public void draw(Canvas canvas)
-    {
-        mCanvasWidth = canvas.getWidth();
-        mCanvasHeight = canvas.getHeight();
-
-        mRadius = map(getLevel(), 0, DRAWABLE_MAX_LEVEL,
-                0, diagonalLength(canvas.getWidth(), canvas.getHeight()) / 2);
-        canvas.drawCircle(canvas.getWidth() / 2.0f, canvas.getHeight() / 2.0f,
-                mRadius, mPaint);
     }
 
     /**
@@ -151,13 +55,91 @@ public class AnimatedCircleDrawable extends Drawable
      * @param out_max Output range maximum.
      * @return The mapped value.
      */
-    private static int map(int x, int in_min, int in_max, int out_min, int out_max)
-    {
+    private static int map(int x, int in_min, int in_max, int out_min, int out_max) {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    private static int diagonalLength(int w, int h)
-    {
+    private static int diagonalLength(int w, int h) {
         return (int) Math.sqrt((w * w) + (h * h));
+    }
+
+    public void setColor(int color) {
+        mColor = color;
+        updatePaintColor();
+    }
+
+    private void updatePaintColor() {
+        int paintColor = (mAlpha << 24) | (mColor & 0x00ffffff);
+        mPaint.setColor(paintColor);
+        invalidateSelf();
+    }
+
+    // abstract overrides
+    @Override
+    public int getOpacity() {
+        return PixelFormat.TRANSLUCENT;
+    }
+    // end abstract overrides
+
+    @Override
+    public void setAlpha(int alpha) {
+        mAlpha = alpha;
+        updatePaintColor();
+    }
+
+    @Override
+    public void setColorFilter(ColorFilter cf) {
+        //TODO support this?
+    }
+
+    @Override
+    public boolean onLevelChange(int level) {
+        if (level != getLevel()) {
+            invalidateSelf();
+            return true;
+        }
+        return false;
+    }
+
+    public void animateToSmallRadius() {
+        int smallLevel = map(mSmallRadiusTarget,
+                0, diagonalLength(mCanvasWidth, mCanvasHeight) / 2,
+                0, DRAWABLE_MAX_LEVEL);
+        final ValueAnimator animator =
+                ValueAnimator.ofInt(getLevel(), smallLevel);
+        animator.setDuration(CIRCLE_ANIM_DURATION_MS);
+        animator.setInterpolator(Gusterpolator.INSTANCE);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                setLevel((Integer) animation.getAnimatedValue());
+            }
+        });
+        animator.start();
+    }
+
+    public void animateToFullSize() {
+        final ValueAnimator animator =
+                ValueAnimator.ofInt(getLevel(), DRAWABLE_MAX_LEVEL);
+        animator.setDuration(CIRCLE_ANIM_DURATION_MS);
+        animator.setInterpolator(Gusterpolator.INSTANCE);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                setLevel((Integer) animation.getAnimatedValue());
+            }
+        });
+        animator.start();
+    }
+
+    @Override
+    public void draw(Canvas canvas) {
+        mCanvasWidth = canvas.getWidth();
+        mCanvasHeight = canvas.getHeight();
+
+        mRadius = map(getLevel(), 0, DRAWABLE_MAX_LEVEL,
+                0, diagonalLength(canvas.getWidth(), canvas.getHeight()) / 2);
+        canvas.drawCircle(canvas.getWidth() / 2.0f, canvas.getHeight() / 2.0f,
+                mRadius, mPaint);
     }
 }

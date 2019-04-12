@@ -39,62 +39,44 @@ import java.util.concurrent.atomic.AtomicReference;
  * change API to use {@link com.android.camera.processing.ProcessingService}.
  * TODO: Hook UI to the listener.
  */
-class BurstFacadeImpl implements BurstFacade
-{
-    /**
-     * The state of the burst module.
-     */
-    private static enum BurstModuleState
-    {
-        IDLE,
-        RUNNING,
-        STOPPING
-    }
-
+class BurstFacadeImpl implements BurstFacade {
     private static final Tag TAG = new Tag("BurstFacadeImpl");
-
     private static final int DEFAULT_PREVIEW_WIDTH = 320;
     private static final int DEFAULT_PREVIEW_HEIGHT = 240;
-
     private final AtomicReference<BurstModuleState> mBurstModuleState =
             new AtomicReference<BurstModuleState>(BurstModuleState.IDLE);
     private final AtomicReference<BurstTaker> mBurstTaker =
             new AtomicReference<>(null);
-
     private final BurstController mBurstController;
-
+    private final OrientationLockController mOrientationLockController;
+    private final BurstReadyStateChangeListener mReadyStateListener;
+    private final AtomicReference<SurfaceTextureContainer> mSurfaceTextureContainer =
+            new AtomicReference<>();
     /**
      * A stack saver for the outstanding burst request.
      */
     private StackSaver mActiveStackSaver;
-
     /**
      * Listener for burst controller. Saves the results and interacts with the
      * UI.
      */
     private final BurstResultsListener mBurstResultsListener =
-            new BurstResultsListener()
-            {
+            new BurstResultsListener() {
                 @Override
-                public void onBurstStarted()
-                {
+                public void onBurstStarted() {
                 }
 
                 @Override
-                public void onBurstError(Exception error)
-                {
+                public void onBurstError(Exception error) {
                     Log.e(TAG, "Exception while running the burst" + error);
                 }
 
                 @Override
-                public void onBurstCompleted(BurstResult burstResult)
-                {
+                public void onBurstCompleted(BurstResult burstResult) {
                     BurstResultsSaver.saveBurstResultsInBackground(burstResult, mActiveStackSaver,
-                            new Runnable()
-                            {
+                            new Runnable() {
                                 @Override
-                                public void run()
-                                {
+                                public void run() {
                                     mBurstModuleState.set(BurstModuleState.IDLE);
                                 }
                             });
@@ -102,17 +84,10 @@ class BurstFacadeImpl implements BurstFacade
 
                 @Override
                 public void onArtifactCountAvailable(
-                        final Map<String, Integer> artifactTypeCount)
-                {
+                        final Map<String, Integer> artifactTypeCount) {
                     BurstResultsSaver.logArtifactCount(artifactTypeCount);
                 }
             };
-
-    private final OrientationLockController mOrientationLockController;
-    private final BurstReadyStateChangeListener mReadyStateListener;
-
-    private final AtomicReference<SurfaceTextureContainer> mSurfaceTextureContainer =
-            new AtomicReference<>();
 
     /**
      * Create a new BurstManagerImpl instance.
@@ -125,8 +100,7 @@ class BurstFacadeImpl implements BurstFacade
      */
     public BurstFacadeImpl(Context appContext,
                            OrientationLockController orientationLockController,
-                           BurstReadyStateChangeListener readyStateListener)
-    {
+                           BurstReadyStateChangeListener readyStateListener) {
         mOrientationLockController = orientationLockController;
         mBurstController = new BurstControllerImpl(appContext);
         mReadyStateListener = readyStateListener;
@@ -136,13 +110,11 @@ class BurstFacadeImpl implements BurstFacade
     public void startBurst(CaptureSession.CaptureSessionCreator captureSessionCreator,
                            DeviceOrientation deviceOrientation,
                            Facing cameraFacing,
-                           int imageOrientationDegrees)
-    {
+                           int imageOrientationDegrees) {
         MainThread.checkMainThread();
         if (mBurstTaker.get() != null &&
                 mBurstModuleState.compareAndSet(BurstModuleState.IDLE,
-                        BurstModuleState.RUNNING))
-        {
+                        BurstModuleState.RUNNING)) {
             // Only create a session if we do start a burst.
             CaptureSession captureSession = captureSessionCreator.createAndStartEmpty();
             mActiveStackSaver = captureSession.getStackSaver();
@@ -155,8 +127,7 @@ class BurstFacadeImpl implements BurstFacade
                     + " image orientation: " + imageOrientationDegrees);
             int width = DEFAULT_PREVIEW_WIDTH;
             int height = DEFAULT_PREVIEW_HEIGHT;
-            if (imageOrientationDegrees % 180 == 90)
-            {
+            if (imageOrientationDegrees % 180 == 90) {
                 int tmp = width;
                 width = height;
                 height = tmp;
@@ -174,20 +145,17 @@ class BurstFacadeImpl implements BurstFacade
 
             // Start burst.
             mBurstTaker.get().startBurst(evictionHandler, mBurstController);
-        } else
-        {
+        } else {
             Log.e(TAG, "Cannot start burst.");
         }
     }
 
     @Override
-    public boolean stopBurst()
-    {
+    public boolean stopBurst() {
         MainThread.checkMainThread();
         boolean wasStopped = false;
         if (mBurstModuleState.compareAndSet(BurstModuleState.RUNNING,
-                BurstModuleState.STOPPING))
-        {
+                BurstModuleState.STOPPING)) {
             mBurstTaker.get().stopBurst();
             wasStopped = true;
             reEnableUI();
@@ -196,14 +164,12 @@ class BurstFacadeImpl implements BurstFacade
     }
 
     @Override
-    public Surface getInputSurface()
-    {
+    public Surface getInputSurface() {
         return mSurfaceTextureContainer.get().getSurface();
     }
 
     @Override
-    public void initialize(SurfaceTexture surfaceTexture)
-    {
+    public void initialize(SurfaceTexture surfaceTexture) {
         MainThread.checkMainThread();
         // TODO: Use preview sizes from Camera API here instead of using the
         // default.
@@ -216,28 +182,33 @@ class BurstFacadeImpl implements BurstFacade
     }
 
     @Override
-    public void release()
-    {
+    public void release() {
         MainThread.checkMainThread();
         stopBurst();
-        if (mSurfaceTextureContainer.get() != null)
-        {
+        if (mSurfaceTextureContainer.get() != null) {
             mSurfaceTextureContainer.get().close();
             mSurfaceTextureContainer.set(null);
         }
     }
 
     @Override
-    public void setBurstTaker(BurstTaker burstTaker)
-    {
+    public void setBurstTaker(BurstTaker burstTaker) {
         mBurstTaker.set(burstTaker);
     }
 
-    private void reEnableUI()
-    {
+    private void reEnableUI() {
         MainThread.checkMainThread();
         mOrientationLockController.unlockOrientation();
         // Re-enable the shutter button.
         mReadyStateListener.onBurstReadyStateChanged(true);
+    }
+
+    /**
+     * The state of the burst module.
+     */
+    private static enum BurstModuleState {
+        IDLE,
+        RUNNING,
+        STOPPING
     }
 }

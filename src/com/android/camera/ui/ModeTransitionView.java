@@ -44,8 +44,7 @@ import com.android.camera2.R;
  * This view is designed to handle all the animations during camera mode transition.
  * It should only be visible during mode switch.
  */
-public class ModeTransitionView extends View
-{
+public class ModeTransitionView extends View {
     private static final Log.Tag TAG = new Log.Tag("ModeTransView");
 
     private static final int PEEP_HOLE_ANIMATION_DURATION_MS = 300;
@@ -71,7 +70,8 @@ public class ModeTransitionView extends View
      * An empty drawable to fall back to when mIconDrawable set to null.
      */
     private final Drawable mDefaultDrawable = new ColorDrawable();
-
+    private final Path mShadePath = new Path();
+    private final Paint mShadePaint = new Paint();
     private Drawable mIconDrawable;
     private int mBackgroundColor;
     private int mWidth = 0;
@@ -83,24 +83,19 @@ public class ModeTransitionView extends View
     private AnimatorSet mPeepHoleAnimator;
     private int mAnimationType = PEEP_HOLE_ANIMATION;
     private float mScrollDistance = 0;
-    private final Path mShadePath = new Path();
-    private final Paint mShadePaint = new Paint();
     private CameraAppUI.AnimationFinishedListener mAnimationFinishedListener;
     private float mScrollTrend;
     private Bitmap mBackgroundBitmap;
 
-    public ModeTransitionView(Context context, AttributeSet attrs)
-    {
+    public ModeTransitionView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mMaskPaint.setAlpha(0);
         mMaskPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         mBackgroundColor = getResources().getColor(R.color.video_mode_color);
         mGestureDetector = new GestureDetector(getContext(),
-                new GestureDetector.SimpleOnGestureListener()
-                {
+                new GestureDetector.SimpleOnGestureListener() {
                     @Override
-                    public boolean onDown(MotionEvent ev)
-                    {
+                    public boolean onDown(MotionEvent ev) {
                         setScrollDistance(0f);
                         mScrollTrend = 0f;
                         return true;
@@ -108,8 +103,7 @@ public class ModeTransitionView extends View
 
                     @Override
                     public boolean onScroll(MotionEvent e1, MotionEvent e2,
-                                            float distanceX, float distanceY)
-                    {
+                                            float distanceX, float distanceY) {
                         setScrollDistance(getScrollDistance()
                                 + SCROLL_DISTANCE_MULTIPLY_FACTOR * distanceY);
                         mScrollTrend = 0.3f * mScrollTrend + 0.7f * distanceY;
@@ -123,32 +117,25 @@ public class ModeTransitionView extends View
     /**
      * Updates the size and shape of the shade
      */
-    private void updateShade()
-    {
-        if (mAnimationType == PULL_UP_SHADE || mAnimationType == PULL_DOWN_SHADE)
-        {
+    private void updateShade() {
+        if (mAnimationType == PULL_UP_SHADE || mAnimationType == PULL_DOWN_SHADE) {
             mShadePath.reset();
             float shadeHeight;
-            if (mAnimationType == PULL_UP_SHADE)
-            {
+            if (mAnimationType == PULL_UP_SHADE) {
                 // Scroll distance > 0.
                 mShadePath.addRect(0, mHeight - getScrollDistance(), mWidth, mHeight,
                         Path.Direction.CW);
                 shadeHeight = getScrollDistance();
-            } else
-            {
+            } else {
                 // Scroll distance < 0.
                 mShadePath.addRect(0, 0, mWidth, -getScrollDistance(), Path.Direction.CW);
                 shadeHeight = getScrollDistance() * (-1);
             }
 
-            if (mIconDrawable != null)
-            {
-                if (shadeHeight < mHeight / 2 || mHeight == 0)
-                {
+            if (mIconDrawable != null) {
+                if (shadeHeight < mHeight / 2 || mHeight == 0) {
                     mIconDrawable.setAlpha(ALPHA_FULLY_TRANSPARENT);
-                } else
-                {
+                } else {
                     int alpha = ((int) shadeHeight - mHeight / 2) * ALPHA_FULLY_OPAQUE
                             / (mHeight / 2);
                     mIconDrawable.setAlpha(alpha);
@@ -158,21 +145,22 @@ public class ModeTransitionView extends View
         }
     }
 
+    public float getScrollDistance() {
+        return mScrollDistance;
+    }
+
     /**
      * Sets the scroll distance. Note this function gets called in every
      * frame during animation. It should be very light weight.
      *
      * @param scrollDistance the scaled distance that user has scrolled
      */
-    public void setScrollDistance(float scrollDistance)
-    {
+    public void setScrollDistance(float scrollDistance) {
         // First make sure scroll distance is clamped to the valid range.
-        if (mAnimationType == PULL_UP_SHADE)
-        {
+        if (mAnimationType == PULL_UP_SHADE) {
             scrollDistance = Math.min(scrollDistance, mHeight);
             scrollDistance = Math.max(scrollDistance, 0);
-        } else if (mAnimationType == PULL_DOWN_SHADE)
-        {
+        } else if (mAnimationType == PULL_DOWN_SHADE) {
             scrollDistance = Math.min(scrollDistance, 0);
             scrollDistance = Math.max(scrollDistance, -mHeight);
         }
@@ -180,30 +168,19 @@ public class ModeTransitionView extends View
         updateShade();
     }
 
-    public float getScrollDistance()
-    {
-        return mScrollDistance;
-    }
-
     @Override
-    public void onDraw(Canvas canvas)
-    {
-        if (mAnimationType == PEEP_HOLE_ANIMATION)
-        {
+    public void onDraw(Canvas canvas) {
+        if (mAnimationType == PEEP_HOLE_ANIMATION) {
             canvas.drawColor(mBackgroundColor);
-            if (mPeepHoleAnimator != null)
-            {
+            if (mPeepHoleAnimator != null) {
                 // Draw a transparent circle using clear mode
                 canvas.drawCircle(mPeepHoleCenterX, mPeepHoleCenterY, mRadius, mMaskPaint);
             }
-        } else if (mAnimationType == PULL_UP_SHADE || mAnimationType == PULL_DOWN_SHADE)
-        {
+        } else if (mAnimationType == PULL_UP_SHADE || mAnimationType == PULL_DOWN_SHADE) {
             canvas.drawPath(mShadePath, mShadePaint);
-        } else if (mAnimationType == IDLE || mAnimationType == FADE_OUT)
-        {
+        } else if (mAnimationType == IDLE || mAnimationType == FADE_OUT) {
             canvas.drawColor(mBackgroundColor);
-        } else if (mAnimationType == SHOW_STATIC_IMAGE)
-        {
+        } else if (mAnimationType == SHOW_STATIC_IMAGE) {
             // TODO: These different animation types need to be refactored into
             // different animation effects.
             canvas.drawBitmap(mBackgroundBitmap, 0, 0, null);
@@ -215,8 +192,7 @@ public class ModeTransitionView extends View
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom)
-    {
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         mWidth = right - left;
         mHeight = bottom - top;
         // Center the icon in the view.
@@ -229,8 +205,7 @@ public class ModeTransitionView extends View
      * This is an overloaded function. When no position is provided for the animation,
      * the peep hole will start at the default position (i.e. center of the view).
      */
-    public void startPeepHoleAnimation()
-    {
+    public void startPeepHoleAnimation() {
         float x = mWidth / 2;
         float y = mHeight / 2;
         startPeepHoleAnimation(x, y);
@@ -239,10 +214,8 @@ public class ModeTransitionView extends View
     /**
      * Starts the peep hole animation where the circle is centered at position (x, y).
      */
-    private void startPeepHoleAnimation(float x, float y)
-    {
-        if (mPeepHoleAnimator != null && mPeepHoleAnimator.isRunning())
-        {
+    private void startPeepHoleAnimation(float x, float y) {
+        if (mPeepHoleAnimator != null && mPeepHoleAnimator.isRunning()) {
             return;
         }
         mAnimationType = PEEP_HOLE_ANIMATION;
@@ -268,11 +241,9 @@ public class ModeTransitionView extends View
         mPeepHoleAnimator.playTogether(radiusAnimator, iconAlphaAnimator, iconScaleAnimator);
         mPeepHoleAnimator.setInterpolator(Gusterpolator.INSTANCE);
 
-        iconAlphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
-        {
+        iconAlphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void onAnimationUpdate(ValueAnimator animation)
-            {
+            public void onAnimationUpdate(ValueAnimator animation) {
                 // Modify mask by enlarging the hole
                 mRadius = (Float) radiusAnimator.getAnimatedValue();
 
@@ -289,18 +260,15 @@ public class ModeTransitionView extends View
             }
         });
 
-        mPeepHoleAnimator.addListener(new Animator.AnimatorListener()
-        {
+        mPeepHoleAnimator.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation)
-            {
+            public void onAnimationStart(Animator animation) {
                 // Sets a HW layer on the view for the animation.
                 setLayerType(LAYER_TYPE_HARDWARE, null);
             }
 
             @Override
-            public void onAnimationEnd(Animator animation)
-            {
+            public void onAnimationEnd(Animator animation) {
                 // Sets the layer type back to NONE as a workaround for b/12594617.
                 setLayerType(LAYER_TYPE_NONE, null);
                 mPeepHoleAnimator = null;
@@ -309,22 +277,19 @@ public class ModeTransitionView extends View
                 mIconDrawable.setBounds(mIconRect);
                 setVisibility(GONE);
                 mAnimationType = IDLE;
-                if (mAnimationFinishedListener != null)
-                {
+                if (mAnimationFinishedListener != null) {
                     mAnimationFinishedListener.onAnimationFinished(true);
                     mAnimationFinishedListener = null;
                 }
             }
 
             @Override
-            public void onAnimationCancel(Animator animation)
-            {
+            public void onAnimationCancel(Animator animation) {
 
             }
 
             @Override
-            public void onAnimationRepeat(Animator animation)
-            {
+            public void onAnimationRepeat(Animator animation) {
 
             }
         });
@@ -333,11 +298,9 @@ public class ModeTransitionView extends View
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent ev)
-    {
+    public boolean onTouchEvent(MotionEvent ev) {
         boolean touchHandled = mGestureDetector.onTouchEvent(ev);
-        if (ev.getActionMasked() == MotionEvent.ACTION_UP)
-        {
+        if (ev.getActionMasked() == MotionEvent.ACTION_UP) {
             // TODO: Take into account fling
             snap();
         }
@@ -347,29 +310,23 @@ public class ModeTransitionView extends View
     /**
      * Snaps the shade to position at the end of a gesture.
      */
-    private void snap()
-    {
-        if (mScrollTrend >= 0 && mAnimationType == PULL_UP_SHADE)
-        {
+    private void snap() {
+        if (mScrollTrend >= 0 && mAnimationType == PULL_UP_SHADE) {
             // Snap to full screen.
             snapShadeTo(mHeight, ALPHA_FULLY_OPAQUE);
-        } else if (mScrollTrend <= 0 && mAnimationType == PULL_DOWN_SHADE)
-        {
+        } else if (mScrollTrend <= 0 && mAnimationType == PULL_DOWN_SHADE) {
             // Snap to full screen.
             snapShadeTo(-mHeight, ALPHA_FULLY_OPAQUE);
-        } else if (mScrollTrend < 0 && mAnimationType == PULL_UP_SHADE)
-        {
+        } else if (mScrollTrend < 0 && mAnimationType == PULL_UP_SHADE) {
             // Snap back.
             snapShadeTo(0, ALPHA_FULLY_TRANSPARENT, false);
-        } else if (mScrollTrend > 0 && mAnimationType == PULL_DOWN_SHADE)
-        {
+        } else if (mScrollTrend > 0 && mAnimationType == PULL_DOWN_SHADE) {
             // Snap back.
             snapShadeTo(0, ALPHA_FULLY_TRANSPARENT, false);
         }
     }
 
-    private void snapShadeTo(int scrollDistance, int alpha)
-    {
+    private void snapShadeTo(int scrollDistance, int alpha) {
         snapShadeTo(scrollDistance, alpha, true);
     }
 
@@ -382,46 +339,37 @@ public class ModeTransitionView extends View
      * @param snapToFullScreen whether this snap animation snaps the shade to full screen
      */
     private void snapShadeTo(final int scrollDistance, final int alpha,
-                             final boolean snapToFullScreen)
-    {
-        if (mAnimationType == PULL_UP_SHADE || mAnimationType == PULL_DOWN_SHADE)
-        {
+                             final boolean snapToFullScreen) {
+        if (mAnimationType == PULL_UP_SHADE || mAnimationType == PULL_DOWN_SHADE) {
             ObjectAnimator scrollAnimator = ObjectAnimator.ofFloat(this, "scrollDistance",
                     scrollDistance);
-            scrollAnimator.addListener(new Animator.AnimatorListener()
-            {
+            scrollAnimator.addListener(new Animator.AnimatorListener() {
                 @Override
-                public void onAnimationStart(Animator animation)
-                {
+                public void onAnimationStart(Animator animation) {
 
                 }
 
                 @Override
-                public void onAnimationEnd(Animator animation)
-                {
+                public void onAnimationEnd(Animator animation) {
                     setScrollDistance(scrollDistance);
                     mIconDrawable.setAlpha(alpha);
                     mAnimationType = IDLE;
-                    if (!snapToFullScreen)
-                    {
+                    if (!snapToFullScreen) {
                         setVisibility(GONE);
                     }
-                    if (mAnimationFinishedListener != null)
-                    {
+                    if (mAnimationFinishedListener != null) {
                         mAnimationFinishedListener.onAnimationFinished(snapToFullScreen);
                         mAnimationFinishedListener = null;
                     }
                 }
 
                 @Override
-                public void onAnimationCancel(Animator animation)
-                {
+                public void onAnimationCancel(Animator animation) {
 
                 }
 
                 @Override
-                public void onAnimationRepeat(Animator animation)
-                {
+                public void onAnimationRepeat(Animator animation) {
 
                 }
             });
@@ -439,8 +387,7 @@ public class ModeTransitionView extends View
      *                     is finished. Could be <code>null</code>.
      */
     public void prepareToPullUpShade(int shadeColorId, int iconId,
-                                     CameraAppUI.AnimationFinishedListener listener)
-    {
+                                     CameraAppUI.AnimationFinishedListener listener) {
         prepareShadeAnimation(PULL_UP_SHADE, shadeColorId, iconId, listener);
     }
 
@@ -453,8 +400,7 @@ public class ModeTransitionView extends View
      *                           is finished. Could be <code>null</code>.
      */
     public void prepareToPullDownShade(int shadeColorId, int modeIconResourceId,
-                                       CameraAppUI.AnimationFinishedListener listener)
-    {
+                                       CameraAppUI.AnimationFinishedListener listener) {
         ;
         prepareShadeAnimation(PULL_DOWN_SHADE, shadeColorId, modeIconResourceId, listener);
     }
@@ -469,11 +415,9 @@ public class ModeTransitionView extends View
      *                      is finished. Could be <code>null</code>.
      */
     private void prepareShadeAnimation(int animationType, int shadeColorId, int iconResId,
-                                       CameraAppUI.AnimationFinishedListener listener)
-    {
+                                       CameraAppUI.AnimationFinishedListener listener) {
         mAnimationFinishedListener = listener;
-        if (mPeepHoleAnimator != null && mPeepHoleAnimator.isRunning())
-        {
+        if (mPeepHoleAnimator != null && mPeepHoleAnimator.isRunning()) {
             mPeepHoleAnimator.end();
         }
         mAnimationType = animationType;
@@ -486,8 +430,7 @@ public class ModeTransitionView extends View
      * @param shadeColorId       id of the shade color
      * @param modeIconResourceId resource id of the icon drawable
      */
-    private void resetShade(int shadeColorId, int modeIconResourceId)
-    {
+    private void resetShade(int shadeColorId, int modeIconResourceId) {
         // Sets color for the shade.
         int shadeColor = getResources().getColor(shadeColorId);
         mBackgroundColor = shadeColor;
@@ -508,11 +451,9 @@ public class ModeTransitionView extends View
      *
      * @param modeIconResourceId resource id of the icon drawable
      */
-    private void updateIconDrawableByResourceId(int modeIconResourceId)
-    {
+    private void updateIconDrawableByResourceId(int modeIconResourceId) {
         Drawable iconDrawable = getResources().getDrawable(modeIconResourceId);
-        if (iconDrawable == null)
-        {
+        if (iconDrawable == null) {
             // Resource id not found
             Log.e(TAG, "Invalid resource id for icon drawable. Setting icon drawable to null.");
             setIconDrawable(null);
@@ -530,13 +471,10 @@ public class ModeTransitionView extends View
      * @param iconDrawable new drawable for icon. A value of <code>null</code> sets
      *                     the icon drawable to the default drawable.
      */
-    private void setIconDrawable(Drawable iconDrawable)
-    {
-        if (iconDrawable == null)
-        {
+    private void setIconDrawable(Drawable iconDrawable) {
+        if (iconDrawable == null) {
             mIconDrawable = mDefaultDrawable;
-        } else
-        {
+        } else {
             mIconDrawable = iconDrawable;
         }
     }
@@ -547,12 +485,10 @@ public class ModeTransitionView extends View
      * @param colorId            resource id of the mode theme color
      * @param modeIconResourceId resource id of the icon drawable
      */
-    public void setupModeCover(int colorId, int modeIconResourceId)
-    {
+    public void setupModeCover(int colorId, int modeIconResourceId) {
         mBackgroundBitmap = null;
         // Stop ongoing animation.
-        if (mPeepHoleAnimator != null && mPeepHoleAnimator.isRunning())
-        {
+        if (mPeepHoleAnimator != null && mPeepHoleAnimator.isRunning()) {
             mPeepHoleAnimator.cancel();
         }
         mAnimationType = IDLE;
@@ -572,53 +508,43 @@ public class ModeTransitionView extends View
      *                                  animation is finished. Could be <code>null</code>.
      */
     public void hideModeCover(
-            final CameraAppUI.AnimationFinishedListener animationFinishedListener)
-    {
-        if (mAnimationType != IDLE)
-        {
+            final CameraAppUI.AnimationFinishedListener animationFinishedListener) {
+        if (mAnimationType != IDLE) {
             // Nothing to hide.
-            if (animationFinishedListener != null)
-            {
+            if (animationFinishedListener != null) {
                 // Animation not successful.
                 animationFinishedListener.onAnimationFinished(false);
             }
-        } else
-        {
+        } else {
             // Start fade out animation.
             mAnimationType = FADE_OUT;
             ObjectAnimator alphaAnimator = ObjectAnimator.ofFloat(this, "alpha", 1f, 0f);
             alphaAnimator.setDuration(FADE_OUT_DURATION_MS);
             // Linear interpolation.
             alphaAnimator.setInterpolator(null);
-            alphaAnimator.addListener(new Animator.AnimatorListener()
-            {
+            alphaAnimator.addListener(new Animator.AnimatorListener() {
                 @Override
-                public void onAnimationStart(Animator animation)
-                {
+                public void onAnimationStart(Animator animation) {
 
                 }
 
                 @Override
-                public void onAnimationEnd(Animator animation)
-                {
+                public void onAnimationEnd(Animator animation) {
                     setVisibility(GONE);
                     setAlpha(1f);
-                    if (animationFinishedListener != null)
-                    {
+                    if (animationFinishedListener != null) {
                         animationFinishedListener.onAnimationFinished(true);
                         mAnimationType = IDLE;
                     }
                 }
 
                 @Override
-                public void onAnimationCancel(Animator animation)
-                {
+                public void onAnimationCancel(Animator animation) {
 
                 }
 
                 @Override
-                public void onAnimationRepeat(Animator animation)
-                {
+                public void onAnimationRepeat(Animator animation) {
 
                 }
             });
@@ -627,8 +553,7 @@ public class ModeTransitionView extends View
     }
 
     @Override
-    public void setAlpha(float alpha)
-    {
+    public void setAlpha(float alpha) {
         super.setAlpha(alpha);
         int alphaScaled = (int) (255f * getAlpha());
         mBackgroundColor = (mBackgroundColor & 0xFFFFFF) | (alphaScaled << 24);
@@ -638,8 +563,7 @@ public class ModeTransitionView extends View
     /**
      * Setup the mode cover with a screenshot.
      */
-    public void setupModeCover(Bitmap screenShot)
-    {
+    public void setupModeCover(Bitmap screenShot) {
         mBackgroundBitmap = screenShot;
         setVisibility(VISIBLE);
         mAnimationType = SHOW_STATIC_IMAGE;
@@ -649,8 +573,7 @@ public class ModeTransitionView extends View
      * Hide the mode cover without animation.
      */
     // TODO: Refactor this and define how cover should be hidden during cover setup
-    public void hideImageCover()
-    {
+    public void hideImageCover() {
         mBackgroundBitmap = null;
         setVisibility(GONE);
         mAnimationType = IDLE;

@@ -16,8 +16,6 @@
 
 package com.android.camera.processing.imagebackend;
 
-import com.google.common.base.Optional;
-
 import android.content.Context;
 import android.location.Location;
 
@@ -25,10 +23,10 @@ import com.android.camera.app.CameraServices;
 import com.android.camera.debug.Log;
 import com.android.camera.processing.ProcessingTask;
 import com.android.camera.session.CaptureSession;
+import com.google.common.base.Optional;
 
 import java.util.concurrent.locks.Condition;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -44,8 +42,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * regard to this ImageShadowTask being queued.
  */
 @ParametersAreNonnullByDefault
-class ImageShadowTask implements ProcessingTask
-{
+class ImageShadowTask implements ProcessingTask {
     static final private Log.Tag TAG = new Log.Tag("ImageShadowTask");
 
     private final CaptureSession mCaptureSession;
@@ -71,21 +68,17 @@ class ImageShadowTask implements ProcessingTask
      *                         ProcessingTask implementation.
      */
     ImageShadowTask(ImageBackend.BlockSignalProtocol protocol,
-                    CaptureSession captureSession, Optional<Runnable> runnableWhenDone)
-    {
+                    CaptureSession captureSession, Optional<Runnable> runnableWhenDone) {
         mProtocol = protocol;
         mCaptureSession = captureSession;
-        if (runnableWhenDone.isPresent())
-        {
+        if (runnableWhenDone.isPresent()) {
             mRunnableWhenDone = runnableWhenDone.get();
-        } else
-        {
+        } else {
             mRunnableWhenDone = null;
         }
     }
 
-    ImageBackend.BlockSignalProtocol getProtocol()
-    {
+    ImageBackend.BlockSignalProtocol getProtocol() {
         return mProtocol;
     }
 
@@ -93,67 +86,56 @@ class ImageShadowTask implements ProcessingTask
      * Returns the Runnable to be executed when all the associated
      * TaskImageContainer of ImageShadowTask have been completed.
      */
-    public Runnable getRunnableWhenDone()
-    {
+    public Runnable getRunnableWhenDone() {
         return mRunnableWhenDone;
     }
 
     @Override
-    public ProcessingResult process(Context context, CameraServices services, CaptureSession session)
-    {
-        try
-        {
+    public ProcessingResult process(Context context, CameraServices services, CaptureSession session) {
+        try {
             mProtocol.block();
-        } catch (InterruptedException e)
-        {
+        } catch (InterruptedException e) {
             // Exit cleanly on Interrupt.
             Log.w(TAG, "Image Shadow task Interrupted.");
         }
 
         ProcessingResult finalResult = new ProcessingResult(true, mCaptureSession);
         // Always finishes alright.
-        if (mDoneListener != null)
-        {
+        if (mDoneListener != null) {
             mDoneListener.onDone(finalResult);
         }
         return finalResult;
     }
 
     @Override
-    public void suspend()
-    {
+    public void suspend() {
         // Do nothing. We are unsuspendable.
     }
 
     @Override
-    public void resume()
-    {
+    public void resume() {
         // Do nothing. We are unresumable.
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         // Name is only required when Session is NULL. Session should never be
         // set to NULL.
         return null;
     }
 
     @Override
-    public Location getLocation()
-    {
+    public Location getLocation() {
         return null;
     }
 
     @Override
-    public CaptureSession getSession()
-    {
+    public CaptureSession getSession() {
         return mCaptureSession;
     }
 
     @Override
-    public void setDoneListener(ProcessingTaskDoneListener listener)
-    {
+    public void setDoneListener(ProcessingTaskDoneListener listener) {
         mDoneListener = listener;
     }
 

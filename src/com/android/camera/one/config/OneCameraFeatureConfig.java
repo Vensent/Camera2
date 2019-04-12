@@ -20,24 +20,96 @@ import android.annotation.TargetApi;
 import android.hardware.camera2.CameraCharacteristics;
 import android.os.Build;
 
+import com.android.camera.one.OneCamera;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-
-import com.android.camera.one.OneCamera;
 
 /**
  * Contains the logic for which Camera API and features should be enabled on the
  * current device.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class OneCameraFeatureConfig
-{
+public class OneCameraFeatureConfig {
+
+    /**
+     * Whether the capture module should be used (instead of PhotoModule).
+     */
+    private final boolean mUseCaptureModule;
+    /**
+     * Determines the mode for regular capture on this device.
+     */
+    private final Function<CameraCharacteristics, CaptureSupportLevel> mCaptureModeDetector;
+    /**
+     * The level of HDR+ support.
+     */
+    private final HdrPlusSupportLevel mHdrPlusSupportLevel;
+    /**
+     * The maximum amount of memory can be consumed by all opened cameras
+     * during capture and processing, in megabytes.
+     */
+    private final int mMaxMemoryMB;
+    /**
+     * The maximum number of images the camera should allocate in the image reader.
+     */
+    private final int mMaxAllowedImageReaderCount;
+    OneCameraFeatureConfig(boolean useCaptureModule,
+                           Function<CameraCharacteristics, CaptureSupportLevel> captureModeDetector,
+                           HdrPlusSupportLevel hdrPlusSupportLevel,
+                           int maxMemoryMB,
+                           int maxAllowedImageReaderCount) {
+        mUseCaptureModule = useCaptureModule;
+        mCaptureModeDetector = captureModeDetector;
+        mHdrPlusSupportLevel = hdrPlusSupportLevel;
+        mMaxMemoryMB = maxMemoryMB;
+        mMaxAllowedImageReaderCount = maxAllowedImageReaderCount;
+    }
+
+    /**
+     * @return Whether CaptureModule should be used for photo capture.
+     */
+    public boolean isUsingCaptureModule() {
+        return mUseCaptureModule;
+    }
+
+    /**
+     * @param characteristics the characteristics of the camera.
+     * @return Whether the camera with the given characteristics supports
+     * app-level ZSL.
+     */
+    public CaptureSupportLevel getCaptureSupportLevel(CameraCharacteristics characteristics) {
+        return mCaptureModeDetector.apply(characteristics);
+    }
+
+    /**
+     * @return The general support level for HDR+ on this device.
+     */
+    public HdrPlusSupportLevel getHdrPlusSupportLevel(OneCamera.Facing cameraFacing) {
+        if (cameraFacing == OneCamera.Facing.FRONT) {
+            return HdrPlusSupportLevel.NONE;
+        }
+        return mHdrPlusSupportLevel;
+    }
+
+    /**
+     * @return The maximum amount of memory can be consumed by all opened
+     * cameras during capture and processing, in megabytes.
+     */
+    public int getMaxMemoryMB() {
+        return mMaxMemoryMB;
+    }
+
+    /**
+     * @return The maximum number of images the camera should allocate in the
+     * image reader.
+     */
+    public int getMaxAllowedImageReaderCount() {
+        return mMaxAllowedImageReaderCount;
+    }
 
     /**
      * The camera API 2 support levels for capture module.
      */
-    public static enum CaptureSupportLevel
-    {
+    public static enum CaptureSupportLevel {
         /**
          * Our app maintains a YUV ringbuffer on FULL devices that support it.
          * App-level JPEG compression. (Option 1).
@@ -60,10 +132,8 @@ public class OneCameraFeatureConfig
         /**
          * Given the GServices override flag, returns the support level.
          */
-        public static Optional<CaptureSupportLevel> fromFlag(int flag)
-        {
-            switch (flag)
-            {
+        public static Optional<CaptureSupportLevel> fromFlag(int flag) {
+            switch (flag) {
                 case 1:
                     return Optional.of(ZSL);
                 case 2:
@@ -81,8 +151,7 @@ public class OneCameraFeatureConfig
     /**
      * The HDR+ support levels.
      */
-    public static enum HdrPlusSupportLevel
-    {
+    public static enum HdrPlusSupportLevel {
         /**
          * No HDR+ supported.
          */
@@ -95,89 +164,5 @@ public class OneCameraFeatureConfig
          * Full API 2 HDR+ support.
          */
         FULL
-    }
-
-    /**
-     * Whether the capture module should be used (instead of PhotoModule).
-     */
-    private final boolean mUseCaptureModule;
-    /**
-     * Determines the mode for regular capture on this device.
-     */
-    private final Function<CameraCharacteristics, CaptureSupportLevel> mCaptureModeDetector;
-    /**
-     * The level of HDR+ support.
-     */
-    private final HdrPlusSupportLevel mHdrPlusSupportLevel;
-    /**
-     * The maximum amount of memory can be consumed by all opened cameras
-     * during capture and processing, in megabytes.
-     */
-    private final int mMaxMemoryMB;
-
-    /**
-     * The maximum number of images the camera should allocate in the image reader.
-     */
-    private final int mMaxAllowedImageReaderCount;
-
-    OneCameraFeatureConfig(boolean useCaptureModule,
-                           Function<CameraCharacteristics, CaptureSupportLevel> captureModeDetector,
-                           HdrPlusSupportLevel hdrPlusSupportLevel,
-                           int maxMemoryMB,
-                           int maxAllowedImageReaderCount)
-    {
-        mUseCaptureModule = useCaptureModule;
-        mCaptureModeDetector = captureModeDetector;
-        mHdrPlusSupportLevel = hdrPlusSupportLevel;
-        mMaxMemoryMB = maxMemoryMB;
-        mMaxAllowedImageReaderCount = maxAllowedImageReaderCount;
-    }
-
-    /**
-     * @return Whether CaptureModule should be used for photo capture.
-     */
-    public boolean isUsingCaptureModule()
-    {
-        return mUseCaptureModule;
-    }
-
-    /**
-     * @param characteristics the characteristics of the camera.
-     * @return Whether the camera with the given characteristics supports
-     * app-level ZSL.
-     */
-    public CaptureSupportLevel getCaptureSupportLevel(CameraCharacteristics characteristics)
-    {
-        return mCaptureModeDetector.apply(characteristics);
-    }
-
-    /**
-     * @return The general support level for HDR+ on this device.
-     */
-    public HdrPlusSupportLevel getHdrPlusSupportLevel(OneCamera.Facing cameraFacing)
-    {
-        if (cameraFacing == OneCamera.Facing.FRONT)
-        {
-            return HdrPlusSupportLevel.NONE;
-        }
-        return mHdrPlusSupportLevel;
-    }
-
-    /**
-     * @return The maximum amount of memory can be consumed by all opened
-     * cameras during capture and processing, in megabytes.
-     */
-    public int getMaxMemoryMB()
-    {
-        return mMaxMemoryMB;
-    }
-
-    /**
-     * @return The maximum number of images the camera should allocate in the
-     * image reader.
-     */
-    public int getMaxAllowedImageReaderCount()
-    {
-        return mMaxAllowedImageReaderCount;
     }
 }

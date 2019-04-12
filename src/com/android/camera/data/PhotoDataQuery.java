@@ -19,8 +19,7 @@ package com.android.camera.data;
 import android.net.Uri;
 import android.provider.MediaStore;
 
-public class PhotoDataQuery
-{
+public class PhotoDataQuery {
     // Sort all data by ID. This must be aligned with
     // {@link CameraDataAdapter.QueryTask} which relies on the highest ID
     // being first in any data returned.

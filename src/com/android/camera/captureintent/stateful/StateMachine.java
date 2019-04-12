@@ -23,8 +23,7 @@ import javax.annotation.Nonnull;
  * is able to transition among different {@link State} and process various
  * {@link Event}.
  */
-public interface StateMachine
-{
+public interface StateMachine {
     /**
      * Obtains the current state.
      *

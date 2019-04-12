@@ -25,20 +25,16 @@ import com.google.common.base.Function;
  * Translates from the Flash Mode setting (stored as a string) to the
  * appropriate {@link OneCamera.PhotoCaptureParameters.Flash} value.
  */
-public class FlashSetting extends ForwardingObservable<OneCamera.PhotoCaptureParameters.Flash>
-{
-    private static class FlashStringToEnum implements
-            Function<String, OneCamera.PhotoCaptureParameters.Flash>
-    {
-        @Override
-        public OneCamera.PhotoCaptureParameters.Flash apply(String settingString)
-        {
-            return OneCamera.PhotoCaptureParameters.Flash.decodeSettingsString(settingString);
-        }
+public class FlashSetting extends ForwardingObservable<OneCamera.PhotoCaptureParameters.Flash> {
+    public FlashSetting(Observable<String> flashSettingString) {
+        super(Observables.transform(flashSettingString, new FlashStringToEnum()));
     }
 
-    public FlashSetting(Observable<String> flashSettingString)
-    {
-        super(Observables.transform(flashSettingString, new FlashStringToEnum()));
+    private static class FlashStringToEnum implements
+            Function<String, OneCamera.PhotoCaptureParameters.Flash> {
+        @Override
+        public OneCamera.PhotoCaptureParameters.Flash apply(String settingString) {
+            return OneCamera.PhotoCaptureParameters.Flash.decodeSettingsString(settingString);
+        }
     }
 }

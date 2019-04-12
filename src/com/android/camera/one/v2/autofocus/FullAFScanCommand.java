@@ -16,8 +16,6 @@
 
 package com.android.camera.one.v2.autofocus;
 
-import static com.android.camera.one.v2.core.ResponseListeners.forPartialMetadata;
-
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
 
@@ -32,12 +30,13 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import static com.android.camera.one.v2.core.ResponseListeners.forPartialMetadata;
+
 /**
  * Performs a full auto focus scan.
  */
 @ParametersAreNonnullByDefault
-final class FullAFScanCommand implements CameraCommand
-{
+final class FullAFScanCommand implements CameraCommand {
     private final FrameServer mFrameServer;
     private final RequestBuilder.Factory mBuilderFactory;
     private final int mTemplateType;
@@ -49,8 +48,7 @@ final class FullAFScanCommand implements CameraCommand
      *                     {@link android.hardware.camera2.CameraDevice#createCaptureRequest}
      */
     public FullAFScanCommand(FrameServer frameServer, RequestBuilder.Factory builder, int
-            templateType)
-    {
+            templateType) {
         mFrameServer = frameServer;
         mBuilderFactory = builder;
         mTemplateType = templateType;
@@ -62,18 +60,15 @@ final class FullAFScanCommand implements CameraCommand
      */
     @Override
     public void run() throws InterruptedException, CameraAccessException,
-            CameraCaptureSessionClosedException, ResourceAcquisitionFailedException
-    {
+            CameraCaptureSessionClosedException, ResourceAcquisitionFailedException {
         FrameServer.Session session = mFrameServer.tryCreateExclusiveSession();
-        if (session == null)
-        {
+        if (session == null) {
             // If there are already other commands interacting with the
             // FrameServer, don't wait to run the AF command, instead just
             // abort.
             return;
         }
-        try
-        {
+        try {
             AFTriggerResult afScanResult = new AFTriggerResult();
 
             // Start a repeating sequence of idle requests
@@ -108,18 +103,15 @@ final class FullAFScanCommand implements CameraCommand
             // block forever (or until interrupted because the app is paused).
             // So, maybe use a generous timeout and log as HAL errors.
             afScanResult.get();
-        } finally
-        {
+        } finally {
             session.close();
         }
     }
 
     private RequestBuilder createAFIdleRequest(@Nullable AFTriggerResult triggerResultListener)
-            throws CameraAccessException
-    {
+            throws CameraAccessException {
         RequestBuilder idleBuilder = mBuilderFactory.create(mTemplateType);
-        if (triggerResultListener != null)
-        {
+        if (triggerResultListener != null) {
             idleBuilder.addResponseListener(forPartialMetadata(triggerResultListener));
         }
         idleBuilder.setParam(CaptureRequest.CONTROL_MODE, CaptureRequest
@@ -132,8 +124,7 @@ final class FullAFScanCommand implements CameraCommand
     }
 
     private RequestBuilder createAFTriggerRequest(AFTriggerResult afScanResult) throws
-            CameraAccessException
-    {
+            CameraAccessException {
         RequestBuilder triggerBuilder = mBuilderFactory.create(mTemplateType);
         triggerBuilder.addResponseListener(forPartialMetadata(afScanResult));
         triggerBuilder.setParam(CaptureRequest.CONTROL_MODE, CaptureRequest
@@ -146,11 +137,9 @@ final class FullAFScanCommand implements CameraCommand
     }
 
     private RequestBuilder createAFCancelRequest(@Nullable AFTriggerResult afScanResult) throws
-            CameraAccessException
-    {
+            CameraAccessException {
         RequestBuilder triggerBuilder = mBuilderFactory.create(mTemplateType);
-        if (afScanResult != null)
-        {
+        if (afScanResult != null) {
             triggerBuilder.addResponseListener(forPartialMetadata(afScanResult));
         }
         triggerBuilder.setParam(CaptureRequest.CONTROL_MODE, CaptureRequest

@@ -26,7 +26,6 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.android.camera.debug.Log;
-import com.android.camera.util.AndroidServices;
 import com.android.camera2.R;
 
 /**
@@ -41,17 +40,26 @@ import com.android.camera2.R;
  * The easiest way to use this class is to call one of the static methods that
  * constructs everything you need and returns a new {@code OnScreenHint} object.
  */
-public class OnScreenHint
-{
+public class OnScreenHint {
     static final Log.Tag TAG = new Log.Tag("OnScreenHint");
-
-    View mView;
-    View mNextView;
-
     private final WindowManager.LayoutParams mParams =
             new WindowManager.LayoutParams();
     private final WindowManager mWM;
     private final Handler mHandler = new Handler();
+    View mView;
+    private final Runnable mHide = new Runnable() {
+        @Override
+        public void run() {
+            handleHide();
+        }
+    };
+    View mNextView;
+    private final Runnable mShow = new Runnable() {
+        @Override
+        public void run() {
+            handleShow();
+        }
+    };
 
     /**
      * Construct an empty OnScreenHint object.
@@ -62,8 +70,7 @@ public class OnScreenHint
      *                 hint due to adding a view to a application {@link WindowManager}
      *                 that doesn't allow view attachment.
      */
-    private OnScreenHint(Activity activity)
-    {
+    private OnScreenHint(Activity activity) {
         mWM = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
 
         mParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -77,26 +84,6 @@ public class OnScreenHint
     }
 
     /**
-     * Show the view on the screen.
-     */
-    public void show()
-    {
-        if (mNextView == null)
-        {
-            throw new RuntimeException("View is not initialized");
-        }
-        mHandler.post(mShow);
-    }
-
-    /**
-     * Close the view if it's showing.
-     */
-    public void cancel()
-    {
-        mHandler.post(mHide);
-    }
-
-    /**
      * Make a standard hint that just contains a text view.
      *
      * @param activity An activity from which to create a {@link WindowManager}
@@ -106,8 +93,7 @@ public class OnScreenHint
      *                 that doesn't allow view attachment.
      * @param text     The text to show.  Can be formatted text.
      */
-    public static OnScreenHint makeText(Activity activity, CharSequence text)
-    {
+    public static OnScreenHint makeText(Activity activity, CharSequence text) {
         OnScreenHint result = new OnScreenHint(activity);
 
         LayoutInflater inflate = (LayoutInflater) activity.getSystemService(
@@ -122,36 +108,47 @@ public class OnScreenHint
     }
 
     /**
+     * Show the view on the screen.
+     */
+    public void show() {
+        if (mNextView == null) {
+            throw new RuntimeException("View is not initialized");
+        }
+        mHandler.post(mShow);
+    }
+
+    /**
+     * Close the view if it's showing.
+     */
+    public void cancel() {
+        mHandler.post(mHide);
+    }
+
+    /**
      * Update the text in a OnScreenHint that was previously created using one
      * of the makeText() methods.
      *
      * @param s The new text for the OnScreenHint.
      */
-    public void setText(CharSequence s)
-    {
-        if (mNextView == null)
-        {
+    public void setText(CharSequence s) {
+        if (mNextView == null) {
             throw new RuntimeException("This OnScreenHint was not "
                     + "created with OnScreenHint.makeText()");
         }
         TextView tv = (TextView) mNextView.findViewById(R.id.message);
-        if (tv == null)
-        {
+        if (tv == null) {
             throw new RuntimeException("This OnScreenHint was not "
                     + "created with OnScreenHint.makeText()");
         }
         tv.setText(s);
     }
 
-    private synchronized void handleShow()
-    {
-        if (mView != mNextView)
-        {
+    private synchronized void handleShow() {
+        if (mView != mNextView) {
             // remove the old view if necessary
             handleHide();
             mView = mNextView;
-            if (mView.getParent() != null)
-            {
+            if (mView.getParent() != null) {
                 mWM.removeView(mView);
             }
 
@@ -159,36 +156,15 @@ public class OnScreenHint
         }
     }
 
-    private synchronized void handleHide()
-    {
-        if (mView != null)
-        {
+    private synchronized void handleHide() {
+        if (mView != null) {
             // note: checking parent() just to make sure the view has
             // been added...  i have seen cases where we get here when
             // the view isn't yet added, so let's try not to crash.
-            if (mView.getParent() != null)
-            {
+            if (mView.getParent() != null) {
                 mWM.removeView(mView);
             }
             mView = null;
         }
     }
-
-    private final Runnable mShow = new Runnable()
-    {
-        @Override
-        public void run()
-        {
-            handleShow();
-        }
-    };
-
-    private final Runnable mHide = new Runnable()
-    {
-        @Override
-        public void run()
-        {
-            handleHide();
-        }
-    };
 }

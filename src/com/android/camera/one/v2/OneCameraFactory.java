@@ -27,8 +27,7 @@ import com.android.camera.one.v2.camera2proxy.CameraDeviceProxy;
 import com.android.camera.one.v2.imagesaver.ImageSaver;
 import com.android.camera.util.Size;
 
-public interface OneCameraFactory
-{
+public interface OneCameraFactory {
     OneCamera createOneCamera(CameraDeviceProxy cameraDevice,
                               OneCameraCharacteristics characteristics,
                               CaptureSupportLevel supportLevel,

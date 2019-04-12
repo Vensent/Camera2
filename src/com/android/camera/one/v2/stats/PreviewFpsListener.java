@@ -16,8 +16,8 @@
 
 package com.android.camera.one.v2.stats;
 
-import com.android.camera.async.Updatables;
 import com.android.camera.async.Updatable;
+import com.android.camera.async.Updatables;
 import com.android.camera.debug.Log;
 import com.android.camera.debug.Log.Tag;
 import com.android.camera.one.v2.core.ResponseListener;
@@ -25,8 +25,7 @@ import com.android.camera.one.v2.core.ResponseListener;
 /**
  * A {@link ResponseListener} which provides a stream of averaged fps.
  */
-public class PreviewFpsListener extends ResponseListener
-{
+public class PreviewFpsListener extends ResponseListener {
     private static final Tag TAG = new Tag("PreviewFPS");
     private static final float EXISTING_VALUE_WEIGHT = .9f;
     private static final float WARNING_THRESHOLD_SECONDS = 0.1f;
@@ -38,21 +37,17 @@ public class PreviewFpsListener extends ResponseListener
     private double mFrameDuration = 1.0 / 30.0f;
     private double mFpsValue = 30.0f;
 
-    public PreviewFpsListener()
-    {
+    public PreviewFpsListener() {
         this(Updatables.<Float>getNoOp());
     }
 
-    public PreviewFpsListener(Updatable<Float> fpsListener)
-    {
+    public PreviewFpsListener(Updatable<Float> fpsListener) {
         mFpsListener = fpsListener;
     }
 
     @Override
-    public void onStarted(long timestampNanos)
-    {
-        if (mLastFrameTimeNanos == 0)
-        {
+    public void onStarted(long timestampNanos) {
+        if (mLastFrameTimeNanos == 0) {
             mLastFrameTimeNanos = timestampNanos;
             return;
         }
@@ -62,8 +57,7 @@ public class PreviewFpsListener extends ResponseListener
 
         // TODO: Consider warning when a frame takes x percent longer than
         // the current frame rate or if the frame rate drops below some value.
-        if (elapsedSeconds > WARNING_THRESHOLD_SECONDS)
-        {
+        if (elapsedSeconds > WARNING_THRESHOLD_SECONDS) {
             Log.e(TAG, String.format(
                     "Elapsed time from previous start was over %.2f millis. "
                             + "%.2f millis total, %.4f avg fps.",

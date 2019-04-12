@@ -45,41 +45,72 @@ import com.google.common.base.Optional;
  * - OnRetakeButtonClicked
  * - OnDoneButtonClicked
  */
-public class StateReviewingPicture extends StateImpl
-{
+public class StateReviewingPicture extends StateImpl {
     private static final Log.Tag TAG = new Log.Tag("StateReviewPic");
 
     private final RefCountBase<ResourceCaptureTools> mResourceCaptureTools;
+    private final CaptureSessionManager.SessionListener mCaptureSessionListener =
+            new CaptureSessionManager.SessionListener() {
+                @Override
+                public void onSessionThumbnailUpdate(final Bitmap thumbnailBitmap) {
+                    // Not waiting for thumbnail anymore.
+                }
 
+                @Override
+                public void onSessionPictureDataUpdate(byte[] pictureData, int orientation) {
+                    getStateMachine().processEvent(
+                            new EventPictureCompressed(pictureData, orientation));
+                }
+
+                @Override
+                public void onSessionQueued(Uri sessionUri) {
+                }
+
+                @Override
+                public void onSessionUpdated(Uri sessionUri) {
+                }
+
+                @Override
+                public void onSessionCaptureIndicatorUpdate(Bitmap bitmap, int rotationDegrees) {
+                }
+
+                @Override
+                public void onSessionDone(Uri sessionUri) {
+                }
+
+                @Override
+                public void onSessionFailed(Uri sessionUri, int failureMessageId,
+                                            boolean removeFromFilmstrip) {
+                }
+
+                @Override
+                public void onSessionCanceled(Uri mediaUri) {
+                }
+
+                @Override
+                public void onSessionProgress(Uri sessionUri, int progress) {
+                }
+
+                @Override
+                public void onSessionProgressText(Uri sessionUri, int messageId) {
+                }
+            };
     /**
      * The picture bitmap to be shown.
      */
     private Bitmap mPictureBitmap;
-
     /**
      * The compressed picture byte array.
      */
     private Optional<byte[]> mPictureData;
-
     private boolean mIsReviewingThumbnail;
     private boolean mShouldFinishWhenReceivePictureData;
-
-    public static StateReviewingPicture from(
-            StateReadyForCapture readyForCapture,
-            RefCountBase<ResourceCaptureTools> resourceCaptureTools,
-            Bitmap pictureBitmap,
-            Optional<byte[]> pictureData)
-    {
-        return new StateReviewingPicture(
-                readyForCapture, resourceCaptureTools, pictureBitmap, pictureData);
-    }
 
     private StateReviewingPicture(
             State previousState,
             RefCountBase<ResourceCaptureTools> resourceCaptureTools,
             Bitmap pictureBitmap,
-            Optional<byte[]> pictureData)
-    {
+            Optional<byte[]> pictureData) {
         super(previousState);
         mResourceCaptureTools = resourceCaptureTools;
         mResourceCaptureTools.addRef();  // Will be balanced in onLeave().
@@ -90,14 +121,20 @@ public class StateReviewingPicture extends StateImpl
         registerEventHandlers();
     }
 
-    private void registerEventHandlers()
-    {
+    public static StateReviewingPicture from(
+            StateReadyForCapture readyForCapture,
+            RefCountBase<ResourceCaptureTools> resourceCaptureTools,
+            Bitmap pictureBitmap,
+            Optional<byte[]> pictureData) {
+        return new StateReviewingPicture(
+                readyForCapture, resourceCaptureTools, pictureBitmap, pictureData);
+    }
+
+    private void registerEventHandlers() {
         /** Handles EventPause. */
-        EventHandler<EventPause> pauseHandler = new EventHandler<EventPause>()
-        {
+        EventHandler<EventPause> pauseHandler = new EventHandler<EventPause>() {
             @Override
-            public Optional<State> processEvent(EventPause event)
-            {
+            public Optional<State> processEvent(EventPause event) {
                 return Optional.of((State) StateBackgroundWithSurfaceTexture.from(
                         StateReviewingPicture.this,
                         mResourceCaptureTools.get().getResourceConstructed(),
@@ -108,11 +145,9 @@ public class StateReviewingPicture extends StateImpl
 
         /** Handles EventOnTextureViewLayoutChanged. */
         EventHandler<EventOnTextureViewLayoutChanged> onTextureViewLayoutChangedHandler =
-                new EventHandler<EventOnTextureViewLayoutChanged>()
-                {
+                new EventHandler<EventOnTextureViewLayoutChanged>() {
                     @Override
-                    public Optional<State> processEvent(EventOnTextureViewLayoutChanged event)
-                    {
+                    public Optional<State> processEvent(EventOnTextureViewLayoutChanged event) {
                         mResourceCaptureTools.get().getResourceSurfaceTexture().get()
                                 .setPreviewLayoutSize(event.getLayoutSize());
                         return NO_CHANGE;
@@ -122,11 +157,9 @@ public class StateReviewingPicture extends StateImpl
 
         /** Handles EventTapOnCancelIntentButton. */
         EventHandler<EventTapOnCancelIntentButton> tapOnCancelIntentButtonHandler =
-                new EventHandler<EventTapOnCancelIntentButton>()
-                {
+                new EventHandler<EventTapOnCancelIntentButton>() {
                     @Override
-                    public Optional<State> processEvent(EventTapOnCancelIntentButton event)
-                    {
+                    public Optional<State> processEvent(EventTapOnCancelIntentButton event) {
                         return Optional.of((State) StateIntentCompleted.from(
                                 StateReviewingPicture.this,
                                 mResourceCaptureTools.get().getResourceConstructed()));
@@ -136,14 +169,11 @@ public class StateReviewingPicture extends StateImpl
 
         /** Handles EventTapOnConfirmPhotoButton. */
         EventHandler<EventTapOnConfirmPhotoButton> tapOnConfirmPhotoButtonHandler =
-                new EventHandler<EventTapOnConfirmPhotoButton>()
-                {
+                new EventHandler<EventTapOnConfirmPhotoButton>() {
                     @Override
-                    public Optional<State> processEvent(EventTapOnConfirmPhotoButton event)
-                    {
+                    public Optional<State> processEvent(EventTapOnConfirmPhotoButton event) {
                         // If the compressed data is not available, need to wait until it arrives.
-                        if (!mPictureData.isPresent())
-                        {
+                        if (!mPictureData.isPresent()) {
                             mShouldFinishWhenReceivePictureData = true;
                             return NO_CHANGE;
                         }
@@ -159,11 +189,9 @@ public class StateReviewingPicture extends StateImpl
 
         /** Handles EventTapOnRetakePhotoButton. */
         EventHandler<EventTapOnRetakePhotoButton> tapOnRetakePhotoButtonHandler =
-                new EventHandler<EventTapOnRetakePhotoButton>()
-                {
+                new EventHandler<EventTapOnRetakePhotoButton>() {
                     @Override
-                    public Optional<State> processEvent(EventTapOnRetakePhotoButton event)
-                    {
+                    public Optional<State> processEvent(EventTapOnRetakePhotoButton event) {
                         return Optional.of((State) StateReadyForCapture.from(
                                 StateReviewingPicture.this, mResourceCaptureTools));
                     }
@@ -172,32 +200,26 @@ public class StateReviewingPicture extends StateImpl
 
         /** Handles EventPictureCompressed. */
         EventHandler<EventPictureCompressed> pictureCompressedHandler =
-                new EventHandler<EventPictureCompressed>()
-                {
+                new EventHandler<EventPictureCompressed>() {
                     @Override
-                    public Optional<State> processEvent(EventPictureCompressed event)
-                    {
+                    public Optional<State> processEvent(EventPictureCompressed event) {
                         // Users have clicked the done button, save the data and finish now.
-                        if (mShouldFinishWhenReceivePictureData)
-                        {
+                        if (mShouldFinishWhenReceivePictureData) {
                             return Optional.of((State) StateSavingPicture.from(
                                     StateReviewingPicture.this,
                                     mResourceCaptureTools.get().getResourceConstructed(),
                                     event.getPictureData()));
                         }
 
-                        if (mIsReviewingThumbnail)
-                        {
+                        if (mIsReviewingThumbnail) {
                             final byte[] pictureData = event.getPictureData();
                             final int pictureOrientation = event.getOrientation();
                             ResourceConstructed resourceConstructed =
                                     mResourceCaptureTools.get().getResourceConstructed().get();
                             resourceConstructed.getCameraHandler().post(
-                                    new Runnable()
-                                    {
+                                    new Runnable() {
                                         @Override
-                                        public void run()
-                                        {
+                                        public void run() {
                                             final Bitmap pictureBitmap = PictureDecoder.decode(
                                                     pictureData,
                                                     CaptureIntentConfig.DOWN_SAMPLE_FACTOR,
@@ -216,11 +238,9 @@ public class StateReviewingPicture extends StateImpl
 
         /** Handles EventPictureDecoded. */
         EventHandler<EventPictureDecoded> pictureDecodedHandler =
-                new EventHandler<EventPictureDecoded>()
-                {
+                new EventHandler<EventPictureDecoded>() {
                     @Override
-                    public Optional<State> processEvent(EventPictureDecoded event)
-                    {
+                    public Optional<State> processEvent(EventPictureDecoded event) {
                         mPictureData = Optional.of(event.getPictureData());
                         showPicture(event.getPictureBitmap());
                         return NO_CHANGE;
@@ -230,8 +250,7 @@ public class StateReviewingPicture extends StateImpl
     }
 
     @Override
-    public Optional<State> onEnter()
-    {
+    public Optional<State> onEnter() {
         mResourceCaptureTools.get().getCaptureSessionManager()
                 .addSessionListener(mCaptureSessionListener);  // Will be balanced in onLeave().
         showPicture(mPictureBitmap);
@@ -239,81 +258,19 @@ public class StateReviewingPicture extends StateImpl
     }
 
     @Override
-    public void onLeave()
-    {
+    public void onLeave() {
         mResourceCaptureTools.close();
         mResourceCaptureTools.get().getCaptureSessionManager()
                 .removeSessionListener(mCaptureSessionListener);
     }
 
-    private void showPicture(final Bitmap bitmap)
-    {
+    private void showPicture(final Bitmap bitmap) {
         mPictureBitmap = bitmap;
-        mResourceCaptureTools.get().getMainThread().execute(new Runnable()
-        {
+        mResourceCaptureTools.get().getMainThread().execute(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 mResourceCaptureTools.get().getModuleUI().showPictureReviewUI(mPictureBitmap);
             }
         });
     }
-
-    private final CaptureSessionManager.SessionListener mCaptureSessionListener =
-            new CaptureSessionManager.SessionListener()
-            {
-                @Override
-                public void onSessionThumbnailUpdate(final Bitmap thumbnailBitmap)
-                {
-                    // Not waiting for thumbnail anymore.
-                }
-
-                @Override
-                public void onSessionPictureDataUpdate(byte[] pictureData, int orientation)
-                {
-                    getStateMachine().processEvent(
-                            new EventPictureCompressed(pictureData, orientation));
-                }
-
-                @Override
-                public void onSessionQueued(Uri sessionUri)
-                {
-                }
-
-                @Override
-                public void onSessionUpdated(Uri sessionUri)
-                {
-                }
-
-                @Override
-                public void onSessionCaptureIndicatorUpdate(Bitmap bitmap, int rotationDegrees)
-                {
-                }
-
-                @Override
-                public void onSessionDone(Uri sessionUri)
-                {
-                }
-
-                @Override
-                public void onSessionFailed(Uri sessionUri, int failureMessageId,
-                                            boolean removeFromFilmstrip)
-                {
-                }
-
-                @Override
-                public void onSessionCanceled(Uri mediaUri)
-                {
-                }
-
-                @Override
-                public void onSessionProgress(Uri sessionUri, int progress)
-                {
-                }
-
-                @Override
-                public void onSessionProgressText(Uri sessionUri, int messageId)
-                {
-                }
-            };
 }

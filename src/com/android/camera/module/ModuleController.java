@@ -26,8 +26,7 @@ import com.android.ex.camera2.portability.CameraAgent;
 /**
  * The controller at app level.
  */
-public interface ModuleController extends ShutterButton.OnShutterButtonListener
-{
+public interface ModuleController extends ShutterButton.OnShutterButtonListener {
     /**
      * Preview is fully visible.
      */

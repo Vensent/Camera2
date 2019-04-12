@@ -31,14 +31,33 @@ import javax.annotation.concurrent.ThreadSafe;
  * Provides thread-safe access to a camera.
  */
 @ThreadSafe
-public interface FrameServer
-{
+public interface FrameServer {
+    /**
+     * Creates an exclusive session. Blocks, if necessary, until any existing
+     * exclusive session is closed.
+     *
+     * @return A new session which may be used to interact with the underlying
+     * camera.
+     */
+    @Nonnull
+    public Session createExclusiveSession() throws InterruptedException;
+
+    /**
+     * Like {@link #createExclusiveSession}, but returns null instead of
+     * blocking if the session cannot be created immediately.
+     */
+    @Nullable
+    public Session tryCreateExclusiveSession();
+
+    public static enum RequestType {
+        REPEATING, NON_REPEATING
+    }
+
     /**
      * A Session enables submitting multiple Requests for frames.
      */
     @ThreadSafe
-    public interface Session extends SafeCloseable
-    {
+    public interface Session extends SafeCloseable {
         /**
          * Submits the given request, blocking until resources are allocated for
          * the request.
@@ -59,29 +78,6 @@ public interface FrameServer
      * Indicates that a session has been closed already, via
      * {@link FrameServer.Session#close} and no more requests may be submitted.
      */
-    public static class SessionClosedException extends RuntimeException
-    {
+    public static class SessionClosedException extends RuntimeException {
     }
-
-    public static enum RequestType
-    {
-        REPEATING, NON_REPEATING
-    }
-
-    /**
-     * Creates an exclusive session. Blocks, if necessary, until any existing
-     * exclusive session is closed.
-     *
-     * @return A new session which may be used to interact with the underlying
-     * camera.
-     */
-    @Nonnull
-    public Session createExclusiveSession() throws InterruptedException;
-
-    /**
-     * Like {@link #createExclusiveSession}, but returns null instead of
-     * blocking if the session cannot be created immediately.
-     */
-    @Nullable
-    public Session tryCreateExclusiveSession();
 }

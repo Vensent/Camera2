@@ -26,23 +26,10 @@ import com.android.camera2.R;
  * Abstract class that is the foundation for a tutorial overlay modules can show
  * to explain their functionality.
  */
-public abstract class AbstractTutorialOverlay
-{
-    /**
-     * Use this interface to get informed when the tutorial was closed.
-     */
-    public interface CloseListener
-    {
-        /**
-         * Called when the tutorial is being closed.
-         */
-        public void onTutorialClosed();
-    }
-
-    private final int mLayoutResId;
+public abstract class AbstractTutorialOverlay {
     protected final CloseListener mCloseListener;
+    private final int mLayoutResId;
     private ViewGroup mPlaceholderWrapper;
-
     /**
      * Create a new overlay.
      *
@@ -51,8 +38,7 @@ public abstract class AbstractTutorialOverlay
      * @param closeListener Called when the user has seen the whole tutorial and
      *                      closed it.
      */
-    public AbstractTutorialOverlay(int layoutResId, CloseListener closeListener)
-    {
+    public AbstractTutorialOverlay(int layoutResId, CloseListener closeListener) {
         mLayoutResId = layoutResId;
         mCloseListener = closeListener;
     }
@@ -63,11 +49,9 @@ public abstract class AbstractTutorialOverlay
      * @param placeHolderWrapper the view group in which the tutorial will be
      *                           embedded.
      */
-    public final void show(ViewGroup placeHolderWrapper, LayoutInflater inflater)
-    {
+    public final void show(ViewGroup placeHolderWrapper, LayoutInflater inflater) {
         mPlaceholderWrapper = placeHolderWrapper;
-        if (mPlaceholderWrapper != null)
-        {
+        if (mPlaceholderWrapper != null) {
             mPlaceholderWrapper.removeAllViews();
         }
 
@@ -89,10 +73,8 @@ public abstract class AbstractTutorialOverlay
      * holder itself) and sets the visibility of the wrapper to GONE, so that it
      * doesn't catch any touch events.
      */
-    public void removeOverlayAndHideWrapper()
-    {
-        if (mPlaceholderWrapper != null)
-        {
+    public void removeOverlayAndHideWrapper() {
+        if (mPlaceholderWrapper != null) {
             mPlaceholderWrapper.removeAllViews();
         }
         mPlaceholderWrapper.setVisibility(View.GONE);
@@ -101,12 +83,20 @@ public abstract class AbstractTutorialOverlay
     /**
      * Removes the UI and calls the close listener.
      */
-    public void close()
-    {
+    public void close() {
         removeOverlayAndHideWrapper();
-        if (mCloseListener != null)
-        {
+        if (mCloseListener != null) {
             mCloseListener.onTutorialClosed();
         }
+    }
+
+    /**
+     * Use this interface to get informed when the tutorial was closed.
+     */
+    public interface CloseListener {
+        /**
+         * Called when the tutorial is being closed.
+         */
+        public void onTutorialClosed();
     }
 }

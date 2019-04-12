@@ -26,12 +26,10 @@ import com.android.camera.unittest.CameraUnitTest;
 
 import junit.framework.TestSuite;
 
-public class CameraTestRunner extends InstrumentationTestRunner
-{
+public class CameraTestRunner extends InstrumentationTestRunner {
 
     @Override
-    public TestSuite getAllTests()
-    {
+    public TestSuite getAllTests() {
         TestSuite suite = new InstrumentationTestSuite(this);
         suite.addTestSuite(CameraTest.class);
         suite.addTestSuite(ImageCaptureIntentTest.class);
@@ -41,8 +39,7 @@ public class CameraTestRunner extends InstrumentationTestRunner
     }
 
     @Override
-    public ClassLoader getLoader()
-    {
+    public ClassLoader getLoader() {
         return CameraTestRunner.class.getClassLoader();
     }
 }

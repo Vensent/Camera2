@@ -24,13 +24,7 @@ import com.android.camera.debug.Log;
  * The SettingsUpgrader class can be used to define an upgrade flow that
  * executes upgrade logic to a target version when a version number has changed.
  */
-public abstract class SettingsUpgrader
-{
-    private static final Log.Tag TAG = new Log.Tag("SettingsUpgrader");
-
-    private final String mVersionKey;
-    private final int mTargetVersion;
-
+public abstract class SettingsUpgrader {
     // These values were in use by the original preferences management, before
     // SettingsManager, to represent string-based booleans via typed string
     // resource arrays. We no longer utilize such value arrays, and reference
@@ -39,9 +33,11 @@ public abstract class SettingsUpgrader
     protected static final String OLD_SETTINGS_VALUE_NONE = "none";
     protected static final String OLD_SETTINGS_VALUE_ON = "on";
     protected static final String OLD_SETTINGS_VALUE_OFF = "off";
+    private static final Log.Tag TAG = new Log.Tag("SettingsUpgrader");
+    private final String mVersionKey;
+    private final int mTargetVersion;
 
-    public SettingsUpgrader(String versionKey, int targetVersion)
-    {
+    public SettingsUpgrader(String versionKey, int targetVersion) {
         mVersionKey = versionKey;
         mTargetVersion = targetVersion;
     }
@@ -50,11 +46,9 @@ public abstract class SettingsUpgrader
      * Execute an upgrade callback if an upgrade version has changed. Third
      * party modules also use this to upgrade settings local to them.
      */
-    public void upgrade(SettingsManager settingsManager)
-    {
+    public void upgrade(SettingsManager settingsManager) {
         int lastVersion = getLastVersion(settingsManager);
-        if (lastVersion != mTargetVersion)
-        {
+        if (lastVersion != mTargetVersion) {
             upgrade(settingsManager, lastVersion, mTargetVersion);
         }
         settingsManager.set(SettingsManager.SCOPE_GLOBAL, mVersionKey, mTargetVersion);
@@ -79,8 +73,7 @@ public abstract class SettingsUpgrader
      * @throws a {@link ClassCastException} if the value for Version is not a
      *           String
      */
-    protected int getLastVersion(SettingsManager settingsManager)
-    {
+    protected int getLastVersion(SettingsManager settingsManager) {
         return settingsManager.getInteger(SettingsManager.SCOPE_GLOBAL, mVersionKey);
     }
 
@@ -92,14 +85,11 @@ public abstract class SettingsUpgrader
      * SharedPreferences values to Strings. It can be used by third party
      * modules to upgrade their boolean settings to Strings.
      */
-    protected boolean removeBoolean(SharedPreferences oldPreferencesLocation, String key)
-    {
+    protected boolean removeBoolean(SharedPreferences oldPreferencesLocation, String key) {
         boolean value = false;
-        try
-        {
+        try {
             value = oldPreferencesLocation.getBoolean(key, value);
-        } catch (ClassCastException e)
-        {
+        } catch (ClassCastException e) {
             Log.e(TAG, "error reading old value, removing and returning default", e);
         }
         oldPreferencesLocation.edit().remove(key).apply();
@@ -114,14 +104,11 @@ public abstract class SettingsUpgrader
      * SharedPreferences values to Strings. It can be used by third party
      * modules to upgrade their Integer settings to Strings.
      */
-    protected int removeInteger(SharedPreferences oldPreferencesLocation, String key)
-    {
+    protected int removeInteger(SharedPreferences oldPreferencesLocation, String key) {
         int value = 0;
-        try
-        {
+        try {
             value = oldPreferencesLocation.getInt(key, value);
-        } catch (ClassCastException e)
-        {
+        } catch (ClassCastException e) {
             Log.e(TAG, "error reading old value, removing and returning default", e);
         }
         oldPreferencesLocation.edit().remove(key).apply();
@@ -136,14 +123,11 @@ public abstract class SettingsUpgrader
      * SharedPreferences values to Strings. It can be used by third party
      * modules to upgrade their boolean settings to Strings.
      */
-    protected String removeString(SharedPreferences oldPreferencesLocation, String key)
-    {
+    protected String removeString(SharedPreferences oldPreferencesLocation, String key) {
         String value = null;
-        try
-        {
+        try {
             value = oldPreferencesLocation.getString(key, value);
-        } catch (ClassCastException e)
-        {
+        } catch (ClassCastException e) {
             Log.e(TAG, "error reading old value, removing and returning default", e);
         }
         oldPreferencesLocation.edit().remove(key).apply();

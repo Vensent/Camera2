@@ -16,20 +16,21 @@
 
 package com.android.camera.burst;
 
-import androidx.collection.LongSparseArray;
+import android.support.v4.util.LongSparseArray;
+
 import com.android.camera.async.SafeCloseable;
 import com.android.camera.one.v2.camera2proxy.ImageProxy;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * A RingBuffer that is used during burst capture. It takes a
  * {@link EvictionHandler} instance and uses it to evict frames when the ring
  * buffer runs out of capacity.
  */
-class RingBuffer<T extends ImageProxy> implements SafeCloseable
-{
+class RingBuffer<T extends ImageProxy> implements SafeCloseable {
     private final int mMaxCapacity;
     private final EvictionHandler mEvictionHandler;
     private final LongSparseArray<T> mImages = new LongSparseArray<>();
@@ -40,8 +41,7 @@ class RingBuffer<T extends ImageProxy> implements SafeCloseable
      * @param maxCapacity     the maximum number of images in the ring buffer.
      * @param evictionHandler
      */
-    public RingBuffer(int maxCapacity, EvictionHandler evictionHandler)
-    {
+    public RingBuffer(int maxCapacity, EvictionHandler evictionHandler) {
         mMaxCapacity = maxCapacity;
         mEvictionHandler = evictionHandler;
     }
@@ -51,11 +51,9 @@ class RingBuffer<T extends ImageProxy> implements SafeCloseable
      *
      * @param image the image to be inserted.
      */
-    public synchronized void insertImage(T image)
-    {
+    public synchronized void insertImage(T image) {
         long timestamp = image.getTimestamp();
-        if (mImages.get(timestamp) != null)
-        {
+        if (mImages.get(timestamp) != null) {
             image.close();
             return;
         }
@@ -63,8 +61,7 @@ class RingBuffer<T extends ImageProxy> implements SafeCloseable
         // handler throws.
         addImage(image);
         mEvictionHandler.onFrameInserted(timestamp);
-        if (mImages.size() > mMaxCapacity)
-        {
+        if (mImages.size() > mMaxCapacity) {
             long selectFrameToDrop = mEvictionHandler.selectFrameToDrop();
             removeAndCloseImage(selectFrameToDrop);
             mEvictionHandler.onFrameDropped(selectFrameToDrop);
@@ -74,11 +71,9 @@ class RingBuffer<T extends ImageProxy> implements SafeCloseable
     /**
      * Returns all images present in the ring buffer.
      */
-    public synchronized List<T> getAndRemoveAllImages()
-    {
+    public synchronized List<T> getAndRemoveAllImages() {
         List<T> allImages = new ArrayList<>(mImages.size());
-        for (int i = 0; i < mImages.size(); i++)
-        {
+        for (int i = 0; i < mImages.size(); i++) {
             allImages.add(mImages.valueAt(i));
         }
         mImages.clear();
@@ -89,23 +84,19 @@ class RingBuffer<T extends ImageProxy> implements SafeCloseable
      * Closes the ring buffer and any images in the ring buffer.
      */
     @Override
-    public synchronized void close()
-    {
-        for (int i = 0; i < mImages.size(); i++)
-        {
+    public synchronized void close() {
+        for (int i = 0; i < mImages.size(); i++) {
             mImages.valueAt(i).close();
         }
         mImages.clear();
     }
 
-    private synchronized void removeAndCloseImage(long timestampNs)
-    {
+    private synchronized void removeAndCloseImage(long timestampNs) {
         mImages.get(timestampNs).close();
         mImages.remove(timestampNs);
     }
 
-    private synchronized void addImage(T image)
-    {
+    private synchronized void addImage(T image) {
         mImages.put(image.getTimestamp(), image);
     }
 }

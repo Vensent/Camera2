@@ -25,41 +25,7 @@ import com.android.camera.session.CaptureSession;
 /**
  * An interface for tasks to be processed by a {@code ProcessingService}.
  */
-public interface ProcessingTask
-{
-    /**
-     * The result returned by a {@code ProcessingTask}.
-     */
-    public class ProcessingResult
-    {
-        public final boolean mSuccess;
-        public final CaptureSession mSession;
-
-        /**
-         * @param success whether the processing was successful.
-         * @param session the capture session for the processed task.
-         */
-        public ProcessingResult(boolean success, CaptureSession session)
-        {
-            mSuccess = success;
-            mSession = session;
-        }
-    }
-
-    /**
-     * Classes implementing this interface can be informed when a task is done
-     * processing.
-     */
-    public interface ProcessingTaskDoneListener
-    {
-        /**
-         * Called when a task is done processing.
-         *
-         * @param result the processing result.
-         */
-        public void onDone(ProcessingResult result);
-    }
-
+public interface ProcessingTask {
     /**
      * Processes the given task. This will be usually called by a service.
      *
@@ -103,4 +69,34 @@ public interface ProcessingTask
      * Sets a listener that is informed when this task is done processing.
      */
     public void setDoneListener(ProcessingTaskDoneListener listener);
+
+    /**
+     * Classes implementing this interface can be informed when a task is done
+     * processing.
+     */
+    public interface ProcessingTaskDoneListener {
+        /**
+         * Called when a task is done processing.
+         *
+         * @param result the processing result.
+         */
+        public void onDone(ProcessingResult result);
+    }
+
+    /**
+     * The result returned by a {@code ProcessingTask}.
+     */
+    public class ProcessingResult {
+        public final boolean mSuccess;
+        public final CaptureSession mSession;
+
+        /**
+         * @param success whether the processing was successful.
+         * @param session the capture session for the processed task.
+         */
+        public ProcessingResult(boolean success, CaptureSession session) {
+            mSuccess = success;
+            mSession = session;
+        }
+    }
 }

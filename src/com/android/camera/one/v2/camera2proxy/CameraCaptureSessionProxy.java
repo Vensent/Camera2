@@ -16,8 +16,6 @@
 
 package com.android.camera.one.v2.camera2proxy;
 
-import java.util.List;
-
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
@@ -27,6 +25,8 @@ import android.os.Handler;
 
 import com.android.camera.async.SafeCloseable;
 
+import java.util.List;
+
 /**
  * Interface for {@link android.hardware.camera2.CameraCaptureSession}.
  * <p>
@@ -35,41 +35,7 @@ import com.android.camera.async.SafeCloseable;
  * a checked exception, forcing callers to explicitly handle this edge case.
  * </p>
  */
-public interface CameraCaptureSessionProxy extends SafeCloseable
-{
-    public interface CaptureCallback
-    {
-        public void onCaptureCompleted(CameraCaptureSessionProxy session, CaptureRequest request,
-                                       TotalCaptureResult result);
-
-        public void onCaptureFailed(CameraCaptureSessionProxy session, CaptureRequest request,
-                                    CaptureFailure failure);
-
-        public void onCaptureProgressed(CameraCaptureSessionProxy session, CaptureRequest request,
-                                        CaptureResult partialResult);
-
-        public void onCaptureSequenceAborted(CameraCaptureSessionProxy session, int sequenceId);
-
-        public void onCaptureSequenceCompleted(CameraCaptureSessionProxy session, int sequenceId,
-                                               long frameNumber);
-
-        public void onCaptureStarted(CameraCaptureSessionProxy session, CaptureRequest request,
-                                     long timestamp, long frameNumber);
-    }
-
-    public interface StateCallback
-    {
-        public void onActive(CameraCaptureSessionProxy session);
-
-        public void onClosed(CameraCaptureSessionProxy session);
-
-        public void onConfigureFailed(CameraCaptureSessionProxy session);
-
-        public void onConfigured(CameraCaptureSessionProxy session);
-
-        public void onReady(CameraCaptureSessionProxy session);
-    }
-
+public interface CameraCaptureSessionProxy extends SafeCloseable {
     public void abortCaptures() throws CameraAccessException, CameraCaptureSessionClosedException;
 
     public int capture(CaptureRequest request, CaptureCallback listener, Handler handler)
@@ -90,4 +56,35 @@ public interface CameraCaptureSessionProxy extends SafeCloseable
             handler) throws CameraAccessException, CameraCaptureSessionClosedException;
 
     public void stopRepeating() throws CameraAccessException, CameraCaptureSessionClosedException;
+
+    public interface CaptureCallback {
+        public void onCaptureCompleted(CameraCaptureSessionProxy session, CaptureRequest request,
+                                       TotalCaptureResult result);
+
+        public void onCaptureFailed(CameraCaptureSessionProxy session, CaptureRequest request,
+                                    CaptureFailure failure);
+
+        public void onCaptureProgressed(CameraCaptureSessionProxy session, CaptureRequest request,
+                                        CaptureResult partialResult);
+
+        public void onCaptureSequenceAborted(CameraCaptureSessionProxy session, int sequenceId);
+
+        public void onCaptureSequenceCompleted(CameraCaptureSessionProxy session, int sequenceId,
+                                               long frameNumber);
+
+        public void onCaptureStarted(CameraCaptureSessionProxy session, CaptureRequest request,
+                                     long timestamp, long frameNumber);
+    }
+
+    public interface StateCallback {
+        public void onActive(CameraCaptureSessionProxy session);
+
+        public void onClosed(CameraCaptureSessionProxy session);
+
+        public void onConfigureFailed(CameraCaptureSessionProxy session);
+
+        public void onConfigured(CameraCaptureSessionProxy session);
+
+        public void onReady(CameraCaptureSessionProxy session);
+    }
 }

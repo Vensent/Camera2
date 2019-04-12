@@ -40,8 +40,7 @@ import com.android.camera.settings.SettingsManager;
  * resources to construct a state machine of
  * {@link com.android.camera.captureintent.CaptureIntentModule}.
  */
-public interface ResourceConstructed extends SafeCloseable
-{
+public interface ResourceConstructed extends SafeCloseable {
     /**
      * Obtains the intent that starts this activity.
      *

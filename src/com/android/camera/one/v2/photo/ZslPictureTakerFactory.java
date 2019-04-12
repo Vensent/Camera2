@@ -16,8 +16,6 @@
 
 package com.android.camera.one.v2.photo;
 
-import static com.android.camera.one.v2.core.ResponseListeners.forPartialMetadata;
-
 import android.hardware.camera2.CameraDevice;
 
 import com.android.camera.async.BufferQueue;
@@ -27,8 +25,8 @@ import com.android.camera.one.OneCamera;
 import com.android.camera.one.v2.camera2proxy.ImageProxy;
 import com.android.camera.one.v2.commands.CameraCommandExecutor;
 import com.android.camera.one.v2.core.FrameServer;
-import com.android.camera.one.v2.core.ResponseManager;
 import com.android.camera.one.v2.core.RequestBuilder;
+import com.android.camera.one.v2.core.ResponseManager;
 import com.android.camera.one.v2.imagesaver.ImageSaver;
 import com.android.camera.one.v2.photo.zsl.AcceptableZslImageFilter;
 import com.android.camera.one.v2.photo.zsl.AutoFlashZslImageFilter;
@@ -39,11 +37,12 @@ import com.google.common.base.Supplier;
 
 import java.util.Arrays;
 
+import static com.android.camera.one.v2.core.ResponseListeners.forPartialMetadata;
+
 /**
  * Wires together a PictureTaker with zero shutter lag.
  */
-public class ZslPictureTakerFactory
-{
+public class ZslPictureTakerFactory {
     /**
      * The maximum amount of time (in nanoseconds) to look-back in the zsl
      * ring-buffer for an image with AE and/or AF convergence.
@@ -51,8 +50,7 @@ public class ZslPictureTakerFactory
     private static final long MAX_LOOKBACK_NANOS = 100000000; // 100 ms
     private final PictureTakerImpl mPictureTaker;
 
-    private ZslPictureTakerFactory(PictureTakerImpl pictureTaker)
-    {
+    private ZslPictureTakerFactory(PictureTakerImpl pictureTaker) {
         mPictureTaker = pictureTaker;
     }
 
@@ -66,8 +64,7 @@ public class ZslPictureTakerFactory
                                                 BufferQueue<ImageProxy> ringBuffer,
                                                 MetadataPool metadataPool,
                                                 Supplier<OneCamera.PhotoCaptureParameters.Flash> flashMode,
-                                                ResponseManager globalResponseManager)
-    {
+                                                ResponseManager globalResponseManager) {
         // When flash is ON, always use the ConvergedImageCaptureCommand which
         // performs the AF & AE precapture sequence.
         ImageCaptureCommand flashOnCommand = new ConvergedImageCaptureCommand(
@@ -102,8 +99,7 @@ public class ZslPictureTakerFactory
         return new ZslPictureTakerFactory(pictureTaker);
     }
 
-    public PictureTaker providePictureTaker()
-    {
+    public PictureTaker providePictureTaker() {
         return mPictureTaker;
     }
 }

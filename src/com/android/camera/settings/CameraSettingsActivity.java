@@ -29,7 +29,7 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
-import androidx.fragment.app.FragmentActivity;
+import android.support.v4.app.FragmentActivity;
 import android.view.MenuItem;
 
 import com.android.camera.FatalErrorHandler;
@@ -38,7 +38,6 @@ import com.android.camera.debug.Log;
 import com.android.camera.device.CameraId;
 import com.android.camera.one.OneCamera.Facing;
 import com.android.camera.one.OneCameraAccessException;
-import com.android.camera.one.OneCameraCharacteristics;
 import com.android.camera.one.OneCameraException;
 import com.android.camera.one.OneCameraManager;
 import com.android.camera.one.OneCameraModule;
@@ -58,8 +57,7 @@ import java.util.List;
 /**
  * Provides the settings UI for the Camera app.
  */
-public class CameraSettingsActivity extends FragmentActivity
-{
+public class CameraSettingsActivity extends FragmentActivity {
 
     /**
      * Used to denote a subsection of the preference tree to display in the
@@ -73,18 +71,15 @@ public class CameraSettingsActivity extends FragmentActivity
     private OneCameraManager mOneCameraManager;
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         FatalErrorHandler fatalErrorHandler = new FatalErrorHandlerImpl(this);
         boolean hideAdvancedScreen = false;
 
-        try
-        {
+        try {
             mOneCameraManager = OneCameraModule.provideOneCameraManager();
-        } catch (OneCameraException e)
-        {
+        } catch (OneCameraException e) {
             // Log error and continue. Modules requiring OneCamera should check
             // and handle if null by showing error dialog or other treatment.
             fatalErrorHandler.onGenericCameraAccessFailure();
@@ -92,8 +87,7 @@ public class CameraSettingsActivity extends FragmentActivity
 
         // Check if manual exposure is available, so we can decide whether to
         // display Advanced screen.
-        try
-        {
+        try {
             CameraId frontCameraId = mOneCameraManager.findFirstCameraFacing(Facing.FRONT);
             CameraId backCameraId = mOneCameraManager.findFirstCameraFacing(Facing.BACK);
 
@@ -109,12 +103,10 @@ public class CameraSettingsActivity extends FragmentActivity
 
             // Hides the option if neither front and back camera support exposure compensation.
             if (!isExposureCompensationSupportedByFrontCamera &&
-                    !isExposureCompensationSupportedByBackCamera)
-            {
+                    !isExposureCompensationSupportedByBackCamera) {
                 hideAdvancedScreen = true;
             }
-        } catch (OneCameraAccessException e)
-        {
+        } catch (OneCameraAccessException e) {
             fatalErrorHandler.onGenericCameraAccessFailure();
         }
 
@@ -132,11 +124,9 @@ public class CameraSettingsActivity extends FragmentActivity
     }
 
     @Override
-    public boolean onMenuItemSelected(int featureId, MenuItem item)
-    {
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == android.R.id.home)
-        {
+        if (itemId == android.R.id.home) {
             finish();
             return true;
         }
@@ -144,8 +134,7 @@ public class CameraSettingsActivity extends FragmentActivity
     }
 
     public static class CameraSettingsFragment extends PreferenceFragment implements
-            OnSharedPreferenceChangeListener
-    {
+            OnSharedPreferenceChangeListener {
 
         public static final String PREF_CATEGORY_RESOLUTION = "pref_category_resolution";
         public static final String PREF_CATEGORY_ADVANCED = "pref_category_advanced";
@@ -162,12 +151,10 @@ public class CameraSettingsActivity extends FragmentActivity
         private PictureSizes mPictureSizes;
 
         @Override
-        public void onCreate(Bundle savedInstanceState)
-        {
+        public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             Bundle arguments = getArguments();
-            if (arguments != null)
-            {
+            if (arguments != null) {
                 mPrefKey = arguments.getString(PREF_SCREEN_EXTRA);
                 mHideAdvancedScreen = arguments.getBoolean(HIDE_ADVANCED_SCREEN);
             }
@@ -177,8 +164,7 @@ public class CameraSettingsActivity extends FragmentActivity
                     (PreferenceScreen) findPreference(PREF_CATEGORY_ADVANCED);
 
             // If manual exposure not enabled, hide the Advanced screen.
-            if (mHideAdvancedScreen)
-            {
+            if (mHideAdvancedScreen) {
                 PreferenceScreen root = (PreferenceScreen) findPreference("prefscreen_top");
                 root.removePreference(advancedScreen);
             }
@@ -197,8 +183,7 @@ public class CameraSettingsActivity extends FragmentActivity
         }
 
         @Override
-        public void onResume()
-        {
+        public void onResume() {
             super.onResume();
             final Activity activity = this.getActivity();
 
@@ -207,11 +192,9 @@ public class CameraSettingsActivity extends FragmentActivity
 
             // Send loaded sizes to additional preferences.
             CameraSettingsActivityHelper.onSizesLoaded(this, mPictureSizes.backCameraSizes,
-                    new ListPreferenceFiller()
-                    {
+                    new ListPreferenceFiller() {
                         @Override
-                        public void fill(List<Size> sizes, ListPreference preference)
-                        {
+                        public void fill(List<Size> sizes, ListPreference preference) {
                             setEntriesForSelection(sizes, preference);
                         }
                     });
@@ -229,18 +212,15 @@ public class CameraSettingsActivity extends FragmentActivity
             final PreferenceScreen advancedScreen =
                     (PreferenceScreen) findPreference(PREF_CATEGORY_ADVANCED);
 
-            if (!mHideAdvancedScreen)
-            {
+            if (!mHideAdvancedScreen) {
                 setPreferenceScreenIntent(advancedScreen);
             }
 
             Preference helpPref = findPreference(PREF_LAUNCH_HELP);
             helpPref.setOnPreferenceClickListener(
-                    new OnPreferenceClickListener()
-                    {
+                    new OnPreferenceClickListener() {
                         @Override
-                        public boolean onPreferenceClick(Preference preference)
-                        {
+                        public boolean onPreferenceClick(Preference preference) {
                             new GoogleHelpHelper(activity).launchGoogleHelp();
                             return true;
                         }
@@ -252,8 +232,7 @@ public class CameraSettingsActivity extends FragmentActivity
         /**
          * Configure home-as-up for sub-screens.
          */
-        private void setPreferenceScreenIntent(final PreferenceScreen preferenceScreen)
-        {
+        private void setPreferenceScreenIntent(final PreferenceScreen preferenceScreen) {
             Intent intent = new Intent(getActivity(), CameraSettingsActivity.class);
             intent.putExtra(PREF_SCREEN_EXTRA, preferenceScreen.getKey());
             preferenceScreen.setIntent(intent);
@@ -268,40 +247,29 @@ public class CameraSettingsActivity extends FragmentActivity
          * returned here.
          */
         @Override
-        public PreferenceScreen getPreferenceScreen()
-        {
+        public PreferenceScreen getPreferenceScreen() {
             PreferenceScreen root = super.getPreferenceScreen();
-            if (!mGetSubPrefAsRoot || mPrefKey == null || root == null)
-            {
+            if (!mGetSubPrefAsRoot || mPrefKey == null || root == null) {
                 return root;
-            } else
-            {
+            } else {
                 PreferenceScreen match = findByKey(root, mPrefKey);
-                if (match != null)
-                {
+                if (match != null) {
                     return match;
-                } else
-                {
+                } else {
                     throw new RuntimeException("key " + mPrefKey + " not found");
                 }
             }
         }
 
-        private PreferenceScreen findByKey(PreferenceScreen parent, String key)
-        {
-            if (key.equals(parent.getKey()))
-            {
+        private PreferenceScreen findByKey(PreferenceScreen parent, String key) {
+            if (key.equals(parent.getKey())) {
                 return parent;
-            } else
-            {
-                for (int i = 0; i < parent.getPreferenceCount(); i++)
-                {
+            } else {
+                for (int i = 0; i < parent.getPreferenceCount(); i++) {
                     Preference child = parent.getPreference(i);
-                    if (child instanceof PreferenceScreen)
-                    {
+                    if (child instanceof PreferenceScreen) {
                         PreferenceScreen match = findByKey((PreferenceScreen) child, key);
-                        if (match != null)
-                        {
+                        if (match != null) {
                             return match;
                         }
                     }
@@ -314,19 +282,16 @@ public class CameraSettingsActivity extends FragmentActivity
          * Depending on camera availability on the device, this removes settings
          * for cameras the device doesn't have.
          */
-        private void setVisibilities()
-        {
+        private void setVisibilities() {
             PreferenceGroup resolutions =
                     (PreferenceGroup) findPreference(PREF_CATEGORY_RESOLUTION);
-            if (mPictureSizes.backCameraSizes.isEmpty())
-            {
+            if (mPictureSizes.backCameraSizes.isEmpty()) {
                 recursiveDelete(resolutions,
                         findPreference(Keys.KEY_PICTURE_SIZE_BACK));
                 recursiveDelete(resolutions,
                         findPreference(Keys.KEY_VIDEO_QUALITY_BACK));
             }
-            if (mPictureSizes.frontCameraSizes.isEmpty())
-            {
+            if (mPictureSizes.frontCameraSizes.isEmpty()) {
                 recursiveDelete(resolutions,
                         findPreference(Keys.KEY_PICTURE_SIZE_FRONT));
                 recursiveDelete(resolutions,
@@ -338,13 +303,10 @@ public class CameraSettingsActivity extends FragmentActivity
          * Recursively go through settings and fill entries and summaries of our
          * preferences.
          */
-        private void fillEntriesAndSummaries(PreferenceGroup group)
-        {
-            for (int i = 0; i < group.getPreferenceCount(); ++i)
-            {
+        private void fillEntriesAndSummaries(PreferenceGroup group) {
+            for (int i = 0; i < group.getPreferenceCount(); ++i) {
                 Preference pref = group.getPreference(i);
-                if (pref instanceof PreferenceGroup)
-                {
+                if (pref instanceof PreferenceGroup) {
                     fillEntriesAndSummaries((PreferenceGroup) pref);
                 }
                 setSummary(pref);
@@ -357,31 +319,24 @@ public class CameraSettingsActivity extends FragmentActivity
          * tries to delete the preference. Traversal stops once the preference
          * was found and removed.
          */
-        private boolean recursiveDelete(PreferenceGroup group, Preference preference)
-        {
-            if (group == null)
-            {
+        private boolean recursiveDelete(PreferenceGroup group, Preference preference) {
+            if (group == null) {
                 Log.d(TAG, "attempting to delete from null preference group");
                 return false;
             }
-            if (preference == null)
-            {
+            if (preference == null) {
                 Log.d(TAG, "attempting to delete null preference");
                 return false;
             }
-            if (group.removePreference(preference))
-            {
+            if (group.removePreference(preference)) {
                 // Removal was successful.
                 return true;
             }
 
-            for (int i = 0; i < group.getPreferenceCount(); ++i)
-            {
+            for (int i = 0; i < group.getPreferenceCount(); ++i) {
                 Preference pref = group.getPreference(i);
-                if (pref instanceof PreferenceGroup)
-                {
-                    if (recursiveDelete((PreferenceGroup) pref, preference))
-                    {
+                if (pref instanceof PreferenceGroup) {
+                    if (recursiveDelete((PreferenceGroup) pref, preference)) {
                         return true;
                     }
                 }
@@ -390,16 +345,14 @@ public class CameraSettingsActivity extends FragmentActivity
         }
 
         @Override
-        public void onPause()
-        {
+        public void onPause() {
             super.onPause();
             getPreferenceScreen().getSharedPreferences()
                     .unregisterOnSharedPreferenceChangeListener(this);
         }
 
         @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
-        {
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             setSummary(findPreference(key));
         }
 
@@ -407,25 +360,19 @@ public class CameraSettingsActivity extends FragmentActivity
          * Set the entries for the given preference. The given preference needs
          * to be a {@link ListPreference}
          */
-        private void setEntries(Preference preference)
-        {
-            if (!(preference instanceof ListPreference))
-            {
+        private void setEntries(Preference preference) {
+            if (!(preference instanceof ListPreference)) {
                 return;
             }
 
             ListPreference listPreference = (ListPreference) preference;
-            if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_BACK))
-            {
+            if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_BACK)) {
                 setEntriesForSelection(mPictureSizes.backCameraSizes, listPreference);
-            } else if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_FRONT))
-            {
+            } else if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_FRONT)) {
                 setEntriesForSelection(mPictureSizes.frontCameraSizes, listPreference);
-            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_BACK))
-            {
+            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_BACK)) {
                 setEntriesForSelection(mPictureSizes.videoQualitiesBack.orNull(), listPreference);
-            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_FRONT))
-            {
+            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_FRONT)) {
                 setEntriesForSelection(mPictureSizes.videoQualitiesFront.orNull(), listPreference);
             }
         }
@@ -434,30 +381,23 @@ public class CameraSettingsActivity extends FragmentActivity
          * Set the summary for the given preference. The given preference needs
          * to be a {@link ListPreference}.
          */
-        private void setSummary(Preference preference)
-        {
-            if (!(preference instanceof ListPreference))
-            {
+        private void setSummary(Preference preference) {
+            if (!(preference instanceof ListPreference)) {
                 return;
             }
 
             ListPreference listPreference = (ListPreference) preference;
-            if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_BACK))
-            {
+            if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_BACK)) {
                 setSummaryForSelection(mPictureSizes.backCameraSizes,
                         listPreference);
-            } else if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_FRONT))
-            {
+            } else if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_FRONT)) {
                 setSummaryForSelection(mPictureSizes.frontCameraSizes,
                         listPreference);
-            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_BACK))
-            {
+            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_BACK)) {
                 setSummaryForSelection(mPictureSizes.videoQualitiesBack.orNull(), listPreference);
-            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_FRONT))
-            {
+            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_FRONT)) {
                 setSummaryForSelection(mPictureSizes.videoQualitiesFront.orNull(), listPreference);
-            } else
-            {
+            } else {
                 listPreference.setSummary(listPreference.getEntry());
             }
         }
@@ -470,17 +410,14 @@ public class CameraSettingsActivity extends FragmentActivity
          * @param preference    The preference to set the entries for.
          */
         private void setEntriesForSelection(List<Size> selectedSizes,
-                                            ListPreference preference)
-        {
-            if (selectedSizes == null)
-            {
+                                            ListPreference preference) {
+            if (selectedSizes == null) {
                 return;
             }
 
             String[] entries = new String[selectedSizes.size()];
             String[] entryValues = new String[selectedSizes.size()];
-            for (int i = 0; i < selectedSizes.size(); i++)
-            {
+            for (int i = 0; i < selectedSizes.size(); i++) {
                 Size size = selectedSizes.get(i);
                 entries[i] = getSizeSummaryString(size);
                 entryValues[i] = SettingsUtil.sizeToSettingString(size);
@@ -497,10 +434,8 @@ public class CameraSettingsActivity extends FragmentActivity
          * @param preference        The preference to set the entries for.
          */
         private void setEntriesForSelection(SelectedVideoQualities selectedQualities,
-                                            ListPreference preference)
-        {
-            if (selectedQualities == null)
-            {
+                                            ListPreference preference) {
+            if (selectedQualities == null) {
                 return;
             }
 
@@ -508,12 +443,10 @@ public class CameraSettingsActivity extends FragmentActivity
             // indicates that not at least 3 qualities are supported.
             ArrayList<String> entries = new ArrayList<String>();
             entries.add(mCamcorderProfileNames[selectedQualities.large]);
-            if (selectedQualities.medium != selectedQualities.large)
-            {
+            if (selectedQualities.medium != selectedQualities.large) {
                 entries.add(mCamcorderProfileNames[selectedQualities.medium]);
             }
-            if (selectedQualities.small != selectedQualities.medium)
-            {
+            if (selectedQualities.small != selectedQualities.medium) {
                 entries.add(mCamcorderProfileNames[selectedQualities.small]);
             }
             preference.setEntries(entries.toArray(new String[0]));
@@ -526,16 +459,13 @@ public class CameraSettingsActivity extends FragmentActivity
          * @param preference       The preference for which to set the summary.
          */
         private void setSummaryForSelection(List<Size> displayableSizes,
-                                            ListPreference preference)
-        {
+                                            ListPreference preference) {
             String setting = preference.getValue();
-            if (setting == null || !setting.contains("x"))
-            {
+            if (setting == null || !setting.contains("x")) {
                 return;
             }
             Size settingSize = SettingsUtil.sizeFromSettingString(setting);
-            if (settingSize == null || settingSize.area() == 0)
-            {
+            if (settingSize == null || settingSize.area() == 0) {
                 return;
             }
             preference.setSummary(getSizeSummaryString(settingSize));
@@ -548,10 +478,8 @@ public class CameraSettingsActivity extends FragmentActivity
          * @param preference        The preference for which to set the summary.
          */
         private void setSummaryForSelection(SelectedVideoQualities selectedQualities,
-                                            ListPreference preference)
-        {
-            if (selectedQualities == null)
-            {
+                                            ListPreference preference) {
+            if (selectedQualities == null) {
                 return;
             }
 
@@ -563,10 +491,8 @@ public class CameraSettingsActivity extends FragmentActivity
          * This method gets the selected picture sizes for S,M,L and populates
          * {@link #mPictureSizes} accordingly.
          */
-        private void loadSizes()
-        {
-            if (mInfos == null)
-            {
+        private void loadSizes() {
+            if (mInfos == null) {
                 Log.w(TAG, "null deviceInfo, cannot display resolution sizes");
                 return;
             }
@@ -580,8 +506,7 @@ public class CameraSettingsActivity extends FragmentActivity
          * @return A human readable and translated string for labeling the
          * picture size in megapixels.
          */
-        private String getSizeSummaryString(Size size)
-        {
+        private String getSizeSummaryString(Size size) {
             Size approximateSize = ResolutionUtil.getApproximateSize(size);
             String megaPixels = sMegaPixelFormat.format((size.width() * size.height()) / 1e6);
             int numerator = ResolutionUtil.aspectRatioNumerator(approximateSize);

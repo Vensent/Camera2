@@ -41,28 +41,17 @@ import com.android.camera2.R;
  * and <code>FLY_OUT</code>. They define how we draw the view when
  * we display the view partially.
  */
-class ModeSelectorItem extends FrameLayout
-{
+class ModeSelectorItem extends FrameLayout {
+    private final int mMinVisibleWidth;
     private TextView mText;
     private ModeIconView mIcon;
     private int mVisibleWidth = 0;
-    private final int mMinVisibleWidth;
     private VisibleWidthChangedListener mListener = null;
 
     private int mWidth;
     private int mModeId;
 
-    /**
-     * A listener that gets notified when the visible width of the current item
-     * is changed.
-     */
-    public interface VisibleWidthChangedListener
-    {
-        public void onVisibleWidthChanged(int width);
-    }
-
-    public ModeSelectorItem(Context context, AttributeSet attrs)
-    {
+    public ModeSelectorItem(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWillNotDraw(false);
         setClickable(true);
@@ -71,16 +60,13 @@ class ModeSelectorItem extends FrameLayout
     }
 
     @Override
-    public void onFinishInflate()
-    {
+    public void onFinishInflate() {
         mIcon = (ModeIconView) findViewById(R.id.selector_icon);
         mText = (TextView) findViewById(R.id.selector_text);
         Typeface typeface;
-        if (ApiHelper.HAS_ROBOTO_MEDIUM_FONT)
-        {
+        if (ApiHelper.HAS_ROBOTO_MEDIUM_FONT) {
             typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL);
-        } else
-        {
+        } else {
             // Load roboto_light typeface from assets.
             typeface = Typeface.createFromAsset(getResources().getAssets(),
                     "Roboto-Medium.ttf");
@@ -88,8 +74,7 @@ class ModeSelectorItem extends FrameLayout
         mText.setTypeface(typeface);
     }
 
-    public void setDefaultBackgroundColor(int color)
-    {
+    public void setDefaultBackgroundColor(int color) {
         setBackgroundColor(color);
     }
 
@@ -97,28 +82,24 @@ class ModeSelectorItem extends FrameLayout
      * Sets a listener that receives a callback when the visible width of this
      * selector item changes.
      */
-    public void setVisibleWidthChangedListener(VisibleWidthChangedListener listener)
-    {
+    public void setVisibleWidthChangedListener(VisibleWidthChangedListener listener) {
         mListener = listener;
     }
 
     @Override
-    public void setSelected(boolean selected)
-    {
+    public void setSelected(boolean selected) {
         mIcon.setSelected(selected);
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev)
-    {
+    public boolean dispatchTouchEvent(MotionEvent ev) {
         // Do not dispatch any touch event, so that all the events that are received
         // in onTouchEvent() are only through forwarding.
         return false;
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent ev)
-    {
+    public boolean onTouchEvent(MotionEvent ev) {
         super.onTouchEvent(ev);
         return false;
     }
@@ -131,23 +112,19 @@ class ModeSelectorItem extends FrameLayout
      * @param swipeIn whether swiping direction is swiping in (i.e. from left
      *                to right)
      */
-    public void onSwipeModeChanged(boolean swipeIn)
-    {
+    public void onSwipeModeChanged(boolean swipeIn) {
         mText.setTranslationX(0);
     }
 
-    public void setText(CharSequence text)
-    {
+    public void setText(CharSequence text) {
         mText.setText(text);
     }
 
     @Override
-    public void onLayout(boolean changed, int left, int top, int right, int bottom)
-    {
+    public void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         mWidth = right - left;
-        if (changed && mVisibleWidth > 0)
-        {
+        if (changed && mVisibleWidth > 0) {
             // Reset mode list to full screen
             setVisibleWidth(mWidth);
         }
@@ -163,14 +140,22 @@ class ModeSelectorItem extends FrameLayout
      *
      * @param resource resource id of the asset to be used as icon
      */
-    public void setImageResource(int resource)
-    {
+    public void setImageResource(int resource) {
         Drawable drawableIcon = getResources().getDrawable(resource);
-        if (drawableIcon != null)
-        {
+        if (drawableIcon != null) {
             drawableIcon = drawableIcon.mutate();
         }
         mIcon.setIconDrawable(drawableIcon);
+    }
+
+    /**
+     * Getter for visible width. This function will get called during animation as
+     * well.
+     *
+     * @return The visible width of this item
+     */
+    public int getVisibleWidth() {
+        return mVisibleWidth;
     }
 
     /**
@@ -181,33 +166,19 @@ class ModeSelectorItem extends FrameLayout
      *
      * @param newWidth new visible width
      */
-    public void setVisibleWidth(int newWidth)
-    {
+    public void setVisibleWidth(int newWidth) {
         int fullyShownIconWidth = getMaxVisibleWidth();
         newWidth = Math.max(newWidth, 0);
         // Visible width should not be greater than view width
         newWidth = Math.min(newWidth, fullyShownIconWidth);
 
-        if (mVisibleWidth != newWidth)
-        {
+        if (mVisibleWidth != newWidth) {
             mVisibleWidth = newWidth;
-            if (mListener != null)
-            {
+            if (mListener != null) {
                 mListener.onVisibleWidthChanged(newWidth);
             }
         }
         invalidate();
-    }
-
-    /**
-     * Getter for visible width. This function will get called during animation as
-     * well.
-     *
-     * @return The visible width of this item
-     */
-    public int getVisibleWidth()
-    {
-        return mVisibleWidth;
     }
 
     /**
@@ -216,12 +187,10 @@ class ModeSelectorItem extends FrameLayout
      * @param canvas The Canvas to which the View is rendered.
      */
     @Override
-    public void draw(Canvas canvas)
-    {
+    public void draw(Canvas canvas) {
         float transX = 0f;
         // If the given width is less than the icon width, we need to translate icon
-        if (mVisibleWidth < mMinVisibleWidth + mIcon.getLeft())
-        {
+        if (mVisibleWidth < mMinVisibleWidth + mIcon.getLeft()) {
             transX = mMinVisibleWidth + mIcon.getLeft() - mVisibleWidth;
         }
         canvas.save();
@@ -231,29 +200,26 @@ class ModeSelectorItem extends FrameLayout
     }
 
     /**
+     * @return highlightColor color for the highlight state
+     */
+    public int getHighlightColor() {
+        return mIcon.getHighlightColor();
+    }
+
+    /**
      * Sets the color that will be used in the drawable for highlight state.
      *
      * @param highlightColor color for the highlight state
      */
-    public void setHighlightColor(int highlightColor)
-    {
+    public void setHighlightColor(int highlightColor) {
         mIcon.setHighlightColor(highlightColor);
-    }
-
-    /**
-     * @return highlightColor color for the highlight state
-     */
-    public int getHighlightColor()
-    {
-        return mIcon.getHighlightColor();
     }
 
     /**
      * Gets the maximum visible width of the mode icon. The mode item will be
      * full shown when the mode icon has max visible width.
      */
-    public int getMaxVisibleWidth()
-    {
+    public int getMaxVisibleWidth() {
         return mIcon.getLeft() + mMinVisibleWidth;
     }
 
@@ -262,11 +228,17 @@ class ModeSelectorItem extends FrameLayout
      *
      * @param loc integer array of size 2, to hold the position x and y
      */
-    public void getIconCenterLocationInWindow(int[] loc)
-    {
+    public void getIconCenterLocationInWindow(int[] loc) {
         mIcon.getLocationInWindow(loc);
         loc[0] += mMinVisibleWidth / 2;
         loc[1] += mMinVisibleWidth / 2;
+    }
+
+    /**
+     * Gets the mode id of the current item.
+     */
+    public int getModeId() {
+        return mModeId;
     }
 
     /**
@@ -274,32 +246,29 @@ class ModeSelectorItem extends FrameLayout
      *
      * @param modeId id of the mode represented by current item.
      */
-    public void setModeId(int modeId)
-    {
+    public void setModeId(int modeId) {
         mModeId = modeId;
-    }
-
-    /**
-     * Gets the mode id of the current item.
-     */
-    public int getModeId()
-    {
-        return mModeId;
     }
 
     /**
      * @return The {@link ModeIconView} attached to this item.
      */
-    public ModeIconView getIcon()
-    {
+    public ModeIconView getIcon() {
         return mIcon;
     }
 
     /**
      * Sets the alpha on the mode text.
      */
-    public void setTextAlpha(float alpha)
-    {
+    public void setTextAlpha(float alpha) {
         mText.setAlpha(alpha);
+    }
+
+    /**
+     * A listener that gets notified when the visible width of the current item
+     * is changed.
+     */
+    public interface VisibleWidthChangedListener {
+        public void onVisibleWidthChanged(int width);
     }
 }

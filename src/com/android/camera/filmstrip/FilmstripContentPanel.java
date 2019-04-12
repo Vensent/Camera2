@@ -21,37 +21,7 @@ import com.android.camera.widget.FilmstripLayout;
 /**
  * The filmstrip panel holding the filmstrip and other controls/widgets.
  */
-public interface FilmstripContentPanel
-{
-    /**
-     * An listener interface extending {@link
-     * com.android.camera.filmstrip.FilmstripController.FilmstripListener} defining extra callbacks
-     * for filmstrip being shown and hidden.
-     */
-    interface Listener extends FilmstripController.FilmstripListener
-    {
-
-        /**
-         * Callback on a swipe out of filmstrip.
-         */
-        public void onSwipeOut();
-
-        /**
-         * Callback on a swiping out begins.
-         */
-        public void onSwipeOutBegin();
-
-        /**
-         * Callback when the filmstrip becomes invisible or gone.
-         */
-        public void onFilmstripHidden();
-
-        /**
-         * Callback when the filmstrip is shown in full-screen.
-         */
-        public void onFilmstripShown();
-    }
-
+public interface FilmstripContentPanel {
     /**
      * Sets the listener.
      */
@@ -80,4 +50,32 @@ public interface FilmstripContentPanel
      * @return Whether the UI responded to the key event.
      */
     boolean onBackPressed();
+
+    /**
+     * An listener interface extending {@link
+     * com.android.camera.filmstrip.FilmstripController.FilmstripListener} defining extra callbacks
+     * for filmstrip being shown and hidden.
+     */
+    interface Listener extends FilmstripController.FilmstripListener {
+
+        /**
+         * Callback on a swipe out of filmstrip.
+         */
+        public void onSwipeOut();
+
+        /**
+         * Callback on a swiping out begins.
+         */
+        public void onSwipeOutBegin();
+
+        /**
+         * Callback when the filmstrip becomes invisible or gone.
+         */
+        public void onFilmstripHidden();
+
+        /**
+         * Callback when the filmstrip is shown in full-screen.
+         */
+        public void onFilmstripShown();
+    }
 }

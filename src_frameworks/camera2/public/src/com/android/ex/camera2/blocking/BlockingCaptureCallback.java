@@ -101,7 +101,6 @@ public class BlockingCaptureCallback extends CameraCaptureSession.CaptureCallbac
      * into {@code listener}.
      *
      * @param listener a non-{@code null} listener to forward invocations into
-     *
      * @throws NullPointerException if {@code listener} was {@code null}
      */
     public BlockingCaptureCallback(CameraCaptureSession.CaptureCallback listener) {
@@ -124,41 +123,53 @@ public class BlockingCaptureCallback extends CameraCaptureSession.CaptureCallbac
     @Override
     public void onCaptureStarted(CameraCaptureSession session, CaptureRequest request,
                                  long timestamp, long frameNumber) {
-        if (mProxy != null) mProxy.onCaptureStarted(session, request, timestamp, frameNumber);
+        if (mProxy != null) {
+            mProxy.onCaptureStarted(session, request, timestamp, frameNumber);
+        }
         mStateChangeListener.onStateChanged(CAPTURE_STARTED);
     }
 
     @Override
     public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request,
                                     CaptureResult partialResult) {
-        if (mProxy != null) mProxy.onCaptureProgressed(session, request, partialResult);
+        if (mProxy != null) {
+            mProxy.onCaptureProgressed(session, request, partialResult);
+        }
         mStateChangeListener.onStateChanged(CAPTURE_PROGRESSED);
     }
 
     @Override
     public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request,
                                    TotalCaptureResult result) {
-        if (mProxy != null) mProxy.onCaptureCompleted(session, request, result);
+        if (mProxy != null) {
+            mProxy.onCaptureCompleted(session, request, result);
+        }
         mStateChangeListener.onStateChanged(CAPTURE_COMPLETED);
     }
 
     @Override
     public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request,
                                 CaptureFailure failure) {
-        if (mProxy != null) mProxy.onCaptureFailed(session, request, failure);
+        if (mProxy != null) {
+            mProxy.onCaptureFailed(session, request, failure);
+        }
         mStateChangeListener.onStateChanged(CAPTURE_FAILED);
     }
 
     @Override
     public void onCaptureSequenceCompleted(CameraCaptureSession session, int sequenceId,
                                            long frameNumber) {
-        if (mProxy != null) mProxy.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
+        if (mProxy != null) {
+            mProxy.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
+        }
         mStateChangeListener.onStateChanged(CAPTURE_SEQUENCE_COMPLETED);
     }
 
     @Override
     public void onCaptureSequenceAborted(CameraCaptureSession session, int sequenceId) {
-        if (mProxy != null) mProxy.onCaptureSequenceAborted(session, sequenceId);
+        if (mProxy != null) {
+            mProxy.onCaptureSequenceAborted(session, sequenceId);
+        }
         mStateChangeListener.onStateChanged(CAPTURE_SEQUENCE_ABORTED);
     }
 }

@@ -21,8 +21,7 @@ import android.graphics.Canvas;
 /**
  * Rendering object that can be driven by an animator instance.
  */
-public interface DynamicAnimation
-{
+public interface DynamicAnimation {
 
     /**
      * Check to determine if this animation is currently in a stable state.

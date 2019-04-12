@@ -38,22 +38,8 @@ import javax.annotation.Nonnull;
 /**
  * Backing data for a single video displayed in the filmstrip.
  */
-public class VideoItem extends FilmstripItemBase<VideoItemData>
-{
-    private static class VideoViewHolder
-    {
-        private final ImageView mVideoView;
-        private final ImageView mPlayButton;
-
-        public VideoViewHolder(ImageView videoView, ImageView playButton)
-        {
-            mVideoView = videoView;
-            mPlayButton = playButton;
-        }
-    }
-
+public class VideoItem extends FilmstripItemBase<VideoItemData> {
     private static final Log.Tag TAG = new Log.Tag("VideoItem");
-
     private static final FilmstripItemAttributes VIDEO_ITEM_ATTRIBUTES =
             new FilmstripItemAttributes.Builder()
                     .with(Attributes.CAN_SHARE)
@@ -63,14 +49,11 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
                     .with(Attributes.HAS_DETAILED_CAPTURE_INFO)
                     .with(Attributes.IS_VIDEO)
                     .build();
-
     private final VideoItemFactory mVideoItemFactory;
-
     private Size mCachedSize;
 
     public VideoItem(Context context, GlideFilmstripManager manager, VideoItemData data,
-                     VideoItemFactory videoItemFactory)
-    {
+                     VideoItemFactory videoItemFactory) {
         super(context, manager, data, VIDEO_ITEM_ATTRIBUTES);
         mVideoItemFactory = videoItemFactory;
     }
@@ -81,26 +64,20 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
      * from the media store, so we instead run the metadata loader in the background
      * to decode the video header for each item and prefer whatever values it obtains.
      */
-    private int getBestWidth()
-    {
+    private int getBestWidth() {
         int metadataWidth = mMetaData.getVideoWidth();
-        if (metadataWidth > 0)
-        {
+        if (metadataWidth > 0) {
             return metadataWidth;
-        } else
-        {
+        } else {
             return mData.getDimensions().getWidth();
         }
     }
 
-    private int getBestHeight()
-    {
+    private int getBestHeight() {
         int metadataHeight = mMetaData.getVideoHeight();
-        if (metadataHeight > 0)
-        {
+        if (metadataHeight > 0) {
             return metadataHeight;
-        } else
-        {
+        } else {
             return mData.getDimensions().getHeight();
         }
     }
@@ -109,32 +86,27 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
      * If the metadata loader has determined from the video header that we need to rotate the video
      * 90 or 270 degrees, then we swap the width and height.
      */
-    public int getWidth()
-    {
+    public int getWidth() {
         return mMetaData.isVideoRotated() ? getBestHeight() : getBestWidth();
     }
 
-    public int getHeight()
-    {
+    public int getHeight() {
         return mMetaData.isVideoRotated() ? getBestWidth() : getBestHeight();
     }
 
     @Override
-    public Size getDimensions()
-    {
+    public Size getDimensions() {
         int width = getWidth();
         int height = getHeight();
         if (mCachedSize == null ||
-                width != mCachedSize.getWidth() || height != mCachedSize.getHeight())
-        {
+                width != mCachedSize.getWidth() || height != mCachedSize.getHeight()) {
             mCachedSize = new Size(width, height);
         }
         return mCachedSize;
     }
 
     @Override
-    public boolean delete()
-    {
+    public boolean delete() {
         ContentResolver cr = mContext.getContentResolver();
         cr.delete(VideoDataQuery.CONTENT_URI,
                 MediaStore.Video.VideoColumns._ID + "=" + mData.getContentId(), null);
@@ -142,11 +114,9 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
     }
 
     @Override
-    public Optional<MediaDetails> getMediaDetails()
-    {
+    public Optional<MediaDetails> getMediaDetails() {
         Optional<MediaDetails> optionalDetails = super.getMediaDetails();
-        if (optionalDetails.isPresent())
-        {
+        if (optionalDetails.isPresent()) {
             MediaDetails mediaDetails = optionalDetails.get();
             String duration = MediaDetails.formatDuration(mContext,
                     TimeUnit.MILLISECONDS.toSeconds(mData.getVideoDurationMillis()));
@@ -156,26 +126,22 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
     }
 
     @Override
-    public FilmstripItem refresh()
-    {
+    public FilmstripItem refresh() {
         return mVideoItemFactory.get(mData.getUri());
     }
 
     @Override
     public View getView(Optional<View> optionalView,
                         LocalFilmstripDataAdapter adapter, boolean isInProgress,
-                        final VideoClickedCallback videoClickedCallback)
-    {
+                        final VideoClickedCallback videoClickedCallback) {
 
         View view;
         VideoViewHolder viewHolder;
 
-        if (optionalView.isPresent())
-        {
+        if (optionalView.isPresent()) {
             view = optionalView.get();
             viewHolder = getViewHolder(view);
-        } else
-        {
+        } else {
             view = LayoutInflater.from(mContext).inflate(R.layout.filmstrip_video, null);
             view.setTag(R.id.mediadata_tag_viewtype, getItemViewType().ordinal());
             ImageView videoView = (ImageView) view.findViewById(R.id.video_view);
@@ -185,14 +151,11 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
             view.setTag(R.id.mediadata_tag_target, viewHolder);
         }
 
-        if (viewHolder != null)
-        {
+        if (viewHolder != null) {
             // ImageView for the play icon.
-            viewHolder.mPlayButton.setOnClickListener(new View.OnClickListener()
-            {
+            viewHolder.mPlayButton.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v)
-                {
+                public void onClick(View v) {
                     videoClickedCallback.playVideo(mData.getUri(), mData.getTitle());
                 }
             });
@@ -202,8 +165,7 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
                     mDateFormatter.format(mData.getLastModifiedDate())));
 
             renderTiny(viewHolder);
-        } else
-        {
+        } else {
             Log.w(TAG, "getView called with a view that is not compatible with VideoItem.");
         }
 
@@ -211,14 +173,12 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
     }
 
     @Override
-    public void renderTiny(@Nonnull View view)
-    {
+    public void renderTiny(@Nonnull View view) {
         renderTiny(getViewHolder(view));
     }
 
     @Override
-    public void renderThumbnail(@Nonnull View view)
-    {
+    public void renderThumbnail(@Nonnull View view) {
         mGlideManager.loadScreen(mData.getUri(), generateSignature(mData), mSuggestedSize)
                 .thumbnail(mGlideManager.loadMediaStoreThumb(mData.getUri(),
                         generateSignature(mData)))
@@ -226,53 +186,54 @@ public class VideoItem extends FilmstripItemBase<VideoItemData>
     }
 
     @Override
-    public void renderFullRes(@Nonnull View view)
-    {
+    public void renderFullRes(@Nonnull View view) {
     }
 
     @Override
-    public void recycle(@Nonnull View view)
-    {
+    public void recycle(@Nonnull View view) {
         VideoViewHolder holder = getViewHolder(view);
-        if (holder != null)
-        {
+        if (holder != null) {
             Glide.clear(getViewHolder(view).mVideoView);
         }
     }
 
     @Override
-    public FilmstripItemType getItemViewType()
-    {
+    public FilmstripItemType getItemViewType() {
         return FilmstripItemType.VIDEO;
     }
 
     @Override
-    public Optional<Bitmap> generateThumbnail(int boundingWidthPx, int boundingHeightPx)
-    {
+    public Optional<Bitmap> generateThumbnail(int boundingWidthPx, int boundingHeightPx) {
         return Optional.fromNullable(FilmstripItemUtils.loadVideoThumbnail(
                 getData().getFilePath()));
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "VideoItem: " + mData.toString();
     }
 
-    private void renderTiny(@Nonnull VideoViewHolder viewHolder)
-    {
+    private void renderTiny(@Nonnull VideoViewHolder viewHolder) {
         mGlideManager.loadMediaStoreThumb(mData.getUri(), generateSignature(mData))
                 .into(viewHolder.mVideoView);
     }
 
-    private VideoViewHolder getViewHolder(@Nonnull View view)
-    {
+    private VideoViewHolder getViewHolder(@Nonnull View view) {
         Object container = view.getTag(R.id.mediadata_tag_target);
-        if (container instanceof VideoViewHolder)
-        {
+        if (container instanceof VideoViewHolder) {
             return (VideoViewHolder) container;
         }
 
         return null;
+    }
+
+    private static class VideoViewHolder {
+        private final ImageView mVideoView;
+        private final ImageView mPlayButton;
+
+        public VideoViewHolder(ImageView videoView, ImageView playButton) {
+            mVideoView = videoView;
+            mPlayButton = playButton;
+        }
     }
 }

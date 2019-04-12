@@ -16,13 +16,6 @@
 
 package com.android.ex.camera2.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 import android.graphics.Rect;
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback;
 import android.hardware.camera2.CameraDevice;
@@ -31,6 +24,13 @@ import android.hardware.camera2.CaptureRequest.Key;
 import android.view.Surface;
 
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class Camera2UtilsTest extends Camera2DeviceTester {
     private void captureListenerSplitterAllCallbacksReceived(CaptureCallback splitter,
@@ -111,18 +111,18 @@ public class Camera2UtilsTest extends Camera2DeviceTester {
         requestSettingsSetAndForget(setUp, CaptureRequest.CONTROL_AE_MODE, -1);
         requestSettingsSetAndForget(setUp, CaptureRequest.CONTROL_AE_MODE, 0);
         // Try an int[]
-        requestSettingsSetAndForget(setUp, CaptureRequest.SENSOR_TEST_PATTERN_DATA, new int[] {1});
+        requestSettingsSetAndForget(setUp, CaptureRequest.SENSOR_TEST_PATTERN_DATA, new int[]{1});
         requestSettingsSetAndForget(setUp, CaptureRequest.SENSOR_TEST_PATTERN_DATA,
-                new int[] {2, 2});
+                new int[]{2, 2});
     }
 
     @Test
     public void requestSettingsSetNullValue() {
         Camera2RequestSettingsSet setUp = new Camera2RequestSettingsSet();
-        requestSettingsSetAndForget(setUp, CaptureRequest.SENSOR_TEST_PATTERN_DATA, new int[] {1});
+        requestSettingsSetAndForget(setUp, CaptureRequest.SENSOR_TEST_PATTERN_DATA, new int[]{1});
         requestSettingsSetAndForget(setUp, CaptureRequest.SENSOR_TEST_PATTERN_DATA, null);
         requestSettingsSetAndForget(setUp, CaptureRequest.SENSOR_TEST_PATTERN_DATA,
-                new int[] {2, 2});
+                new int[]{2, 2});
     }
 
     @Test
@@ -206,30 +206,30 @@ public class Camera2UtilsTest extends Camera2DeviceTester {
         requestSettingsUnsetAndAssertChanged(setUp, CaptureRequest.CONTROL_AE_LOCK, true);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void requestSettingsSetNullArgToCopyConstructor() {
         Camera2RequestSettingsSet flop = new Camera2RequestSettingsSet(null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void requestSettingsSetNullArgToSetKey() {
         Camera2RequestSettingsSet setUp = new Camera2RequestSettingsSet();
         setUp.set(null, null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void requestSettingsSetNullArgToUnset() {
         Camera2RequestSettingsSet setUp = new Camera2RequestSettingsSet();
         setUp.unset(null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void requestSettingsSetNullArgToContains() {
         Camera2RequestSettingsSet setUp = new Camera2RequestSettingsSet();
         setUp.contains(null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void requestSettingsSetNullArgToGet() {
         Camera2RequestSettingsSet setUp = new Camera2RequestSettingsSet();
         setUp.get(null);
@@ -274,19 +274,19 @@ public class Camera2UtilsTest extends Camera2DeviceTester {
         assertFalse(setUp.matches(CaptureRequest.SCALER_CROP_REGION, new Rect(0, 0, 1, 1)));
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void requestSettingsSetNullArgToCreateRequest0() throws Exception {
         Camera2RequestSettingsSet setUp = new Camera2RequestSettingsSet();
         setUp.createRequest(null, CameraDevice.TEMPLATE_PREVIEW);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void requestSettingsSetNullArgToCreateRequest2() throws Exception {
         Camera2RequestSettingsSet setUp = new Camera2RequestSettingsSet();
         setUp.createRequest(mCamera, CameraDevice.TEMPLATE_PREVIEW, (Surface) null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void requestSettingsSetNullArgToCreateRequest02() throws Exception {
         Camera2RequestSettingsSet setUp = new Camera2RequestSettingsSet();
         setUp.createRequest(null, CameraDevice.TEMPLATE_PREVIEW, (Surface) null);
@@ -401,8 +401,8 @@ public class Camera2UtilsTest extends Camera2DeviceTester {
 
     @Test
     public void requestSettingsSetUnionChangesRecorded() {
-        Camera2RequestSettingsSet[] sets = { new Camera2RequestSettingsSet(),
-                                             new Camera2RequestSettingsSet() };
+        Camera2RequestSettingsSet[] sets = {new Camera2RequestSettingsSet(),
+                new Camera2RequestSettingsSet()};
         sets[0].union(sets[1]);
         assertEquals(1, sets[0].getRevision());
         assertEquals(0, sets[1].getRevision());
@@ -424,8 +424,8 @@ public class Camera2UtilsTest extends Camera2DeviceTester {
 
     @Test
     public void requestSettingsSetUnionChangesReflected() {
-        Camera2RequestSettingsSet[] sets = { new Camera2RequestSettingsSet(),
-                                             new Camera2RequestSettingsSet() };
+        Camera2RequestSettingsSet[] sets = {new Camera2RequestSettingsSet(),
+                new Camera2RequestSettingsSet()};
 
         sets[0].set(CaptureRequest.CONTROL_AE_LOCK, true);
         sets[1].set(CaptureRequest.CONTROL_AWB_LOCK, true);

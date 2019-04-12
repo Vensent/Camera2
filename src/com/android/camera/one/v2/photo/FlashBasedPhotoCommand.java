@@ -30,8 +30,7 @@ import com.google.common.base.Supplier;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-final class FlashBasedPhotoCommand implements ImageCaptureCommand
-{
+final class FlashBasedPhotoCommand implements ImageCaptureCommand {
     private final Logger mLog;
     private final Supplier<OneCamera.PhotoCaptureParameters.Flash> mFlashMode;
     private final ImageCaptureCommand mFlashOnCommand;
@@ -42,8 +41,7 @@ final class FlashBasedPhotoCommand implements ImageCaptureCommand
                            Supplier<OneCamera.PhotoCaptureParameters.Flash> flashMode,
                            ImageCaptureCommand flashOnCommand,
                            ImageCaptureCommand flashAutoCommand,
-                           ImageCaptureCommand flashOffCommand)
-    {
+                           ImageCaptureCommand flashOffCommand) {
         mLog = logFactory.create(new Log.Tag("FlashBasedPhotoCmd"));
         mFlashMode = flashMode;
         mFlashOnCommand = flashOnCommand;
@@ -55,19 +53,15 @@ final class FlashBasedPhotoCommand implements ImageCaptureCommand
     public void run(Updatable<Void> imageExposeCallback, ImageSaver imageSaver)
             throws InterruptedException, CameraAccessException,
             CameraCaptureSessionClosedException,
-            ResourceAcquisitionFailedException
-    {
+            ResourceAcquisitionFailedException {
         OneCamera.PhotoCaptureParameters.Flash flashMode = mFlashMode.get();
-        if (flashMode == OneCamera.PhotoCaptureParameters.Flash.ON)
-        {
+        if (flashMode == OneCamera.PhotoCaptureParameters.Flash.ON) {
             mLog.i("running flash-on command: " + mFlashOnCommand);
             mFlashOnCommand.run(imageExposeCallback, imageSaver);
-        } else if (flashMode == OneCamera.PhotoCaptureParameters.Flash.AUTO)
-        {
+        } else if (flashMode == OneCamera.PhotoCaptureParameters.Flash.AUTO) {
             mLog.i("running flash-auto command: " + mFlashAutoCommand);
             mFlashAutoCommand.run(imageExposeCallback, imageSaver);
-        } else
-        {
+        } else {
             mLog.i("running flash-off command: " + mFlashOffCommand);
             mFlashOffCommand.run(imageExposeCallback, imageSaver);
         }

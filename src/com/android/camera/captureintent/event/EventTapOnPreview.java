@@ -16,21 +16,18 @@
 
 package com.android.camera.captureintent.event;
 
-import com.android.camera.captureintent.stateful.Event;
-
 import android.graphics.Point;
 
-public class EventTapOnPreview implements Event
-{
+import com.android.camera.captureintent.stateful.Event;
+
+public class EventTapOnPreview implements Event {
     private final Point mTapPoint;
 
-    public EventTapOnPreview(Point tapPoint)
-    {
+    public EventTapOnPreview(Point tapPoint) {
         mTapPoint = tapPoint;
     }
 
-    public Point getTapPoint()
-    {
+    public Point getTapPoint() {
         return mTapPoint;
     }
 }

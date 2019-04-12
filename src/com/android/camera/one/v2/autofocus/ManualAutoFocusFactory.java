@@ -40,16 +40,14 @@ import java.util.concurrent.TimeUnit;
  * {@link ManualAutoFocus} instance to trigger auto-focus and metering. It also
  * provides a way of polling for the most up-to-date metering regions.
  */
-public class ManualAutoFocusFactory
-{
+public class ManualAutoFocusFactory {
     private final ManualAutoFocus mManualAutoFocus;
     private final Supplier<MeteringRectangle[]> mAEMeteringRegion;
     private final Supplier<MeteringRectangle[]> mAFMeteringRegion;
 
     private ManualAutoFocusFactory(ManualAutoFocus manualAutoFocus,
                                    Supplier<MeteringRectangle[]> aeMeteringRegion,
-                                   Supplier<MeteringRectangle[]> afMeteringRegion)
-    {
+                                   Supplier<MeteringRectangle[]> afMeteringRegion) {
         mManualAutoFocus = manualAutoFocus;
         mAEMeteringRegion = aeMeteringRegion;
         mAFMeteringRegion = afMeteringRegion;
@@ -74,8 +72,7 @@ public class ManualAutoFocusFactory
                                                 Runnable previewRunner, RequestBuilder.Factory rootBuilder,
                                                 int templateType, Settings3A settings3A,
                                                 ScheduledExecutorService threadPool,
-                                                int afHoldSeconds)
-    {
+                                                int afHoldSeconds) {
         ConcurrentState<MeteringParameters> currentMeteringParameters = new ConcurrentState<>(
                 GlobalMeteringParameters.create());
         AEMeteringRegion aeMeteringRegion = new AEMeteringRegion(currentMeteringParameters,
@@ -106,18 +103,15 @@ public class ManualAutoFocusFactory
         return new ManualAutoFocusFactory(manualAutoFocus, aeMeteringRegion, afMeteringRegion);
     }
 
-    public ManualAutoFocus provideManualAutoFocus()
-    {
+    public ManualAutoFocus provideManualAutoFocus() {
         return mManualAutoFocus;
     }
 
-    public Supplier<MeteringRectangle[]> provideAEMeteringRegion()
-    {
+    public Supplier<MeteringRectangle[]> provideAEMeteringRegion() {
         return mAEMeteringRegion;
     }
 
-    public Supplier<MeteringRectangle[]> provideAFMeteringRegion()
-    {
+    public Supplier<MeteringRectangle[]> provideAFMeteringRegion() {
         return mAFMeteringRegion;
     }
 }

@@ -30,15 +30,13 @@ import java.util.List;
 /**
  * Provides direct access to libjpeg-turbo via the NDK.
  */
-public class JpegUtilNative
-{
-    static
-    {
-        System.loadLibrary("jni_jpegutil");
-    }
-
+public class JpegUtilNative {
     public static final int ERROR_OUT_BUF_TOO_SMALL = -1;
     private static final Log.Tag TAG = new Log.Tag("JpegUtilNative");
+
+    static {
+        System.loadLibrary("jni_jpegutil");
+    }
 
     /**
      * Compresses a YCbCr image to jpeg, applying a crop and rotation.
@@ -121,10 +119,8 @@ public class JpegUtilNative
     private static native void copyImagePlaneToBitmap(int width, int height, Object planeBuf,
                                                       int pStride, int rStride, Object outBitmap, int rot90);
 
-    public static void copyImagePlaneToBitmap(ImageProxy.Plane plane, Bitmap bitmap, int rot90)
-    {
-        if (bitmap.getConfig() != Bitmap.Config.ALPHA_8)
-        {
+    public static void copyImagePlaneToBitmap(ImageProxy.Plane plane, Bitmap bitmap, int rot90) {
+        if (bitmap.getConfig() != Bitmap.Config.ALPHA_8) {
             throw new RuntimeException("Unsupported bitmap format");
         }
 
@@ -146,8 +142,7 @@ public class JpegUtilNative
             ByteBuffer cbBuf, int cbPStride, int cbRStride,
             ByteBuffer crBuf, int crPStride, int crRStride,
             ByteBuffer outBuf, int quality,
-            int cropLeft, int cropTop, int cropRight, int cropBottom, int rot90)
-    {
+            int cropLeft, int cropTop, int cropRight, int cropBottom, int rot90) {
         Log.i(TAG, String.format(
                 "Compressing jpeg with size = (%d, %d); " +
                         "y-channel pixel stride = %d; " +
@@ -175,8 +170,7 @@ public class JpegUtilNative
      * @param quality the jpeg encoder quality (0 to 100)
      * @return The number of bytes written to outBuf
      */
-    public static int compressJpegFromYUV420Image(ImageProxy img, ByteBuffer outBuf, int quality)
-    {
+    public static int compressJpegFromYUV420Image(ImageProxy img, ByteBuffer outBuf, int quality) {
         return compressJpegFromYUV420Image(img, outBuf, quality, 0);
     }
 
@@ -192,8 +186,7 @@ public class JpegUtilNative
      * @return The number of bytes written to outBuf
      */
     public static int compressJpegFromYUV420Image(ImageProxy img, ByteBuffer outBuf, int quality,
-                                                  int degrees)
-    {
+                                                  int degrees) {
         return compressJpegFromYUV420Image(img, outBuf, quality, new Rect(0, 0, img.getWidth(),
                 img.getHeight()), degrees);
     }
@@ -215,8 +208,7 @@ public class JpegUtilNative
      * @return The number of bytes written to outBuf
      */
     public static int compressJpegFromYUV420Image(ImageProxy img, ByteBuffer outBuf, int quality,
-                                                  Rect crop, int degrees)
-    {
+                                                  Rect crop, int degrees) {
         Preconditions.checkState((degrees % 90) == 0, "Rotation must be a multiple of 90 degrees," +
                 " was " + degrees);
         // Handle negative angles by converting to positive.
@@ -236,8 +228,7 @@ public class JpegUtilNative
         int[] pixelStride = new int[NUM_PLANES];
         int[] rowStride = new int[NUM_PLANES];
 
-        for (int i = 0; i < NUM_PLANES; i++)
-        {
+        for (int i = 0; i < NUM_PLANES; i++) {
             ImageProxy.Plane plane = planeList.get(i);
 
             Preconditions.checkState(plane.getBuffer().isDirect());

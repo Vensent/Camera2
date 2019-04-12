@@ -30,8 +30,7 @@ import com.android.camera.one.v2.photo.ImageRotationCalculator;
  * The camera manager is responsible for instantiating {@link OneCamera}
  * instances.
  */
-public interface OneCameraOpener
-{
+public interface OneCameraOpener {
     /**
      * Attempts to open the given camera with the provided parameters and
      * settings.

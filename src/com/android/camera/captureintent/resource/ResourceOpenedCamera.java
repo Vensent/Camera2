@@ -30,8 +30,7 @@ import com.android.camera.util.Size;
  * Defines an interface that any implementation of this is responsible for
  * retaining and releasing an opened {@link com.android.camera.one.OneCamera}.
  */
-public interface ResourceOpenedCamera extends SafeCloseable
-{
+public interface ResourceOpenedCamera extends SafeCloseable {
     /**
      * Obtains the opened camera.
      *

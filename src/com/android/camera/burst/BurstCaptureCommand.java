@@ -48,8 +48,7 @@ import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class BurstCaptureCommand implements CameraCommand
-{
+public class BurstCaptureCommand implements CameraCommand {
     /**
      * Template to use for the burst capture.
      */
@@ -94,8 +93,7 @@ public class BurstCaptureCommand implements CameraCommand
                                EvictionHandler burstEvictionHandler,
                                BurstController burstController,
                                Runnable restorePreviewCommand,
-                               int maxImageCount)
-    {
+                               int maxImageCount) {
         mFrameServer = frameServer;
         mBuilderFactory = new RequestTemplate(builder);
         mManagedImageReader = managedImageReader;
@@ -107,23 +105,30 @@ public class BurstCaptureCommand implements CameraCommand
         mMaxImageCount = maxImageCount;
     }
 
+    /**
+     * On Nexus 5 limit frame rate to 24 fps. See b/18950682.
+     */
+    private static void checkAndApplyNexus5FrameRateWorkaround(RequestBuilder request) {
+        if (ApiHelper.IS_NEXUS_5) {
+            // For burst limit the frame rate to 24 fps.
+            Range<Integer> frameRateBackOff = new Range<>(7, 24);
+            request.setParam(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, frameRateBackOff);
+        }
+    }
+
     @Override
     public void run() throws InterruptedException, CameraAccessException,
-            CameraCaptureSessionClosedException, ResourceAcquisitionFailedException
-    {
+            CameraCaptureSessionClosedException, ResourceAcquisitionFailedException {
         List<MetadataImage> capturedImages = new ArrayList<>();
-        try (FrameServer.Session session = mFrameServer.createExclusiveSession())
-        {
+        try (FrameServer.Session session = mFrameServer.createExclusiveSession()) {
             // Create a ring buffer and with the passed burst eviction
             // handler and insert images in it from the image stream.
             // The ring buffer size is one less than the image count.
             int ringBufferSize = mMaxImageCount - 1;
             try (RingBuffer<MetadataImage> ringBuffer =
-                         new RingBuffer<MetadataImage>(ringBufferSize, mBurstEvictionHandler))
-            {
+                         new RingBuffer<MetadataImage>(ringBufferSize, mBurstEvictionHandler)) {
                 try (ImageStream imageStream =
-                             mManagedImageReader.createStream(mMaxImageCount))
-                {
+                             mManagedImageReader.createStream(mMaxImageCount)) {
                     mBurstLifetime.add(imageStream);
 
                     // Use the video snapshot template for the burst.
@@ -135,24 +140,20 @@ public class BurstCaptureCommand implements CameraCommand
 
                     photoRequest.addStream(imageStream);
                     // Hook up the camera stream to burst input surface.
-                    photoRequest.addStream(new CaptureStream()
-                    {
+                    photoRequest.addStream(new CaptureStream() {
                         @Override
                         public Surface bind(BufferQueue<Long> timestamps)
                                 throws InterruptedException,
-                                ResourceAcquisitionFailedException
-                        {
+                                ResourceAcquisitionFailedException {
                             return mBurstInputSurface;
                         }
                     });
 
                     // Hook the response listener to invoke eviction handler
                     // frame capture result.
-                    photoRequest.addResponseListener(new ResponseListener()
-                    {
+                    photoRequest.addResponseListener(new ResponseListener() {
                         @Override
-                        public void onCompleted(TotalCaptureResult result)
-                        {
+                        public void onCompleted(TotalCaptureResult result) {
                             final long timestamp = result.get(TotalCaptureResult.SENSOR_TIMESTAMP);
                             mBurstEvictionHandler.onFrameCaptureResultAvailable(timestamp, result);
                         }
@@ -160,10 +161,8 @@ public class BurstCaptureCommand implements CameraCommand
                     session.submitRequest(Arrays.asList(photoRequest.build()),
                             FrameServer.RequestType.REPEATING);
 
-                    try
-                    {
-                        while (!imageStream.isClosed())
-                        {
+                    try {
+                        while (!imageStream.isClosed()) {
                             // metadata
                             MetadataFuture metadataFuture = new MetadataFuture();
                             photoRequest.addResponseListener(metadataFuture);
@@ -171,41 +170,23 @@ public class BurstCaptureCommand implements CameraCommand
                             ringBuffer.insertImage(new MetadataImage(imageStream.getNext(),
                                     metadataFuture.getMetadata()));
                         }
-                    } catch (BufferQueueClosedException e)
-                    {
+                    } catch (BufferQueueClosedException e) {
                         // This is normal. the image stream was closed.
                     }
-                } finally
-                {
+                } finally {
                     // Burst was completed call remove the images from the ring
                     // buffer.
                     capturedImages = ringBuffer.getAndRemoveAllImages();
                 }
             }
-        } finally
-        {
-            try
-            {
+        } finally {
+            try {
                 // Note: BurstController will release images after use
                 mBurstController.processBurstResults(capturedImages);
-            } finally
-            {
+            } finally {
                 // Switch back to the old request.
                 mRestorePreviewCommand.run();
             }
-        }
-    }
-
-    /**
-     * On Nexus 5 limit frame rate to 24 fps. See b/18950682.
-     */
-    private static void checkAndApplyNexus5FrameRateWorkaround(RequestBuilder request)
-    {
-        if (ApiHelper.IS_NEXUS_5)
-        {
-            // For burst limit the frame rate to 24 fps.
-            Range<Integer> frameRateBackOff = new Range<>(7, 24);
-            request.setParam(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, frameRateBackOff);
         }
     }
 }

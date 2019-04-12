@@ -17,15 +17,13 @@
 package com.android.camera.one.v2.photo;
 
 import com.android.camera.app.OrientationManager;
-
 import com.google.common.base.Supplier;
 
 /**
  * Based on the current device orientation, calculates the JPEG rotation that
  * needs to be applied to render the resulting JPEG correctly.
  */
-public interface ImageRotationCalculator
-{
+public interface ImageRotationCalculator {
 
     /**
      * Calculates the correct JPEG orientation based on the given sampled device

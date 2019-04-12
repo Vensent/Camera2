@@ -38,37 +38,14 @@ import javax.annotation.Nonnull;
  * This is used to represent a local data item that is in progress and not
  * yet in the media store.
  */
-public class SessionItem implements FilmstripItem
-{
+public class SessionItem implements FilmstripItem {
     protected final Metadata mMetaData;
-    private FilmstripItemData mData;
     private final FilmstripItemAttributes mAttributes;
     private final Context mContext;
     private final Uri mUri;
+    private FilmstripItemData mData;
 
-    /**
-     * Creates a new session from the given URI.
-     *
-     * @param context valid android application context.
-     * @param uri     the URI of the session.
-     * @return If the session was found, a new SessionItem is returned.
-     */
-    public static Optional<SessionItem> create(Context context, Uri uri)
-    {
-        if (!Storage.containsPlaceholderSize(uri))
-        {
-            return Optional.absent();
-        }
-        Size dimension = getSessionSize(uri);
-        if (dimension == null)
-        {
-            return Optional.absent();
-        }
-        return Optional.of(new SessionItem(context, uri, dimension));
-    }
-
-    protected SessionItem(Context context, Uri uri, Size dimension)
-    {
+    protected SessionItem(Context context, Uri uri, Size dimension) {
         mContext = context;
         mUri = uri;
 
@@ -87,11 +64,27 @@ public class SessionItem implements FilmstripItem
                 .build();
     }
 
-    private static Size getSessionSize(Uri uri)
-    {
+    /**
+     * Creates a new session from the given URI.
+     *
+     * @param context valid android application context.
+     * @param uri     the URI of the session.
+     * @return If the session was found, a new SessionItem is returned.
+     */
+    public static Optional<SessionItem> create(Context context, Uri uri) {
+        if (!Storage.containsPlaceholderSize(uri)) {
+            return Optional.absent();
+        }
+        Size dimension = getSessionSize(uri);
+        if (dimension == null) {
+            return Optional.absent();
+        }
+        return Optional.of(new SessionItem(context, uri, dimension));
+    }
+
+    private static Size getSessionSize(Uri uri) {
         Point size = Storage.getSizeForSession(uri);
-        if (size == null)
-        {
+        if (size == null) {
             return null;
         }
         return new Size(size);
@@ -99,25 +92,20 @@ public class SessionItem implements FilmstripItem
 
     @Override
     public View getView(Optional<View> optionalView, LocalFilmstripDataAdapter adapter,
-                        boolean isInProgress, VideoClickedCallback videoClickedCallback)
-    {
+                        boolean isInProgress, VideoClickedCallback videoClickedCallback) {
         ImageView imageView;
 
-        if (optionalView.isPresent())
-        {
+        if (optionalView.isPresent()) {
             imageView = (ImageView) optionalView.get();
-        } else
-        {
+        } else {
             imageView = new ImageView(mContext);
             imageView.setTag(R.id.mediadata_tag_viewtype, getItemViewType().ordinal());
         }
 
         Optional<Bitmap> placeholder = Storage.getPlaceholderForSession(mData.getUri());
-        if (placeholder.isPresent())
-        {
+        if (placeholder.isPresent()) {
             imageView.setImageBitmap(placeholder.get());
-        } else
-        {
+        } else {
             imageView.setImageResource(GlideFilmstripManager.DEFAULT_PLACEHOLDER_RESOURCE);
         }
         imageView.setContentDescription(mContext.getResources().getString(
@@ -126,49 +114,40 @@ public class SessionItem implements FilmstripItem
     }
 
     @Override
-    public FilmstripItemType getItemViewType()
-    {
+    public FilmstripItemType getItemViewType() {
         return FilmstripItemType.SESSION;
     }
 
     @Override
-    public void setSuggestedSize(int widthPx, int heightPx)
-    {
+    public void setSuggestedSize(int widthPx, int heightPx) {
     }
 
     @Override
-    public void renderTiny(@Nonnull View view)
-    {
+    public void renderTiny(@Nonnull View view) {
     }
 
     @Override
-    public void renderThumbnail(@Nonnull View view)
-    {
+    public void renderThumbnail(@Nonnull View view) {
     }
 
     @Override
-    public void renderFullRes(@Nonnull View view)
-    {
+    public void renderFullRes(@Nonnull View view) {
     }
 
     @Override
-    public boolean delete()
-    {
+    public boolean delete() {
         return false;
     }
 
     @Override
-    public Optional<MediaDetails> getMediaDetails()
-    {
+    public Optional<MediaDetails> getMediaDetails() {
         return Optional.absent();
     }
 
     @Override
-    public FilmstripItem refresh()
-    {
+    public FilmstripItem refresh() {
         Size dimension = getSessionSize(mData.getUri());
-        if (dimension == null)
-        {
+        if (dimension == null) {
             Log.w(TAG, "Cannot refresh item, session does not exist.");
             return this;
         }
@@ -181,44 +160,37 @@ public class SessionItem implements FilmstripItem
     }
 
     @Override
-    public Metadata getMetadata()
-    {
+    public Metadata getMetadata() {
         return mMetaData;
     }
 
     @Override
-    public FilmstripItemData getData()
-    {
+    public FilmstripItemData getData() {
         return mData;
     }
 
     @Override
-    public FilmstripItemAttributes getAttributes()
-    {
+    public FilmstripItemAttributes getAttributes() {
         return mAttributes;
     }
 
     @Override
-    public Optional<Bitmap> generateThumbnail(int boundingWidthPx, int boundingHeightPx)
-    {
+    public Optional<Bitmap> generateThumbnail(int boundingWidthPx, int boundingHeightPx) {
         return Storage.getPlaceholderForSession(mUri);
     }
 
     @Override
-    public void recycle(@Nonnull View view)
-    {
+    public void recycle(@Nonnull View view) {
         Glide.clear(view);
     }
 
     @Override
-    public Size getDimensions()
-    {
+    public Size getDimensions() {
         return mData.getDimensions();
     }
 
     @Override
-    public int getOrientation()
-    {
+    public int getOrientation() {
         return mData.getOrientation();
     }
 }

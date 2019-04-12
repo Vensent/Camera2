@@ -39,9 +39,9 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.SystemClock;
+import android.support.v4.util.Pools;
 import android.view.Surface;
 
-import androidx.core.util.Pools;
 import com.android.camera.CaptureModuleUtil;
 import com.android.camera.debug.Log;
 import com.android.camera.debug.Log.Tag;
@@ -83,6 +83,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+
 /**
  * {@link OneCamera} implementation directly on top of the Camera2 API with zero
  * shutter lag.<br>
@@ -90,8 +91,7 @@ import java.util.concurrent.TimeUnit;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 @Deprecated
-public class OneCameraZslImpl extends AbstractOneCamera
-{
+public class OneCameraZslImpl extends AbstractOneCamera {
     private static final Tag TAG = new Tag("OneCameraZslImpl2");
 
     /**
@@ -112,21 +112,6 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * disable ZSL in that case.
      */
     private static final boolean ZSL_ENABLED = true;
-
-    /**
-     * Tags which may be used in CaptureRequests.
-     */
-    private static enum RequestTag
-    {
-        /**
-         * Indicates that the request was explicitly sent for a single
-         * high-quality still capture. Unlike other requests, such as the
-         * repeating (ZSL) stream and AF/AE triggers, requests with this tag
-         * should always be saved.
-         */
-        EXPLICIT_CAPTURE
-    }
-
     /**
      * Set to ImageFormat.JPEG to use the hardware encoder, or
      * ImageFormat.YUV_420_888 to use the software encoder. No other image
@@ -138,12 +123,6 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * continuous AF.
      */
     private static final String FOCUS_RESUME_CALLBACK_TOKEN = "RESUME_CONTINUOUS_AF";
-
-    /**
-     * Zero weight 3A region, to reset regions per API.
-     */
-    /*package*/ MeteringRectangle[] ZERO_WEIGHT_3A_REGION = AutoFocusHelper.getZeroWeightRegion();
-
     /**
      * Thread on which high-priority camera operations, such as grabbing preview
      * frames for the viewfinder, are running.
@@ -153,13 +132,11 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * Handler of the {@link #mCameraThread}.
      */
     private final Handler mCameraHandler;
-
     /**
      * Thread on which low-priority camera listeners are running.
      */
     private final HandlerThread mCameraListenerThread;
     private final Handler mCameraListenerHandler;
-
     /**
      * The characteristics of this camera.
      */
@@ -173,12 +150,46 @@ public class OneCameraZslImpl extends AbstractOneCamera
      */
     private final CameraDevice mDevice;
     private final CameraDirectionProvider mDirection;
-
     /**
      * The aspect ratio (width/height) of the full resolution for this camera.
      * Usually the native aspect ratio of this camera.
      */
     private final float mFullSizeAspectRatio;
+    /**
+     * Receives the normal captured images.
+     */
+    private final ImageReader mCaptureImageReader;
+    /**
+     * The sensor timestamps (which may not be relative to the system time) of
+     * the most recently captured images.
+     */
+    private final Set<Long> mCapturedImageTimestamps = Collections.synchronizedSet(
+            new HashSet<Long>());
+    /**
+     * Thread pool for performing slow jpeg encoding and saving tasks.
+     */
+    private final ThreadPoolExecutor mImageSaverThreadPool;
+    /**
+     * Pool of native byte buffers on which to store jpeg-encoded images.
+     */
+    private final Pools.SynchronizedPool<ByteBuffer> mJpegByteBufferPool =
+            new Pools.SynchronizedPool<ByteBuffer>(64);
+    /**
+     * Handles the thread-safe logic of dispatching whenever the logical AND of
+     * these constraints changes.
+     */
+    private final ListenerCombiner<ReadyStateRequirement>
+            mReadyStateManager = new ListenerCombiner<ReadyStateRequirement>(
+            ReadyStateRequirement.class, new ListenerCombiner.StateChangeListener() {
+        @Override
+        public void onStateChange(boolean state) {
+            broadcastReadyState(state);
+        }
+    });
+    /**
+     * Zero weight 3A region, to reset regions per API.
+     */
+    /*package*/ MeteringRectangle[] ZERO_WEIGHT_3A_REGION = AutoFocusHelper.getZeroWeightRegion();
     /**
      * The Camera2 API capture session currently active.
      */
@@ -191,35 +202,10 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * Whether closing of this device has been requested.
      */
     private volatile boolean mIsClosed = false;
-
-    /**
-     * Receives the normal captured images.
-     */
-    private final ImageReader mCaptureImageReader;
-
     /**
      * Maintains a buffer of images and their associated {@link CaptureResult}s.
      */
     private ImageCaptureManager mCaptureManager;
-
-    /**
-     * The sensor timestamps (which may not be relative to the system time) of
-     * the most recently captured images.
-     */
-    private final Set<Long> mCapturedImageTimestamps = Collections.synchronizedSet(
-            new HashSet<Long>());
-
-    /**
-     * Thread pool for performing slow jpeg encoding and saving tasks.
-     */
-    private final ThreadPoolExecutor mImageSaverThreadPool;
-
-    /**
-     * Pool of native byte buffers on which to store jpeg-encoded images.
-     */
-    private final Pools.SynchronizedPool<ByteBuffer> mJpegByteBufferPool =
-            new Pools.SynchronizedPool<ByteBuffer>(64);
-
     /**
      * Current zoom value. 1.0 is no zoom.
      */
@@ -237,106 +223,13 @@ public class OneCameraZslImpl extends AbstractOneCamera
     private MediaActionSound mMediaActionSound = new MediaActionSound();
 
     /**
-     * Ready state (typically displayed by the UI shutter-button) depends on two
-     * things:<br>
-     * <ol>
-     * <li>{@link #mCaptureManager} must be ready.</li>
-     * <li>We must not be in the process of capturing a single, high-quality,
-     * image.</li>
-     * </ol>
-     * See {@link ListenerCombiner} and {@link #mReadyStateManager} for
-     * details of how this is managed.
-     */
-    private static enum ReadyStateRequirement
-    {
-        CAPTURE_MANAGER_READY, CAPTURE_NOT_IN_PROGRESS
-    }
-
-    /**
-     * Handles the thread-safe logic of dispatching whenever the logical AND of
-     * these constraints changes.
-     */
-    private final ListenerCombiner<ReadyStateRequirement>
-            mReadyStateManager = new ListenerCombiner<ReadyStateRequirement>(
-            ReadyStateRequirement.class, new ListenerCombiner.StateChangeListener()
-    {
-        @Override
-        public void onStateChange(boolean state)
-        {
-            broadcastReadyState(state);
-        }
-    });
-
-    /**
-     * An {@link ImageCaptureListener} which will compress and save an image to
-     * disk.
-     */
-    private class ImageCaptureTask implements ImageCaptureListener
-    {
-        private final PhotoCaptureParameters mParams;
-        private final CaptureSession mSession;
-
-        public ImageCaptureTask(PhotoCaptureParameters parameters, CaptureSession session)
-        {
-            mParams = parameters;
-            mSession = session;
-        }
-
-        @Override
-        public void onImageCaptured(Image image, TotalCaptureResult captureResult)
-        {
-            long timestamp = captureResult.get(CaptureResult.SENSOR_TIMESTAMP);
-
-            // We should only capture the image if it hasn't been captured
-            // before. Synchronization is necessary since
-            // mCapturedImageTimestamps is read & modified elsewhere.
-            synchronized (mCapturedImageTimestamps)
-            {
-                if (!mCapturedImageTimestamps.contains(timestamp))
-                {
-                    mCapturedImageTimestamps.add(timestamp);
-                } else
-                {
-                    // There was a more recent (or identical) image which has
-                    // begun being saved, so abort.
-                    return;
-                }
-
-                // Clear out old timestamps from the set.
-                // We must keep old timestamps in the set a little longer (a
-                // factor of 2 seems adequate) to ensure they are cleared out of
-                // the ring buffer before their timestamp is removed from the
-                // set.
-                long maxTimestamps = MAX_CAPTURE_IMAGES * 2;
-                if (mCapturedImageTimestamps.size() > maxTimestamps)
-                {
-                    ArrayList<Long> timestamps = new ArrayList<Long>(mCapturedImageTimestamps);
-                    Collections.sort(timestamps);
-                    for (int i = 0; i < timestamps.size()
-                            && mCapturedImageTimestamps.size() > maxTimestamps; i++)
-                    {
-                        mCapturedImageTimestamps.remove(timestamps.get(i));
-                    }
-                }
-            }
-
-            mReadyStateManager.setInput(ReadyStateRequirement.CAPTURE_NOT_IN_PROGRESS, true);
-
-            savePicture(image, mParams, mSession, captureResult);
-            mParams.callback.onPictureTaken(mSession);
-            Log.v(TAG, "Image saved.  Frame number = " + captureResult.getFrameNumber());
-        }
-    }
-
-    /**
      * Instantiates a new camera based on Camera 2 API.
      *
      * @param device          The underlying Camera 2 device.
      * @param characteristics The device's characteristics.
      * @param pictureSize     the size of the final image to be taken.
      */
-    OneCameraZslImpl(CameraDevice device, CameraCharacteristics characteristics, Size pictureSize)
-    {
+    OneCameraZslImpl(CameraDevice device, CameraCharacteristics characteristics, Size pictureSize) {
         Log.v(TAG, "Creating new OneCameraZslImpl");
 
         mDevice = device;
@@ -365,11 +258,9 @@ public class OneCameraZslImpl extends AbstractOneCamera
         mCaptureManager =
                 new ImageCaptureManager(MAX_CAPTURE_IMAGES, mCameraListenerHandler,
                         mImageSaverThreadPool);
-        mCaptureManager.setCaptureReadyListener(new ImageCaptureManager.CaptureReadyListener()
-        {
+        mCaptureManager.setCaptureReadyListener(new ImageCaptureManager.CaptureReadyListener() {
             @Override
-            public void onReadyStateChange(boolean capturePossible)
-            {
+            public void onReadyStateChange(boolean capturePossible) {
                 mReadyStateManager.setInput(ReadyStateRequirement.CAPTURE_MANAGER_READY,
                         capturePossible);
             }
@@ -378,15 +269,12 @@ public class OneCameraZslImpl extends AbstractOneCamera
         // Listen for changes to auto focus state and dispatch to
         // mFocusStateListener.
         mCaptureManager.addMetadataChangeListener(CaptureResult.CONTROL_AF_STATE,
-                new ImageCaptureManager.MetadataChangeListener()
-                {
+                new ImageCaptureManager.MetadataChangeListener() {
                     @Override
                     public void onImageMetadataChange(Key<?> key, Object oldValue, Object newValue,
-                                                      CaptureResult result)
-                    {
+                                                      CaptureResult result) {
                         FocusStateListener listener = mFocusStateListener;
-                        if (listener != null)
-                        {
+                        if (listener != null) {
                             listener.onFocusStatusUpdate(
                                     AutoFocusHelper.stateFromCamera2State(
                                             result.get(CaptureResult.CONTROL_AF_STATE)),
@@ -397,8 +285,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
 
         // Allocate the image reader to store all images received from the
         // camera.
-        if (pictureSize == null)
-        {
+        if (pictureSize == null) {
             // TODO The default should be selected by the caller, and
             // pictureSize should never be null.
             pictureSize = getDefaultPictureSize();
@@ -411,27 +298,35 @@ public class OneCameraZslImpl extends AbstractOneCamera
         mMediaActionSound.load(MediaActionSound.SHUTTER_CLICK);
     }
 
+    /**
+     * Calculate the aspect ratio of the full size capture on this device.
+     *
+     * @param characteristics the characteristics of the camera device.
+     * @return The aspect ration, in terms of width/height of the full capture
+     * size.
+     */
+    private static float calculateFullSizeAspectRatio(CameraCharacteristics characteristics) {
+        Rect activeArraySize =
+                characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+        return ((float) activeArraySize.width()) / activeArraySize.height();
+    }
+
     @Override
-    public void setFocusDistanceListener(FocusDistanceListener focusDistanceListener)
-    {
-        if (mFocusDistanceListener == null)
-        {
+    public void setFocusDistanceListener(FocusDistanceListener focusDistanceListener) {
+        if (mFocusDistanceListener == null) {
             mCaptureManager.addMetadataChangeListener(CaptureResult.LENS_FOCUS_DISTANCE,
-                    new ImageCaptureManager.MetadataChangeListener()
-                    {
+                    new ImageCaptureManager.MetadataChangeListener() {
                         @Override
                         public void onImageMetadataChange(Key<?> key, Object oldValue,
                                                           Object newValue,
-                                                          CaptureResult result)
-                        {
+                                                          CaptureResult result) {
                             Integer state = result.get(CaptureResult.LENS_STATE);
 
                             // Forward changes if we have a new value and the camera
                             // A) Doesn't support lens state or B) lens state is
                             // reported and it is reported as moving.
                             if (newValue != null &&
-                                    (state == null || state == CameraMetadata.LENS_STATE_MOVING))
-                            {
+                                    (state == null || state == CameraMetadata.LENS_STATE_MOVING)) {
                                 mFocusDistanceListener.onFocusDistance((float) newValue, mLensRange);
                             }
                         }
@@ -443,8 +338,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
     /**
      * @return The largest supported picture size.
      */
-    public Size getDefaultPictureSize()
-    {
+    public Size getDefaultPictureSize() {
         StreamConfigurationMap configs =
                 mCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         android.util.Size[] supportedSizes = configs.getOutputSizes(sCaptureImageFormat);
@@ -453,11 +347,9 @@ public class OneCameraZslImpl extends AbstractOneCamera
         android.util.Size largestSupportedSize = supportedSizes[0];
         long largestSupportedSizePixels =
                 largestSupportedSize.getWidth() * largestSupportedSize.getHeight();
-        for (int i = 0; i < supportedSizes.length; i++)
-        {
+        for (int i = 0; i < supportedSizes.length; i++) {
             long numPixels = supportedSizes[i].getWidth() * supportedSizes[i].getHeight();
-            if (numPixels > largestSupportedSizePixels)
-            {
+            if (numPixels > largestSupportedSizePixels) {
                 largestSupportedSize = supportedSizes[i];
                 largestSupportedSizePixels = numPixels;
             }
@@ -466,8 +358,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
         return new Size(largestSupportedSize.getWidth(), largestSupportedSize.getHeight());
     }
 
-    private void onShutterInvokeUI(final PhotoCaptureParameters params)
-    {
+    private void onShutterInvokeUI(final PhotoCaptureParameters params) {
         // Tell CaptureModule shutter has occurred so it can flash the screen.
         params.callback.onQuickExpose();
         // Play shutter click sound.
@@ -478,8 +369,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * Take a picture.
      */
     @Override
-    public void takePicture(final PhotoCaptureParameters params, final CaptureSession session)
-    {
+    public void takePicture(final PhotoCaptureParameters params, final CaptureSession session) {
         mReadyStateManager.setInput(ReadyStateRequirement.CAPTURE_NOT_IN_PROGRESS, false);
 
         boolean useZSL = ZSL_ENABLED;
@@ -488,11 +378,9 @@ public class OneCameraZslImpl extends AbstractOneCamera
         // this constraint.
         ArrayList<ImageCaptureManager.CapturedImageConstraint> zslConstraints =
                 new ArrayList<ImageCaptureManager.CapturedImageConstraint>();
-        zslConstraints.add(new ImageCaptureManager.CapturedImageConstraint()
-        {
+        zslConstraints.add(new ImageCaptureManager.CapturedImageConstraint() {
             @Override
-            public boolean satisfiesConstraint(TotalCaptureResult captureResult)
-            {
+            public boolean satisfiesConstraint(TotalCaptureResult captureResult) {
                 Long timestamp = captureResult.get(CaptureResult.SENSOR_TIMESTAMP);
                 Integer lensState = captureResult.get(CaptureResult.LENS_STATE);
                 Integer flashState = captureResult.get(CaptureResult.FLASH_STATE);
@@ -501,60 +389,48 @@ public class OneCameraZslImpl extends AbstractOneCamera
                 Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
                 Integer awbState = captureResult.get(CaptureResult.CONTROL_AWB_STATE);
 
-                if (lensState == null)
-                {
+                if (lensState == null) {
                     lensState = CaptureResult.LENS_STATE_STATIONARY;
                 }
-                if (flashState == null)
-                {
+                if (flashState == null) {
                     flashState = CaptureResult.FLASH_STATE_UNAVAILABLE;
                 }
-                if (flashMode == null)
-                {
+                if (flashMode == null) {
                     flashMode = CaptureResult.FLASH_MODE_OFF;
                 }
-                if (aeState == null)
-                {
+                if (aeState == null) {
                     aeState = CaptureResult.CONTROL_AE_STATE_INACTIVE;
                 }
-                if (afState == null)
-                {
+                if (afState == null) {
                     afState = CaptureResult.CONTROL_AF_STATE_INACTIVE;
                 }
-                if (awbState == null)
-                {
+                if (awbState == null) {
                     awbState = CaptureResult.CONTROL_AWB_STATE_INACTIVE;
                 }
 
-                synchronized (mCapturedImageTimestamps)
-                {
-                    if (mCapturedImageTimestamps.contains(timestamp))
-                    {
+                synchronized (mCapturedImageTimestamps) {
+                    if (mCapturedImageTimestamps.contains(timestamp)) {
                         // Don't save frames which we've already saved.
                         return false;
                     }
                 }
 
-                if (lensState == CaptureResult.LENS_STATE_MOVING)
-                {
+                if (lensState == CaptureResult.LENS_STATE_MOVING) {
                     // If we know the lens was moving, don't use this image.
                     return false;
                 }
 
                 if (aeState == CaptureResult.CONTROL_AE_STATE_SEARCHING
-                        || aeState == CaptureResult.CONTROL_AE_STATE_PRECAPTURE)
-                {
+                        || aeState == CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
                     return false;
                 }
 
                 if (afState == CaptureResult.CONTROL_AF_STATE_ACTIVE_SCAN
-                        || afState == CaptureResult.CONTROL_AF_STATE_PASSIVE_SCAN)
-                {
+                        || afState == CaptureResult.CONTROL_AF_STATE_PASSIVE_SCAN) {
                     return false;
                 }
 
-                if (awbState == CaptureResult.CONTROL_AWB_STATE_SEARCHING)
-                {
+                if (awbState == CaptureResult.CONTROL_AWB_STATE_SEARCHING) {
                     return false;
                 }
 
@@ -565,11 +441,9 @@ public class OneCameraZslImpl extends AbstractOneCamera
         // requested. See {@link RequestTag.EXPLICIT_CAPTURE}.
         ArrayList<ImageCaptureManager.CapturedImageConstraint> singleCaptureConstraint =
                 new ArrayList<ImageCaptureManager.CapturedImageConstraint>();
-        singleCaptureConstraint.add(new ImageCaptureManager.CapturedImageConstraint()
-        {
+        singleCaptureConstraint.add(new ImageCaptureManager.CapturedImageConstraint() {
             @Override
-            public boolean satisfiesConstraint(TotalCaptureResult captureResult)
-            {
+            public boolean satisfiesConstraint(TotalCaptureResult captureResult) {
                 Object tag = captureResult.getRequest().getTag();
                 return tag == RequestTag.EXPLICIT_CAPTURE;
             }
@@ -577,16 +451,13 @@ public class OneCameraZslImpl extends AbstractOneCamera
 
         // If we can use ZSL, try to save a previously-captured frame, if an
         // acceptable one exists in the buffer.
-        if (useZSL)
-        {
+        if (useZSL) {
             boolean capturedPreviousFrame = mCaptureManager.tryCaptureExistingImage(
                     new ImageCaptureTask(params, session), zslConstraints);
-            if (capturedPreviousFrame)
-            {
+            if (capturedPreviousFrame) {
                 Log.v(TAG, "Saving previous frame");
                 onShutterInvokeUI(params);
-            } else
-            {
+            } else {
                 Log.v(TAG, "No good image Available.  Capturing next available good image.");
                 // If there was no good frame available in the ring buffer
                 // already, capture the next good image.
@@ -594,8 +465,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
 
                 Flash flashMode = Flash.OFF;
 
-                if (flashMode == Flash.ON || flashMode == Flash.AUTO)
-                {
+                if (flashMode == Flash.ON || flashMode == Flash.AUTO) {
                     // We must issue a request for a single capture using the
                     // flash, including an AE precapture trigger.
 
@@ -613,17 +483,14 @@ public class OneCameraZslImpl extends AbstractOneCamera
                             singleCaptureConstraint);
 
                     mCaptureManager.addMetadataChangeListener(CaptureResult.CONTROL_AE_STATE,
-                            new MetadataChangeListener()
-                            {
+                            new MetadataChangeListener() {
                                 @Override
                                 public void onImageMetadataChange(Key<?> key, Object oldValue,
                                                                   Object newValue,
-                                                                  CaptureResult result)
-                                {
+                                                                  CaptureResult result) {
                                     Log.v(TAG, "AE State Changed");
                                     if (oldValue.equals(Integer.valueOf(
-                                            CaptureResult.CONTROL_AE_STATE_PRECAPTURE)))
-                                    {
+                                            CaptureResult.CONTROL_AE_STATE_PRECAPTURE))) {
                                         mCaptureManager.removeMetadataChangeListener(key, this);
                                         sendSingleRequest(params);
                                         // TODO: Delay this until
@@ -634,8 +501,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
                             });
 
                     sendAutoExposureTriggerRequest(flashMode);
-                } else
-                {
+                } else {
                     // We may get here if, for example, the auto focus is in the
                     // middle of a scan.
                     // If the flash is off, we should just wait for the next
@@ -645,8 +511,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
                             zslConstraints);
                 }
             }
-        } else
-        {
+        } else {
             // TODO If we can't save a previous frame, create a new capture
             // request to do what we need (e.g. flash) and call
             // captureNextImage().
@@ -655,25 +520,20 @@ public class OneCameraZslImpl extends AbstractOneCamera
     }
 
     @Override
-    public void startPreview(Surface previewSurface, CaptureReadyCallback listener)
-    {
+    public void startPreview(Surface previewSurface, CaptureReadyCallback listener) {
         mPreviewSurface = previewSurface;
         setupAsync(mPreviewSurface, listener);
     }
 
     @Override
-    public void close()
-    {
-        if (mIsClosed)
-        {
+    public void close() {
+        if (mIsClosed) {
             Log.w(TAG, "Camera is already closed.");
             return;
         }
-        try
-        {
+        try {
             mCaptureSession.stopRepeating();
-        } catch (CameraAccessException e)
-        {
+        } catch (CameraAccessException e) {
             Log.e(TAG, "Could not abort captures in progress.");
         }
         mIsClosed = true;
@@ -683,27 +543,23 @@ public class OneCameraZslImpl extends AbstractOneCamera
         mCaptureImageReader.close();
     }
 
-    public Size[] getSupportedPreviewSizes()
-    {
+    public Size[] getSupportedPreviewSizes() {
         StreamConfigurationMap config =
                 mCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         return Size.convert(config.getOutputSizes(sCaptureImageFormat));
     }
 
-    public float getFullSizeAspectRatio()
-    {
+    public float getFullSizeAspectRatio() {
         return mFullSizeAspectRatio;
     }
 
     @Override
-    public Facing getDirection()
-    {
+    public Facing getDirection() {
         return mDirection.getDirection();
     }
 
     private void savePicture(Image image, final PhotoCaptureParameters captureParams,
-                             CaptureSession session, CaptureResult result)
-    {
+                             CaptureSession session, CaptureResult result) {
         int heading = captureParams.heading;
         int degrees = CameraUtil.getJpegRotation(captureParams.orientation, mCharacteristics);
 
@@ -720,8 +576,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
                 exif.buildTag(ExifInterface.TAG_ORIENTATION, ExifInterface.Orientation.TOP_LEFT));
 
         // Set GPS heading direction based on sensor, if location is on.
-        if (heading >= 0)
-        {
+        if (heading >= 0) {
             ExifTag directionRefTag = exif.buildTag(ExifInterface.TAG_GPS_IMG_DIRECTION_REF,
                     ExifInterface.GpsTrackRef.MAGNETIC_DIRECTION);
             ExifTag directionTag =
@@ -735,17 +590,14 @@ public class OneCameraZslImpl extends AbstractOneCamera
         ListenableFuture<Optional<Uri>> futureUri = session.saveAndFinish(
                 acquireJpegBytes(image, degrees),
                 size.getWidth(), size.getHeight(), 0, exif);
-        Futures.addCallback(futureUri, new FutureCallback<Optional<Uri>>()
-        {
+        Futures.addCallback(futureUri, new FutureCallback<Optional<Uri>>() {
             @Override
-            public void onSuccess(Optional<Uri> uriOptional)
-            {
+            public void onSuccess(Optional<Uri> uriOptional) {
                 captureParams.callback.onPictureSaved(uriOptional.orNull());
             }
 
             @Override
-            public void onFailure(Throwable throwable)
-            {
+            public void onFailure(Throwable throwable) {
                 captureParams.callback.onPictureSaved(null);
             }
         });
@@ -758,13 +610,10 @@ public class OneCameraZslImpl extends AbstractOneCamera
      *                       rendered.
      * @param listener       called when setup is completed.
      */
-    private void setupAsync(final Surface previewSurface, final CaptureReadyCallback listener)
-    {
-        mCameraHandler.post(new Runnable()
-        {
+    private void setupAsync(final Surface previewSurface, final CaptureReadyCallback listener) {
+        mCameraHandler.post(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 setup(previewSurface, listener);
             }
         });
@@ -777,12 +626,9 @@ public class OneCameraZslImpl extends AbstractOneCamera
      *                       rendered.
      * @param listener       called when the setup is completed.
      */
-    private void setup(Surface previewSurface, final CaptureReadyCallback listener)
-    {
-        try
-        {
-            if (mCaptureSession != null)
-            {
+    private void setup(Surface previewSurface, final CaptureReadyCallback listener) {
+        try {
+            if (mCaptureSession != null) {
                 mCaptureSession.abortCaptures();
                 mCaptureSession = null;
             }
@@ -790,59 +636,49 @@ public class OneCameraZslImpl extends AbstractOneCamera
             outputSurfaces.add(previewSurface);
             outputSurfaces.add(mCaptureImageReader.getSurface());
 
-            mDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback()
-            {
+            mDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
                 @Override
-                public void onConfigureFailed(CameraCaptureSession session)
-                {
+                public void onConfigureFailed(CameraCaptureSession session) {
                     listener.onSetupFailed();
                 }
 
                 @Override
-                public void onConfigured(CameraCaptureSession session)
-                {
+                public void onConfigured(CameraCaptureSession session) {
                     mCaptureSession = session;
                     mAFRegions = ZERO_WEIGHT_3A_REGION;
                     mAERegions = ZERO_WEIGHT_3A_REGION;
                     mZoomValue = 1f;
                     mCropRegion = cropRegionForZoom(mZoomValue);
                     boolean success = sendRepeatingCaptureRequest();
-                    if (success)
-                    {
+                    if (success) {
                         mReadyStateManager.setInput(ReadyStateRequirement.CAPTURE_NOT_IN_PROGRESS,
                                 true);
                         mReadyStateManager.notifyListeners();
                         listener.onReadyForCapture();
-                    } else
-                    {
+                    } else {
                         listener.onSetupFailed();
                     }
                 }
 
                 @Override
-                public void onClosed(CameraCaptureSession session)
-                {
+                public void onClosed(CameraCaptureSession session) {
                     super.onClosed(session);
                 }
             }, mCameraHandler);
-        } catch (CameraAccessException ex)
-        {
+        } catch (CameraAccessException ex) {
             Log.e(TAG, "Could not set up capture session", ex);
             listener.onSetupFailed();
         }
     }
 
-    private void addRegionsToCaptureRequestBuilder(CaptureRequest.Builder builder)
-    {
+    private void addRegionsToCaptureRequestBuilder(CaptureRequest.Builder builder) {
         builder.set(CaptureRequest.CONTROL_AE_REGIONS, mAERegions);
         builder.set(CaptureRequest.CONTROL_AF_REGIONS, mAFRegions);
         builder.set(CaptureRequest.SCALER_CROP_REGION, mCropRegion);
     }
 
-    private void addFlashToCaptureRequestBuilder(CaptureRequest.Builder builder, Flash flashMode)
-    {
-        switch (flashMode)
-        {
+    private void addFlashToCaptureRequestBuilder(CaptureRequest.Builder builder, Flash flashMode) {
+        switch (flashMode) {
             case ON:
                 builder.set(CaptureRequest.CONTROL_AE_MODE,
                         CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
@@ -865,24 +701,19 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * @return true if successful, false if there was an error submitting the
      * capture request.
      */
-    private boolean sendRepeatingCaptureRequest()
-    {
+    private boolean sendRepeatingCaptureRequest() {
         Log.v(TAG, "sendRepeatingCaptureRequest()");
-        try
-        {
+        try {
             CaptureRequest.Builder builder;
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_ZERO_SHUTTER_LAG);
-            } else
-            {
+            } else {
                 builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             }
 
             builder.addTarget(mPreviewSurface);
 
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder.addTarget(mCaptureImageReader.getSurface());
             }
 
@@ -899,13 +730,10 @@ public class OneCameraZslImpl extends AbstractOneCamera
 
             mCaptureSession.setRepeatingRequest(builder.build(), mCaptureManager, mCameraHandler);
             return true;
-        } catch (CameraAccessException e)
-        {
-            if (ZSL_ENABLED)
-            {
+        } catch (CameraAccessException e) {
+            if (ZSL_ENABLED) {
                 Log.v(TAG, "Could not execute zero-shutter-lag repeating request.", e);
-            } else
-            {
+            } else {
                 Log.v(TAG, "Could not execute preview request.", e);
             }
             return false;
@@ -918,11 +746,9 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * @return true if successful, false if there was an error submitting the
      * capture request.
      */
-    private boolean sendSingleRequest(OneCamera.PhotoCaptureParameters params)
-    {
+    private boolean sendSingleRequest(OneCamera.PhotoCaptureParameters params) {
         Log.v(TAG, "sendSingleRequest()");
-        try
-        {
+        try {
             CaptureRequest.Builder builder;
             builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
 
@@ -943,8 +769,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
             // Tag this as a special request which should be saved.
             builder.setTag(RequestTag.EXPLICIT_CAPTURE);
 
-            if (sCaptureImageFormat == ImageFormat.JPEG)
-            {
+            if (sCaptureImageFormat == ImageFormat.JPEG) {
                 builder.set(CaptureRequest.JPEG_QUALITY, (byte) (JPEG_QUALITY));
                 builder.set(CaptureRequest.JPEG_ORIENTATION,
                         CameraUtil.getJpegRotation(params.orientation, mCharacteristics));
@@ -952,24 +777,20 @@ public class OneCameraZslImpl extends AbstractOneCamera
 
             mCaptureSession.capture(builder.build(), mCaptureManager, mCameraHandler);
             return true;
-        } catch (CameraAccessException e)
-        {
+        } catch (CameraAccessException e) {
             Log.v(TAG, "Could not execute single still capture request.", e);
             return false;
         }
     }
 
-    private boolean sendRepeatingBurstCaptureRequest()
-    {
+    private boolean sendRepeatingBurstCaptureRequest() {
         Log.v(TAG, "sendRepeatingBurstCaptureRequest()");
-        try
-        {
+        try {
             CaptureRequest.Builder builder;
             builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_VIDEO_SNAPSHOT);
             builder.addTarget(mPreviewSurface);
 
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder.addTarget(mCaptureImageReader.getSurface());
             }
 
@@ -985,31 +806,25 @@ public class OneCameraZslImpl extends AbstractOneCamera
 
             mCaptureSession.setRepeatingRequest(builder.build(), mCaptureManager, mCameraHandler);
             return true;
-        } catch (CameraAccessException e)
-        {
+        } catch (CameraAccessException e) {
             Log.v(TAG, "Could not send repeating burst capture request.", e);
             return false;
         }
     }
 
-    private boolean sendAutoExposureTriggerRequest(Flash flashMode)
-    {
+    private boolean sendAutoExposureTriggerRequest(Flash flashMode) {
         Log.v(TAG, "sendAutoExposureTriggerRequest()");
-        try
-        {
+        try {
             CaptureRequest.Builder builder;
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_ZERO_SHUTTER_LAG);
-            } else
-            {
+            } else {
                 builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             }
 
             builder.addTarget(mPreviewSurface);
 
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder.addTarget(mCaptureImageReader.getSurface());
             }
 
@@ -1024,8 +839,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
             mCaptureSession.capture(builder.build(), mCaptureManager, mCameraHandler);
 
             return true;
-        } catch (CameraAccessException e)
-        {
+        } catch (CameraAccessException e) {
             Log.v(TAG, "Could not execute auto exposure trigger request.", e);
             return false;
         }
@@ -1033,24 +847,19 @@ public class OneCameraZslImpl extends AbstractOneCamera
 
     /**
      */
-    private boolean sendAutoFocusTriggerRequest()
-    {
+    private boolean sendAutoFocusTriggerRequest() {
         Log.v(TAG, "sendAutoFocusTriggerRequest()");
-        try
-        {
+        try {
             CaptureRequest.Builder builder;
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_ZERO_SHUTTER_LAG);
-            } else
-            {
+            } else {
                 builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             }
 
             builder.addTarget(mPreviewSurface);
 
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder.addTarget(mCaptureImageReader.getSurface());
             }
 
@@ -1064,8 +873,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
             mCaptureSession.capture(builder.build(), mCaptureManager, mCameraHandler);
 
             return true;
-        } catch (CameraAccessException e)
-        {
+        } catch (CameraAccessException e) {
             Log.v(TAG, "Could not execute auto focus trigger request.", e);
             return false;
         }
@@ -1078,24 +886,19 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * @return true if successful, false if there was an error submitting the
      * capture request.
      */
-    private boolean sendAutoFocusHoldRequest()
-    {
+    private boolean sendAutoFocusHoldRequest() {
         Log.v(TAG, "sendAutoFocusHoldRequest()");
-        try
-        {
+        try {
             CaptureRequest.Builder builder;
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_ZERO_SHUTTER_LAG);
-            } else
-            {
+            } else {
                 builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             }
 
             builder.addTarget(mPreviewSurface);
 
-            if (ZSL_ENABLED)
-            {
+            if (ZSL_ENABLED) {
                 builder.addTarget(mCaptureImageReader.getSurface());
             }
 
@@ -1110,25 +913,10 @@ public class OneCameraZslImpl extends AbstractOneCamera
             mCaptureSession.setRepeatingRequest(builder.build(), mCaptureManager, mCameraHandler);
 
             return true;
-        } catch (CameraAccessException e)
-        {
+        } catch (CameraAccessException e) {
             Log.v(TAG, "Could not execute auto focus hold request.", e);
             return false;
         }
-    }
-
-    /**
-     * Calculate the aspect ratio of the full size capture on this device.
-     *
-     * @param characteristics the characteristics of the camera device.
-     * @return The aspect ration, in terms of width/height of the full capture
-     * size.
-     */
-    private static float calculateFullSizeAspectRatio(CameraCharacteristics characteristics)
-    {
-        Rect activeArraySize =
-                characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
-        return ((float) activeArraySize.width()) / activeArraySize.height();
     }
 
     /**
@@ -1140,16 +928,12 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * @return The size of the final rotated image
      */
     private Size getImageSizeForOrientation(int originalWidth, int originalHeight,
-                                            int orientation)
-    {
-        if (orientation == 0 || orientation == 180)
-        {
+                                            int orientation) {
+        if (orientation == 0 || orientation == 180) {
             return new Size(originalWidth, originalHeight);
-        } else if (orientation == 90 || orientation == 270)
-        {
+        } else if (orientation == 90 || orientation == 270) {
             return new Size(originalHeight, originalWidth);
-        } else
-        {
+        } else {
             throw new InvalidParameterException("Orientation not supported.");
         }
     }
@@ -1164,12 +948,10 @@ public class OneCameraZslImpl extends AbstractOneCamera
      *                only applied to YUV images.
      * @return The bytes of the JPEG image. Newly allocated.
      */
-    private byte[] acquireJpegBytes(Image img, int degrees)
-    {
+    private byte[] acquireJpegBytes(Image img, int degrees) {
         ByteBuffer buffer;
 
-        if (img.getFormat() == ImageFormat.JPEG)
-        {
+        if (img.getFormat() == ImageFormat.JPEG) {
             Image.Plane plane0 = img.getPlanes()[0];
             buffer = plane0.getBuffer();
 
@@ -1177,11 +959,9 @@ public class OneCameraZslImpl extends AbstractOneCamera
             buffer.get(imageBytes);
             buffer.rewind();
             return imageBytes;
-        } else if (img.getFormat() == ImageFormat.YUV_420_888)
-        {
+        } else if (img.getFormat() == ImageFormat.YUV_420_888) {
             buffer = mJpegByteBufferPool.acquire();
-            if (buffer == null)
-            {
+            if (buffer == null) {
                 buffer = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 3);
             }
 
@@ -1189,8 +969,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
                     new AndroidImageProxy(img), buffer, JPEG_QUALITY,
                     degrees);
 
-            if (numBytes < 0)
-            {
+            if (numBytes < 0) {
                 throw new RuntimeException("Error compressing jpeg.");
             }
 
@@ -1203,14 +982,12 @@ public class OneCameraZslImpl extends AbstractOneCamera
             mJpegByteBufferPool.release(buffer);
 
             return imageBytes;
-        } else
-        {
+        } else {
             throw new RuntimeException("Unsupported image format.");
         }
     }
 
-    private void startAFCycle()
-    {
+    private void startAFCycle() {
         // Clean up any existing AF cycle's pending callbacks.
         mCameraHandler.removeCallbacksAndMessages(FOCUS_RESUME_CALLBACK_TOKEN);
 
@@ -1224,11 +1001,9 @@ public class OneCameraZslImpl extends AbstractOneCamera
 
         // Waits Settings3A.getFocusHoldMillis() milliseconds before sending
         // a request for a regular preview stream to resume.
-        mCameraHandler.postAtTime(new Runnable()
-                                  {
+        mCameraHandler.postAtTime(new Runnable() {
                                       @Override
-                                      public void run()
-                                      {
+                                      public void run() {
                                           mAERegions = ZERO_WEIGHT_3A_REGION;
                                           mAFRegions = ZERO_WEIGHT_3A_REGION;
                                           sendRepeatingCaptureRequest();
@@ -1242,8 +1017,7 @@ public class OneCameraZslImpl extends AbstractOneCamera
      * float)
      */
     @Override
-    public void triggerFocusAndMeterAtPoint(float nx, float ny)
-    {
+    public void triggerFocusAndMeterAtPoint(float nx, float ny) {
         int sensorOrientation = mCharacteristics.get(
                 CameraCharacteristics.SENSOR_ORIENTATION);
         mAERegions = AutoFocusHelper.aeRegionsForNormalizedCoord(nx, ny, mCropRegion, sensorOrientation);
@@ -1253,10 +1027,8 @@ public class OneCameraZslImpl extends AbstractOneCamera
     }
 
     @Override
-    public Size pickPreviewSize(Size pictureSize, Context context)
-    {
-        if (pictureSize == null)
-        {
+    public Size pickPreviewSize(Size pictureSize, Context context) {
+        if (pictureSize == null) {
             // TODO The default should be selected by the caller, and
             // pictureSize should never be null.
             pictureSize = getDefaultPictureSize();
@@ -1267,21 +1039,99 @@ public class OneCameraZslImpl extends AbstractOneCamera
     }
 
     @Override
-    public float getMaxZoom()
-    {
+    public float getMaxZoom() {
         return mCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
     }
 
     @Override
-    public void setZoom(float zoom)
-    {
+    public void setZoom(float zoom) {
         mZoomValue = zoom;
         mCropRegion = cropRegionForZoom(zoom);
         sendRepeatingCaptureRequest();
     }
 
-    private Rect cropRegionForZoom(float zoom)
-    {
+    private Rect cropRegionForZoom(float zoom) {
         return AutoFocusHelper.cropRegionForZoom(mCharacteristics, zoom);
+    }
+
+    /**
+     * Tags which may be used in CaptureRequests.
+     */
+    private static enum RequestTag {
+        /**
+         * Indicates that the request was explicitly sent for a single
+         * high-quality still capture. Unlike other requests, such as the
+         * repeating (ZSL) stream and AF/AE triggers, requests with this tag
+         * should always be saved.
+         */
+        EXPLICIT_CAPTURE
+    }
+
+    /**
+     * Ready state (typically displayed by the UI shutter-button) depends on two
+     * things:<br>
+     * <ol>
+     * <li>{@link #mCaptureManager} must be ready.</li>
+     * <li>We must not be in the process of capturing a single, high-quality,
+     * image.</li>
+     * </ol>
+     * See {@link ListenerCombiner} and {@link #mReadyStateManager} for
+     * details of how this is managed.
+     */
+    private static enum ReadyStateRequirement {
+        CAPTURE_MANAGER_READY, CAPTURE_NOT_IN_PROGRESS
+    }
+
+    /**
+     * An {@link ImageCaptureListener} which will compress and save an image to
+     * disk.
+     */
+    private class ImageCaptureTask implements ImageCaptureListener {
+        private final PhotoCaptureParameters mParams;
+        private final CaptureSession mSession;
+
+        public ImageCaptureTask(PhotoCaptureParameters parameters, CaptureSession session) {
+            mParams = parameters;
+            mSession = session;
+        }
+
+        @Override
+        public void onImageCaptured(Image image, TotalCaptureResult captureResult) {
+            long timestamp = captureResult.get(CaptureResult.SENSOR_TIMESTAMP);
+
+            // We should only capture the image if it hasn't been captured
+            // before. Synchronization is necessary since
+            // mCapturedImageTimestamps is read & modified elsewhere.
+            synchronized (mCapturedImageTimestamps) {
+                if (!mCapturedImageTimestamps.contains(timestamp)) {
+                    mCapturedImageTimestamps.add(timestamp);
+                } else {
+                    // There was a more recent (or identical) image which has
+                    // begun being saved, so abort.
+                    return;
+                }
+
+                // Clear out old timestamps from the set.
+                // We must keep old timestamps in the set a little longer (a
+                // factor of 2 seems adequate) to ensure they are cleared out of
+                // the ring buffer before their timestamp is removed from the
+                // set.
+                long maxTimestamps = MAX_CAPTURE_IMAGES * 2;
+                if (mCapturedImageTimestamps.size() > maxTimestamps) {
+                    ArrayList<Long> timestamps = new ArrayList<Long>(mCapturedImageTimestamps);
+                    Collections.sort(timestamps);
+                    for (int i = 0; i < timestamps.size()
+                            && mCapturedImageTimestamps.size() > maxTimestamps; i++) {
+                        mCapturedImageTimestamps.remove(timestamps.get(i));
+                    }
+                }
+            }
+
+            mReadyStateManager.setInput(ReadyStateRequirement.CAPTURE_NOT_IN_PROGRESS, true);
+
+            savePicture(image, mParams, mSession, captureResult);
+            mParams.callback.onPictureTaken(mSession);
+            Log.v(TAG, "Image saved.  Frame number = " + captureResult.getFrameNumber());
+        }
     }
 }

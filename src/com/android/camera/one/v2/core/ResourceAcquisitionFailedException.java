@@ -21,15 +21,12 @@ package com.android.camera.one.v2.core;
  * underlying resources are no longer available because resources have been
  * closed.
  */
-public class ResourceAcquisitionFailedException extends Exception
-{
-    public ResourceAcquisitionFailedException()
-    {
+public class ResourceAcquisitionFailedException extends Exception {
+    public ResourceAcquisitionFailedException() {
         super();
     }
 
-    public ResourceAcquisitionFailedException(Exception reason)
-    {
+    public ResourceAcquisitionFailedException(Exception reason) {
         super(reason);
     }
 }

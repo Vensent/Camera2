@@ -5,11 +5,10 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.params.Face;
 import android.os.SystemClock;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import com.android.camera.exif.ExifInterface;
 import com.android.camera.one.v2.camera2proxy.CaptureResultProxy;
 import com.android.camera.ui.TouchCoordinate;
+import com.google.common.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +20,13 @@ import java.util.List;
  * attached to the CaptureSession so that we can collect information from both
  * the CaptureModule and the ImageBackend.
  */
-public class CaptureSessionStatsCollector
-{
+public class CaptureSessionStatsCollector {
 
+    protected final UsageStatistics mUsageStatistics;
     /**
      * Time when capture is completed in SystemClock.elapsedRealtime().
      */
     protected long mCaptureTimeMillis;
-    protected final UsageStatistics mUsageStatistics;
-
     // Define all fields as Objects so that we know whether they were set or not.
     // A required field
     protected Integer mMode;
@@ -54,8 +51,7 @@ public class CaptureSessionStatsCollector
     /**
      * Constructor
      */
-    public CaptureSessionStatsCollector()
-    {
+    public CaptureSessionStatsCollector() {
         mUsageStatistics = UsageStatistics.instance();
     }
 
@@ -63,8 +59,7 @@ public class CaptureSessionStatsCollector
      * Constructor for testing/dependency injection
      */
     @VisibleForTesting
-    public CaptureSessionStatsCollector(UsageStatistics usageStatistics)
-    {
+    public CaptureSessionStatsCollector(UsageStatistics usageStatistics) {
         mUsageStatistics = usageStatistics;
     }
 
@@ -75,17 +70,13 @@ public class CaptureSessionStatsCollector
      *
      * @param captureResult CaptureResults to be queried for capture event information
      */
-    public void decorateAtTimeOfCaptureRequestAvailable(CaptureResultProxy captureResult)
-    {
+    public void decorateAtTimeOfCaptureRequestAvailable(CaptureResultProxy captureResult) {
         Face[] facesCaptured = captureResult.get(CaptureResult.STATISTICS_FACES);
-        if (facesCaptured == null)
-        {
+        if (facesCaptured == null) {
             mFaceProxies = null;
-        } else
-        {
+        } else {
             mFaceProxies = new ArrayList<>(facesCaptured.length);
-            for (Face face : facesCaptured)
-            {
+            for (Face face : facesCaptured) {
                 mFaceProxies.add(Camera2FaceProxy.from(face));
             }
         }
@@ -122,8 +113,7 @@ public class CaptureSessionStatsCollector
             final TouchCoordinate touchCoordinate,
             final Boolean volumeButtonShutter,
             final Rect activeSensorSize
-    )
-    {
+    ) {
         mMode = mode;
         mFilename = filename;
         mIsFrontFacing = frontFacing;
@@ -147,27 +137,23 @@ public class CaptureSessionStatsCollector
      */
     public void decorateAtTimeWriteToDisk(
             final ExifInterface exifInterface
-    )
-    {
+    ) {
         mExifInterface = exifInterface;
     }
 
     /**
      * Called when image processing time begins.
      */
-    public void markProcessingTimeStart()
-    {
+    public void markProcessingTimeStart() {
         mCaptureTimeMillis = getElapsedRealTime();
     }
 
     /**
      * Send capture event to the UsageStatistics singleton.
      */
-    public void photoCaptureDoneEvent()
-    {
+    public void photoCaptureDoneEvent() {
         Float processingTime = (getElapsedRealTime() - mCaptureTimeMillis) / 1000f;
-        if (isValidForPhotoCaptureEvent())
-        {
+        if (isValidForPhotoCaptureEvent()) {
             mUsageStatistics.photoCaptureDoneEvent(
                     mMode, mFilename, mExifInterface, mIsFrontFacing,
                     mIsHdr, mZoom, mFlashSetting, mGridLinesOn, mTimerSeconds,
@@ -179,8 +165,7 @@ public class CaptureSessionStatsCollector
     /**
      * Returns whether all the fields in the CaptureSessionStatsCollector are set or not.
      */
-    public boolean isCompleteForPhotoCaptureEvent()
-    {
+    public boolean isCompleteForPhotoCaptureEvent() {
         return (mMode != null) &&
                 (mFilename != null) &&
                 (mExifInterface != null) &&
@@ -199,16 +184,14 @@ public class CaptureSessionStatsCollector
      *
      * @return whether state of collector is sufficient for PhotoCaptureEvent.
      */
-    public boolean isValidForPhotoCaptureEvent()
-    {
+    public boolean isValidForPhotoCaptureEvent() {
         return (mMode != null);
     }
 
     /**
      * Call to SystemClock.elapsedRealtime() that we can override for testing.
      */
-    public long getElapsedRealTime()
-    {
+    public long getElapsedRealTime() {
         return SystemClock.elapsedRealtime();
     }
 

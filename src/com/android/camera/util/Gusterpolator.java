@@ -23,21 +23,11 @@ import android.animation.TimeInterpolator;
  * <p>
  * TODO: Replace usages with ui.motion classes.
  */
-public class Gusterpolator implements TimeInterpolator
-{
+public class Gusterpolator implements TimeInterpolator {
     /**
      * An instance of {@link Gusterpolator}.
      */
     public static final Gusterpolator INSTANCE = new Gusterpolator();
-
-    /**
-     * To avoid users of this class creating multiple copies needlessly, the constructor is
-     * private.
-     */
-    private Gusterpolator()
-    {
-    }
-
     /**
      * Lookup table values.
      * Generated using a Bezier curve from (0,0) to (1,1) with control points:
@@ -61,19 +51,22 @@ public class Gusterpolator implements TimeInterpolator
             0.9866f, 0.9884f, 0.9901f, 0.9917f, 0.9931f, 0.9944f, 0.9955f, 0.9964f, 0.9973f,
             0.9981f, 0.9986f, 0.9992f, 0.9995f, 0.9998f, 1.0f, 1.0f
     };
-
     private static final float STEP_SIZE = 1.0f / (VALUES.length - 1);
 
+    /**
+     * To avoid users of this class creating multiple copies needlessly, the constructor is
+     * private.
+     */
+    private Gusterpolator() {
+    }
+
     @Override
-    public float getInterpolation(float input)
-    {
-        if (input >= 1.0f)
-        {
+    public float getInterpolation(float input) {
+        if (input >= 1.0f) {
             return 1.0f;
         }
 
-        if (input <= 0f)
-        {
+        if (input <= 0f) {
             return 0f;
         }
 

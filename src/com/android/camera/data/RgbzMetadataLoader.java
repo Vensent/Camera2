@@ -24,8 +24,7 @@ import com.android.camera.util.RefocusHelper;
 /**
  * Loads RGBZ data.
  */
-public class RgbzMetadataLoader
-{
+public class RgbzMetadataLoader {
 
     /**
      * Checks whether this file is an RGBZ file and fill in the metadata.
@@ -33,10 +32,8 @@ public class RgbzMetadataLoader
      * @param context The app context.
      */
     public static boolean loadRgbzMetadata(
-            final Context context, Uri contentUri, Metadata metadata)
-    {
-        if (RefocusHelper.isRGBZ(context, contentUri))
-        {
+            final Context context, Uri contentUri, Metadata metadata) {
+        if (RefocusHelper.isRGBZ(context, contentUri)) {
             metadata.setHasRgbzData(true);
             return true;
         }

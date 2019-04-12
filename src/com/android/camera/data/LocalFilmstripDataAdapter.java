@@ -30,20 +30,7 @@ import java.util.List;
  * and defines operations on the data in the local camera folder.
  */
 public interface LocalFilmstripDataAdapter extends FilmstripDataAdapter,
-        Preloader.ItemLoader<Integer, AsyncTask>, Preloader.ItemSource<Integer>
-{
-
-    public interface FilmstripItemListener
-    {
-        /**
-         * Metadata of a {@link FilmstripItem} is loaded on
-         * demand. Once the metadata is loaded this listener is notified.
-         *
-         * @param indexes The indexes of the data whose metadata has been
-         *                updated.
-         */
-        public void onMetadataUpdated(List<Integer> indexes);
-    }
+        Preloader.ItemLoader<Integer, AsyncTask>, Preloader.ItemSource<Integer> {
 
     /**
      * Request for loading any photos that may have been added to the
@@ -144,4 +131,15 @@ public interface LocalFilmstripDataAdapter extends FilmstripDataAdapter,
      * @return whether the metadata is already updated.
      */
     public boolean isMetadataUpdatedAt(int index);
+
+    public interface FilmstripItemListener {
+        /**
+         * Metadata of a {@link FilmstripItem} is loaded on
+         * demand. Once the metadata is loaded this listener is notified.
+         *
+         * @param indexes The indexes of the data whose metadata has been
+         *                updated.
+         */
+        public void onMetadataUpdated(List<Integer> indexes);
+    }
 }

@@ -29,20 +29,13 @@ import com.android.camera2.R;
  * Displays a dialog that allows people to choose whether they like to enable
  * location recording or not. Please instantiate this class programmatically.
  */
-public class LocationDialogLayout extends FrameLayout
-{
-
-    public interface LocationDialogListener
-    {
-        public void onConfirm(boolean locationRecordingEnabled);
-    }
+public class LocationDialogLayout extends FrameLayout {
 
     private LocationDialogListener mListener;
     private CheckBox mCheckBox;
     private View mConfirmButton;
     private int mLastOrientation;
     private boolean mLocationRecordingEnabled;
-
     /**
      * Constructs a new LocationDialogLayout object.
      *
@@ -50,8 +43,7 @@ public class LocationDialogLayout extends FrameLayout
      * @param defaultLocationRecordingEnabled Whether to enable location
      *                                        recording by default.
      */
-    public LocationDialogLayout(Context context, boolean defaultLocationRecordingEnabled)
-    {
+    public LocationDialogLayout(Context context, boolean defaultLocationRecordingEnabled) {
         super(context);
         mLocationRecordingEnabled = defaultLocationRecordingEnabled;
         mLastOrientation = context.getResources().getConfiguration().orientation;
@@ -60,17 +52,14 @@ public class LocationDialogLayout extends FrameLayout
         updateSubviewReferences();
     }
 
-    public void setListener(LocationDialogListener listener)
-    {
+    public void setListener(LocationDialogListener listener) {
         mListener = listener;
     }
 
     @Override
-    public void onConfigurationChanged(Configuration config)
-    {
+    public void onConfigurationChanged(Configuration config) {
         super.onConfigurationChanged(config);
-        if (config.orientation == mLastOrientation)
-        {
+        if (config.orientation == mLastOrientation) {
             return;
         }
         mLastOrientation = config.orientation;
@@ -80,30 +69,28 @@ public class LocationDialogLayout extends FrameLayout
         updateSubviewReferences();
     }
 
-    private void updateSubviewReferences()
-    {
+    private void updateSubviewReferences() {
         mCheckBox = (CheckBox) findViewById(R.id.check_box);
         mCheckBox.setChecked(mLocationRecordingEnabled);
-        mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
+        mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-            {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mLocationRecordingEnabled = isChecked;
             }
         });
 
         mConfirmButton = findViewById(R.id.confirm_button);
-        mConfirmButton.setOnClickListener(new OnClickListener()
-        {
+        mConfirmButton.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
-                if (mListener != null)
-                {
+            public void onClick(View v) {
+                if (mListener != null) {
                     mListener.onConfirm(mLocationRecordingEnabled);
                 }
             }
         });
+    }
+
+    public interface LocationDialogListener {
+        public void onConfirm(boolean locationRecordingEnabled);
     }
 }

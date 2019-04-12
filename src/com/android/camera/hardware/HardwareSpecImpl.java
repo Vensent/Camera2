@@ -19,7 +19,6 @@ package com.android.camera.hardware;
 import com.android.camera.app.CameraProvider;
 import com.android.camera.one.OneCamera;
 import com.android.camera.one.config.OneCameraFeatureConfig;
-import com.android.camera.util.GcamHelper;
 import com.android.ex.camera2.portability.CameraCapabilities;
 
 /**
@@ -28,8 +27,7 @@ import com.android.ex.camera2.portability.CameraCapabilities;
  * a camera device opened using the {@link android.hardware.Camera}
  * api.
  */
-public class HardwareSpecImpl implements HardwareSpec
-{
+public class HardwareSpecImpl implements HardwareSpec {
 
     private final boolean mIsFrontCameraSupported;
     private final boolean mIsHdrSupported;
@@ -41,8 +39,7 @@ public class HardwareSpecImpl implements HardwareSpec
      * {@link com.android.camera.hardware.HardwareSpec} methods
      */
     public HardwareSpecImpl(CameraProvider provider, CameraCapabilities capabilities,
-                            OneCameraFeatureConfig featureConfig, boolean isFrontCamera)
-    {
+                            OneCameraFeatureConfig featureConfig, boolean isFrontCamera) {
         // Cache whether front camera is supported.
         mIsFrontCameraSupported = (provider.getFirstFrontCameraId() != -1);
 
@@ -60,26 +57,22 @@ public class HardwareSpecImpl implements HardwareSpec
     }
 
     @Override
-    public boolean isFrontCameraSupported()
-    {
+    public boolean isFrontCameraSupported() {
         return mIsFrontCameraSupported;
     }
 
     @Override
-    public boolean isHdrSupported()
-    {
+    public boolean isHdrSupported() {
         return mIsHdrSupported;
     }
 
     @Override
-    public boolean isHdrPlusSupported()
-    {
+    public boolean isHdrPlusSupported() {
         return mIsHdrPlusSupported;
     }
 
     @Override
-    public boolean isFlashSupported()
-    {
+    public boolean isFlashSupported() {
         return mIsFlashSupported;
     }
 
@@ -87,8 +80,7 @@ public class HardwareSpecImpl implements HardwareSpec
      * Returns whether flash is supported and flash has more than
      * one possible value.
      */
-    private boolean isFlashSupported(CameraCapabilities capabilities)
-    {
+    private boolean isFlashSupported(CameraCapabilities capabilities) {
         return (capabilities.supports(CameraCapabilities.FlashMode.AUTO) || capabilities.supports
                 (CameraCapabilities.FlashMode.ON));
     }

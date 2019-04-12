@@ -19,8 +19,7 @@ package com.android.camera.data;
 import android.net.Uri;
 import android.provider.MediaStore;
 
-public class VideoDataQuery
-{
+public class VideoDataQuery {
     public static final Uri CONTENT_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
     public static final int COL_ID = 0;

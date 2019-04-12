@@ -33,8 +33,8 @@ import com.android.camera.one.v2.autofocus.ManualAutoFocus;
 import com.android.camera.one.v2.autofocus.ManualAutoFocusFactory;
 import com.android.camera.one.v2.commands.CameraCommand;
 import com.android.camera.one.v2.commands.CameraCommandExecutor;
-import com.android.camera.one.v2.commands.ResettingRunnableCameraCommand;
 import com.android.camera.one.v2.commands.PreviewCommandFactory;
+import com.android.camera.one.v2.commands.ResettingRunnableCameraCommand;
 import com.android.camera.one.v2.core.FrameServer;
 import com.android.camera.one.v2.core.RequestBuilder;
 import com.android.camera.one.v2.core.RequestTemplate;
@@ -60,8 +60,7 @@ import java.util.concurrent.Executors;
  * </p>
  */
 @TargetApi(VERSION_CODES.LOLLIPOP)
-public class BasicCameraFactory
-{
+public class BasicCameraFactory {
     private final ManualAutoFocus mManualAutoFocus;
     private final RequestBuilder.Factory mMeteredZoomedRequestBuilder;
     private final Runnable mPreviewUpdater;
@@ -86,8 +85,7 @@ public class BasicCameraFactory
                               Observable<Integer> exposure,
                               Observable<Float> zoom,
                               Observable<Boolean> hdrSceneSetting,
-                              int templateType)
-    {
+                              int templateType) {
         RequestTemplate requestTemplate = new RequestTemplate(rootTemplate);
         requestTemplate.setParam(
                 CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
@@ -159,18 +157,15 @@ public class BasicCameraFactory
         mMeteredZoomedRequestBuilder = requestTemplate;
     }
 
-    public RequestBuilder.Factory provideMeteredZoomedRequestBuilder()
-    {
+    public RequestBuilder.Factory provideMeteredZoomedRequestBuilder() {
         return mMeteredZoomedRequestBuilder;
     }
 
-    public ManualAutoFocus provideManualAutoFocus()
-    {
+    public ManualAutoFocus provideManualAutoFocus() {
         return mManualAutoFocus;
     }
 
-    public Runnable providePreviewUpdater()
-    {
+    public Runnable providePreviewUpdater() {
         return mPreviewUpdater;
     }
 }

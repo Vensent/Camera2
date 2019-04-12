@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2014 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2014 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -18,14 +17,15 @@
     android:id="@+id/settings_cling"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:visibility="invisible"
     android:paddingTop="@dimen/settings_cling_triangle_height"
-    android:paddingBottom="@dimen/settings_cling_triangle_height">
+    android:paddingBottom="@dimen/settings_cling_triangle_height"
+    android:visibility="invisible">
+
     <TextView
-      android:layout_width="@dimen/settings_cling_width"
-      android:layout_height="wrap_content"
-      android:text="@string/settings_cling_text"
-      android:background="@drawable/settings_cling"
-      android:textColor="@android:color/white"
-      android:layout_gravity="top|left"/>
+        android:layout_width="@dimen/settings_cling_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|left"
+        android:background="@drawable/settings_cling"
+        android:text="@string/settings_cling_text"
+        android:textColor="@android:color/white" />
 </com.android.camera.widget.SettingsCling>

@@ -16,8 +16,6 @@
 
 package com.android.camera.one.v2.core;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import android.hardware.camera2.CameraAccessException;
 
 import com.android.camera.one.v2.camera2proxy.CameraCaptureSessionClosedException;
@@ -28,80 +26,27 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static com.google.common.base.Preconditions.checkState;
+
 /**
  * Implements a FrameServer by managing exclusive access to a single
  * {@link FrameServer.Session}.
  */
-public final class FrameServerImpl implements FrameServer
-{
-    public class Session implements FrameServer.Session
-    {
-        private final Object mLock;
-        private boolean mClosed;
-
-        private Session()
-        {
-            mLock = new Object();
-            mClosed = false;
-        }
-
-        @Override
-        public void submitRequest(List<Request> burstRequests, RequestType type)
-                throws CameraAccessException, InterruptedException,
-                CameraCaptureSessionClosedException, ResourceAcquisitionFailedException
-        {
-            synchronized (mLock)
-            {
-                try
-                {
-                    if (mClosed)
-                    {
-                        throw new SessionClosedException();
-                    }
-
-                    mCaptureSession.submitRequest(burstRequests, type);
-                } catch (Exception e)
-                {
-                    for (Request r : burstRequests)
-                    {
-                        r.abort();
-                    }
-                    throw e;
-                }
-            }
-        }
-
-        @Override
-        public void close()
-        {
-            synchronized (mLock)
-            {
-                if (!mClosed)
-                {
-                    mClosed = true;
-                    mCameraLock.unlock();
-                }
-            }
-        }
-    }
-
+public final class FrameServerImpl implements FrameServer {
     private final FrameServer.Session mCaptureSession;
     private final ReentrantLock mCameraLock;
-
     /**
      * @param captureSession The underlying session to manage access to. Note
      *                       that this will never close the session.
      */
-    public FrameServerImpl(FrameServer.Session captureSession)
-    {
+    public FrameServerImpl(FrameServer.Session captureSession) {
         mCaptureSession = captureSession;
         mCameraLock = new ReentrantLock(true);
     }
 
     @Override
     @Nonnull
-    public Session createExclusiveSession() throws InterruptedException
-    {
+    public Session createExclusiveSession() throws InterruptedException {
         checkState(!mCameraLock.isHeldByCurrentThread(), "Cannot acquire another " +
                 "FrameServer.Session on the same thread.");
         mCameraLock.lockInterruptibly();
@@ -110,18 +55,54 @@ public final class FrameServerImpl implements FrameServer
 
     @Override
     @Nullable
-    public Session tryCreateExclusiveSession()
-    {
-        if (mCameraLock.isHeldByCurrentThread())
-        {
+    public Session tryCreateExclusiveSession() {
+        if (mCameraLock.isHeldByCurrentThread()) {
             return null;
         }
-        if (mCameraLock.tryLock())
-        {
+        if (mCameraLock.tryLock()) {
             return new Session();
-        } else
-        {
+        } else {
             return null;
+        }
+    }
+
+    public class Session implements FrameServer.Session {
+        private final Object mLock;
+        private boolean mClosed;
+
+        private Session() {
+            mLock = new Object();
+            mClosed = false;
+        }
+
+        @Override
+        public void submitRequest(List<Request> burstRequests, RequestType type)
+                throws CameraAccessException, InterruptedException,
+                CameraCaptureSessionClosedException, ResourceAcquisitionFailedException {
+            synchronized (mLock) {
+                try {
+                    if (mClosed) {
+                        throw new SessionClosedException();
+                    }
+
+                    mCaptureSession.submitRequest(burstRequests, type);
+                } catch (Exception e) {
+                    for (Request r : burstRequests) {
+                        r.abort();
+                    }
+                    throw e;
+                }
+            }
+        }
+
+        @Override
+        public void close() {
+            synchronized (mLock) {
+                if (!mClosed) {
+                    mClosed = true;
+                    mCameraLock.unlock();
+                }
+            }
         }
     }
 }

@@ -19,8 +19,7 @@ package com.android.camera.ui;
 /**
  * Touch coordinate.
  */
-public class TouchCoordinate
-{
+public class TouchCoordinate {
     private float x;
     private float y;
     private float maxX;
@@ -34,31 +33,26 @@ public class TouchCoordinate
      * @param maxX Highest X value possible for any touch.
      * @param maxY Highest Y value possible for any touch.
      */
-    public TouchCoordinate(float x, float y, float maxX, float maxY)
-    {
+    public TouchCoordinate(float x, float y, float maxX, float maxY) {
         this.x = x;
         this.y = y;
         this.maxX = maxX;
         this.maxY = maxY;
     }
 
-    public float getX()
-    {
+    public float getX() {
         return this.x;
     }
 
-    public float getY()
-    {
+    public float getY() {
         return this.y;
     }
 
-    public float getMaxX()
-    {
+    public float getMaxX() {
         return this.maxX;
     }
 
-    public float getMaxY()
-    {
+    public float getMaxY() {
         return this.maxY;
     }
 }

@@ -58,42 +58,21 @@ import javax.annotation.concurrent.GuardedBy;
  * this device until the current device is closed.
  */
 @ParametersAreNonnullByDefault
-public class MultiCameraDeviceLifecycle
-{
+public class MultiCameraDeviceLifecycle {
     private static final Tag TAG = new Tag("MltiDeviceLife");
-
-    private static class Singleton
-    {
-        private static final MultiCameraDeviceLifecycle INSTANCE = new MultiCameraDeviceLifecycle(
-                CameraModuleHelper.provideLegacyCameraActionProvider(),
-                CameraModuleHelper.providePortabilityActionProvider(),
-                CameraModuleHelper.provideCamera2ActionProvider(),
-                ActiveCameraDeviceTracker.instance(),
-                Loggers.tagFactory());
-    }
-
-    public static MultiCameraDeviceLifecycle instance()
-    {
-        return Singleton.INSTANCE;
-    }
-
     private final LegacyCameraActionProvider mLegacyCameraActionProvider;
     private final PortabilityCameraActionProvider mPortabilityCameraActionProvider;
     private final Camera2ActionProvider mCamera2ActionProvider;
     private final ActiveCameraDeviceTracker mActiveCameraDeviceTracker;
-
     private final Object mDeviceLock = new Object();
     private final Logger.Factory mLogFactory;
     private final Logger mLogger;
-
     @Nullable
     @GuardedBy("mDeviceLock")
     private SingleDeviceLifecycle mCurrentDevice;
-
     @Nullable
     @GuardedBy("mDeviceLock")
     private SingleDeviceLifecycle mTargetDevice;
-
     @Nullable
     @GuardedBy("mDeviceLock")
     private SettableFuture<Void> mShutdownFuture;
@@ -104,8 +83,7 @@ public class MultiCameraDeviceLifecycle
             PortabilityCameraActionProvider portabilityCameraActionProvider,
             Camera2ActionProvider camera2ActionProvider,
             ActiveCameraDeviceTracker activeCameraDeviceTracker,
-            Logger.Factory logFactory)
-    {
+            Logger.Factory logFactory) {
         mLegacyCameraActionProvider = legacyCameraActionProvider;
         mPortabilityCameraActionProvider = portabilityCameraActionProvider;
         mCamera2ActionProvider = camera2ActionProvider;
@@ -114,6 +92,10 @@ public class MultiCameraDeviceLifecycle
         mLogger = logFactory.create(TAG);
 
         mLogger.d("Creating the CameraDeviceProvider.");
+    }
+
+    public static MultiCameraDeviceLifecycle instance() {
+        return Singleton.INSTANCE;
     }
 
     /**
@@ -137,8 +119,7 @@ public class MultiCameraDeviceLifecycle
      */
     @TargetApi(VERSION_CODES.LOLLIPOP)
     public ListenableFuture<android.hardware.camera2.CameraDevice> openCamera2Device(
-            Lifetime requestLifetime, CameraId cameraId)
-    {
+            Lifetime requestLifetime, CameraId cameraId) {
         CameraDeviceKey key = new CameraDeviceKey(ApiType.CAMERA_API2, cameraId);
         return openDevice(requestLifetime, key, mCamera2ActionProvider);
     }
@@ -164,8 +145,7 @@ public class MultiCameraDeviceLifecycle
      * @param cameraId        the specific camera device to open.
      */
     public ListenableFuture<CameraProxy> openPortabilityDevice(
-            Lifetime requestLifetime, CameraId cameraId)
-    {
+            Lifetime requestLifetime, CameraId cameraId) {
         CameraDeviceKey key = new CameraDeviceKey(ApiType.CAMERA_API_PORTABILITY_AUTO,
                 cameraId);
         return openDevice(requestLifetime, key, mPortabilityCameraActionProvider);
@@ -192,8 +172,7 @@ public class MultiCameraDeviceLifecycle
      */
     @TargetApi(VERSION_CODES.LOLLIPOP)
     public ListenableFuture<CameraProxy> openCamera2PortabilityDevice(
-            Lifetime requestLifetime, CameraId cameraId)
-    {
+            Lifetime requestLifetime, CameraId cameraId) {
         CameraDeviceKey key = new CameraDeviceKey(ApiType.CAMERA_API_PORTABILITY_API2,
                 cameraId);
         return openDevice(requestLifetime, key, mPortabilityCameraActionProvider);
@@ -219,8 +198,7 @@ public class MultiCameraDeviceLifecycle
      * @param cameraId        the specific camera device to open.
      */
     public ListenableFuture<CameraProxy> openLegacyPortabilityDevice(
-            Lifetime requestLifetime, CameraId cameraId)
-    {
+            Lifetime requestLifetime, CameraId cameraId) {
         CameraDeviceKey key = new CameraDeviceKey(ApiType.CAMERA_API_PORTABILITY_API1, cameraId);
         return openDevice(requestLifetime, key, mPortabilityCameraActionProvider);
     }
@@ -245,8 +223,7 @@ public class MultiCameraDeviceLifecycle
      */
     @Deprecated
     public ListenableFuture<Camera> openLegacyCameraDevice(Lifetime requestLifetime,
-                                                           CameraId cameraId)
-    {
+                                                           CameraId cameraId) {
         CameraDeviceKey key = new CameraDeviceKey(ApiType.CAMERA_API1, cameraId);
         return openDevice(requestLifetime, key, mLegacyCameraActionProvider);
     }
@@ -255,13 +232,10 @@ public class MultiCameraDeviceLifecycle
      * This will close any open or pending requests and will execute the future
      * when all requests have been cleared out. This method executes immediately.
      */
-    public ListenableFuture<Void> shutdown()
-    {
-        synchronized (mDeviceLock)
-        {
+    public ListenableFuture<Void> shutdown() {
+        synchronized (mDeviceLock) {
             mLogger.d("shutdownAsync()");
-            if (mCurrentDevice != null)
-            {
+            if (mCurrentDevice != null) {
                 // Ensure there are no queued requests. Cancel any existing requests.
                 clearTargetDevice();
 
@@ -272,15 +246,12 @@ public class MultiCameraDeviceLifecycle
                 // Execute close on the current device.
                 mCurrentDevice.close();
                 return mShutdownFuture;
-            } else if (mShutdownFuture != null)
-            {
+            } else if (mShutdownFuture != null) {
                 // This could occur if a previous shutdown call occurred, and
                 // the receiver called cancel on the future before it completed.
-                if (mShutdownFuture.isDone())
-                {
+                if (mShutdownFuture.isDone()) {
                     mShutdownFuture = null;
-                } else
-                {
+                } else {
                     return mShutdownFuture;
                 }
             }
@@ -295,27 +266,23 @@ public class MultiCameraDeviceLifecycle
      */
     private <TDevice> ListenableFuture<TDevice> openDevice(Lifetime requestLifetime,
                                                            CameraDeviceKey key, CameraDeviceActionProvider<TDevice>
-                                                                   provider)
-    {
+                                                                   provider) {
 
         final SingleDeviceLifecycle<TDevice, CameraDeviceKey> deviceLifecycle;
         final ListenableFuture<TDevice> result;
 
-        synchronized (mDeviceLock)
-        {
+        synchronized (mDeviceLock) {
             mLogger.d("[openDevice()] open(cameraId: '" + key + "')");
             cancelShutdown();
 
-            if (mCurrentDevice == null)
-            {
+            if (mCurrentDevice == null) {
                 mLogger.d("[openDevice()] No existing request. Creating a new device.");
                 deviceLifecycle = createLifecycle(key, provider);
                 mCurrentDevice = deviceLifecycle;
                 result = deviceLifecycle.createRequest(requestLifetime);
                 deviceLifecycle.open();
                 mActiveCameraDeviceTracker.onCameraOpening(key.getCameraId());
-            } else if (mCurrentDevice.getId().equals(key))
-            {
+            } else if (mCurrentDevice.getId().equals(key)) {
                 mLogger.d("[openDevice()] Existing request with the same id.");
                 deviceLifecycle =
                         (SingleDeviceLifecycle<TDevice, CameraDeviceKey>) mCurrentDevice;
@@ -323,8 +290,7 @@ public class MultiCameraDeviceLifecycle
                 result = deviceLifecycle.createRequest(requestLifetime);
                 deviceLifecycle.open();
                 mActiveCameraDeviceTracker.onCameraOpening(key.getCameraId());
-            } else
-            {
+            } else {
                 mLogger.d("[openDevice()] Existing request with a different id.");
                 mCurrentDevice.close();
                 deviceLifecycle = createLifecycle(key, provider);
@@ -340,14 +306,11 @@ public class MultiCameraDeviceLifecycle
 
     private <TDevice> SingleDeviceLifecycle<TDevice, CameraDeviceKey>
     createLifecycle(CameraDeviceKey key,
-                    CameraDeviceActionProvider<TDevice> provider)
-    {
+                    CameraDeviceActionProvider<TDevice> provider) {
         SingleDeviceShutdownListener<CameraDeviceKey> listener =
-                new SingleDeviceShutdownListener<CameraDeviceKey>()
-                {
+                new SingleDeviceShutdownListener<CameraDeviceKey>() {
                     @Override
-                    public void onShutdown(CameraDeviceKey key)
-                    {
+                    public void onShutdown(CameraDeviceKey key) {
                         onCameraDeviceShutdown(key);
                     }
                 };
@@ -358,20 +321,16 @@ public class MultiCameraDeviceLifecycle
         return new CameraDeviceLifecycle<>(key, deviceState);
     }
 
-    private void clearTargetDevice()
-    {
-        if (mTargetDevice != null)
-        {
+    private void clearTargetDevice() {
+        if (mTargetDevice != null) {
             mLogger.d("Target request exists. cancel() and clear.");
             mTargetDevice.close();
             mTargetDevice = null;
         }
     }
 
-    private void cancelShutdown()
-    {
-        if (mShutdownFuture != null)
-        {
+    private void cancelShutdown() {
+        if (mShutdownFuture != null) {
             mLogger.i("Canceling shutdown.");
             Future<Void> shutdownFuture = mShutdownFuture;
             mShutdownFuture = null;
@@ -379,10 +338,8 @@ public class MultiCameraDeviceLifecycle
         }
     }
 
-    private void completeShutdown()
-    {
-        if (mShutdownFuture != null)
-        {
+    private void completeShutdown() {
+        if (mShutdownFuture != null) {
             mLogger.i("Completing shutdown.");
             SettableFuture<Void> shutdownFuture = mShutdownFuture;
             mShutdownFuture = null;
@@ -390,40 +347,43 @@ public class MultiCameraDeviceLifecycle
         }
     }
 
-    private void onCameraDeviceShutdown(CameraDeviceKey key)
-    {
-        synchronized (mDeviceLock)
-        {
+    private void onCameraDeviceShutdown(CameraDeviceKey key) {
+        synchronized (mDeviceLock) {
             mLogger.d("onCameraClosed(id: " + key + ").");
             if (mShutdownFuture != null &&
-                    (mCurrentDevice == null || (mCurrentDevice.getId().equals(key))))
-            {
+                    (mCurrentDevice == null || (mCurrentDevice.getId().equals(key)))) {
                 // if the shutdown future is set but there is no current device,
                 // we should call shutdown, just in case so that it clears out the
                 // shutdown state. If
                 mCurrentDevice = null;
                 completeShutdown();
             }
-            if (mCurrentDevice != null && mCurrentDevice.getId().equals(key))
-            {
+            if (mCurrentDevice != null && mCurrentDevice.getId().equals(key)) {
 
                 mLogger.d("Current device was closed.");
 
-                if (mTargetDevice != null)
-                {
+                if (mTargetDevice != null) {
                     mLogger.d("Target request exists, calling open().");
                     mCurrentDevice = mTargetDevice;
                     mTargetDevice = null;
                     mCurrentDevice.open();
                     mActiveCameraDeviceTracker.onCameraOpening(((CameraDeviceKey)
                             mCurrentDevice.getId()).getCameraId());
-                } else
-                {
+                } else {
                     mLogger.d("No target request exists. Clearing current device.");
                     mCurrentDevice = null;
                     mActiveCameraDeviceTracker.onCameraClosed(key.getCameraId());
                 }
             }
         }
+    }
+
+    private static class Singleton {
+        private static final MultiCameraDeviceLifecycle INSTANCE = new MultiCameraDeviceLifecycle(
+                CameraModuleHelper.provideLegacyCameraActionProvider(),
+                CameraModuleHelper.providePortabilityActionProvider(),
+                CameraModuleHelper.provideCamera2ActionProvider(),
+                ActiveCameraDeviceTracker.instance(),
+                Loggers.tagFactory());
     }
 }

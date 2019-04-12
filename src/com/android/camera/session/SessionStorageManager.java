@@ -25,8 +25,7 @@ import javax.annotation.Nonnull;
  * Interface for the session storage manager which handles management of storage
  * space that can be used for temporary session files.
  */
-public interface SessionStorageManager
-{
+public interface SessionStorageManager {
 
     /**
      * Returns the directory that can be used for temporary sessions of a

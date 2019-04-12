@@ -23,8 +23,7 @@ import java.io.File;
 /**
  * Used to store images that belong to the same stack.
  */
-public interface StackSaver
-{
+public interface StackSaver {
 
     /**
      * Save a single image from a stack/burst.

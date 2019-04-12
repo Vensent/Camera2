@@ -23,8 +23,7 @@ import android.net.Uri;
  * Internal interface that e.g. a capture session can use to update about the
  * status of session.
  */
-public interface SessionNotifier
-{
+public interface SessionNotifier {
     /**
      * A new task has been queued.
      */

@@ -19,8 +19,7 @@ import java.util.Map;
 /**
  * A listener to the various events generated during a burst.
  */
-public interface BurstResultsListener
-{
+public interface BurstResultsListener {
     /**
      * Called when burst starts.
      */

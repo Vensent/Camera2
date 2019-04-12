@@ -19,7 +19,6 @@ package com.android.camera;
 import com.android.camera.stress.CameraLatency;
 import com.android.camera.stress.CameraStartUp;
 import com.android.camera.stress.ImageCapture;
-import com.android.camera.stress.SwitchPreview;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -34,10 +33,8 @@ import junit.framework.TestSuite;
  * -w com.google.android.camera.tests/com.android.camera.stress.CameraStressTestRunner
  */
 
-public class StressTests extends TestSuite
-{
-    public static Test suite()
-    {
+public class StressTests extends TestSuite {
+    public static Test suite() {
         TestSuite result = new TestSuite();
         result.addTestSuite(CameraLatency.class);
         result.addTestSuite(CameraStartUp.class);

@@ -37,6 +37,15 @@ public abstract class CameraStateHolder {
     }
 
     /**
+     * Obtain the current state.
+     *
+     * @return The current state.
+     */
+    public synchronized int getState() {
+        return mState;
+    }
+
+    /**
      * Change to a new state.
      *
      * @param state The new state.
@@ -47,15 +56,6 @@ public abstract class CameraStateHolder {
         }
         mState = state;
         this.notifyAll();
-    }
-
-    /**
-     * Obtain the current state.
-     *
-     * @return The current state.
-     */
-    public synchronized int getState() {
-        return mState;
     }
 
     /**
@@ -74,25 +74,18 @@ public abstract class CameraStateHolder {
         return mInvalid;
     }
 
-    private static interface ConditionChecker {
-        /**
-         * @return Whether the condition holds.
-         */
-        boolean success();
-    }
-
     /**
      * A helper method used by {@link #waitToAvoidStates(int)} and
      * {@link #waitForStates(int)}. This method will wait until the
      * condition is successful.
      *
      * @param stateChecker The state checker to be used.
-     * @param timeoutMs The timeout limit in milliseconds.
+     * @param timeoutMs    The timeout limit in milliseconds.
      * @return {@code false} if the wait is interrupted or timeout limit is
-     *         reached.
+     * reached.
      */
     private boolean waitForCondition(ConditionChecker stateChecker,
-            long timeoutMs) {
+                                     long timeoutMs) {
         long timeBound = SystemClock.uptimeMillis() + timeoutMs;
         synchronized (this) {
             while (!stateChecker.success()) {
@@ -116,7 +109,7 @@ public abstract class CameraStateHolder {
      *
      * @param states Expected states.
      * @return {@code false} if the wait is interrupted or timeout limit is
-     *         reached.
+     * reached.
      */
     public boolean waitForStates(final int states) {
         Log.v(TAG, "waitForStates - states = " + Integer.toBinaryString(states));
@@ -134,7 +127,7 @@ public abstract class CameraStateHolder {
      *
      * @param states States to avoid.
      * @return {@code false} if the wait is interrupted or timeout limit is
-     *         reached.
+     * reached.
      */
     public boolean waitToAvoidStates(final int states) {
         Log.v(TAG, "waitToAvoidStates - states = " + Integer.toBinaryString(states));
@@ -144,5 +137,12 @@ public abstract class CameraStateHolder {
                 return (states & getState()) == 0;
             }
         }, CameraAgent.CAMERA_OPERATION_TIMEOUT_MS);
+    }
+
+    private static interface ConditionChecker {
+        /**
+         * @return Whether the condition holds.
+         */
+        boolean success();
     }
 }

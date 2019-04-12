@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--  Copyright (C) 2007 The Android Open Source Project
+<?xml version="1.0" encoding="UTF-8"?><!--  Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,8 +13,7 @@
      limitations under the License.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name" msgid="1175086483881127797">"相機"</string>
     <string name="video_camera_label" msgid="1723708322021743770">"攝錄機"</string>
     <string name="details_ms" msgid="6618163484662724641">"%1$02d:%2$02d"</string>
@@ -71,9 +69,9 @@
     <string name="error_permissions" msgid="3454167403425651254">"應用程式欠缺執行所需的關鍵權限。請檢查您的權限設定。"</string>
     <string name="reason_storage_failure" msgid="6818898304774654969">"相片儲存失敗。"</string>
     <string name="wait" msgid="765601745709933047">"請稍候…"</string>
-    <string name="no_storage" product="default" msgid="5922012950780548098">"使用相機前，請先插入 SD 卡。"</string>
-    <string name="preparing_sd" product="default" msgid="7435693655017362767">"正在準備 SD 卡…"</string>
-    <string name="access_sd_fail" product="default" msgid="2634861611082499811">"無法存取 SD 卡。"</string>
+    <string name="no_storage" msgid="5922012950780548098" product="default">"使用相機前，請先插入 SD 卡。"</string>
+    <string name="preparing_sd" msgid="7435693655017362767" product="default">"正在準備 SD 卡…"</string>
+    <string name="access_sd_fail" msgid="2634861611082499811" product="default">"無法存取 SD 卡。"</string>
     <string name="time_lapse_title" msgid="3267978566401228497">"延時攝影錄製"</string>
     <string name="feedback_description_camera_access" msgid="419090951070170132">"應用程式無法連接到相機"</string>
     <string name="feedback_description_save_photo" msgid="8658767358989083228">"相片或影片並未儲存在裝置上。"</string>
@@ -160,7 +158,7 @@
     <string name="dialog_cancel" msgid="692365061128351656">"取消"</string>
     <string name="dialog_report" msgid="7616428760369876209">"報告"</string>
     <string name="dialog_dismiss" msgid="1382550604990470119">"關閉"</string>
-    <string name="spaceIsLow_content" product="default" msgid="4522771065344332702">"您 SD 卡的空間即將用盡，請變更相片的品質設定，或是刪除部分相片或其他檔案。"</string>
+    <string name="spaceIsLow_content" msgid="4522771065344332702" product="default">"您 SD 卡的空間即將用盡，請變更相片的品質設定，或是刪除部分相片或其他檔案。"</string>
     <string name="video_reach_size_limit" msgid="9196836111505731836">"已達大小上限。"</string>
     <string name="pano_too_fast_prompt" msgid="2503148095578052177">"太快"</string>
     <string name="pano_dialog_prepare_preview" msgid="4445235163599534263">"正在準備全景相片預覽"</string>

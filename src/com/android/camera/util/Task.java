@@ -19,7 +19,6 @@ package com.android.camera.util;
 /**
  * Generic callback interface for tasks which require a parameter.
  */
-public interface Task<T>
-{
+public interface Task<T> {
     public void run(T t);
 }

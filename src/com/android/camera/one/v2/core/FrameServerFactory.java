@@ -23,15 +23,13 @@ import com.android.camera.async.Lifetime;
 import com.android.camera.async.Observable;
 import com.android.camera.one.v2.camera2proxy.CameraCaptureSessionProxy;
 
-public class FrameServerFactory
-{
+public class FrameServerFactory {
     private FrameServer mEphemeralFrameServer;
     private FrameServer mFrameServer;
     private Observable<Boolean> mReadyState;
 
     public FrameServerFactory(Lifetime lifetime, CameraCaptureSessionProxy cameraCaptureSession,
-                              HandlerFactory handlerFactory)
-    {
+                              HandlerFactory handlerFactory) {
         // The camera handler will be created with a very very high thread
         // priority because missing any input event potentially stalls the
         // camera preview and HAL.
@@ -53,8 +51,7 @@ public class FrameServerFactory
      * @return The {@link FrameServer} to use for interactions with the camera
      * device which should affect the ready-state.
      */
-    public FrameServer provideFrameServer()
-    {
+    public FrameServer provideFrameServer() {
         return mFrameServer;
     }
 
@@ -65,8 +62,7 @@ public class FrameServerFactory
      * interactions which should not block the ready-state, such as
      * performing a tap-to-focus routine).
      */
-    public FrameServer provideEphemeralFrameServer()
-    {
+    public FrameServer provideEphemeralFrameServer() {
         return mEphemeralFrameServer;
     }
 
@@ -74,8 +70,7 @@ public class FrameServerFactory
      * @return A hint as to whether or not a {@link FrameServer} session can be
      * acquired immediately.
      */
-    public Observable<Boolean> provideReadyState()
-    {
+    public Observable<Boolean> provideReadyState() {
         return mReadyState;
     }
 }

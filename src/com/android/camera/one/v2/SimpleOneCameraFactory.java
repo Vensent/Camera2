@@ -41,8 +41,8 @@ import com.android.camera.one.v2.camera2proxy.CameraDeviceProxy;
 import com.android.camera.one.v2.camera2proxy.CameraDeviceRequestBuilderFactory;
 import com.android.camera.one.v2.camera2proxy.ImageReaderProxy;
 import com.android.camera.one.v2.camera2proxy.TotalCaptureResultProxy;
-import com.android.camera.one.v2.commands.CameraCommandExecutor;
 import com.android.camera.one.v2.commands.BasicPreviewCommandFactory;
+import com.android.camera.one.v2.commands.CameraCommandExecutor;
 import com.android.camera.one.v2.common.BasicCameraFactory;
 import com.android.camera.one.v2.common.SimpleCaptureStream;
 import com.android.camera.one.v2.core.FrameServer;
@@ -78,8 +78,7 @@ import java.util.concurrent.Executors;
  * baseline functionality.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class SimpleOneCameraFactory implements OneCameraFactory
-{
+public class SimpleOneCameraFactory implements OneCameraFactory {
     private final int mImageFormat;
     private final int mMaxImageCount;
     private final ImageRotationCalculator mImageRotationCalculator;
@@ -91,8 +90,7 @@ public class SimpleOneCameraFactory implements OneCameraFactory
      *                      images.
      */
     public SimpleOneCameraFactory(int imageFormat, int maxImageCount,
-                                  ImageRotationCalculator imageRotationCalculator)
-    {
+                                  ImageRotationCalculator imageRotationCalculator) {
         mImageFormat = imageFormat;
         mMaxImageCount = maxImageCount;
         mImageRotationCalculator = imageRotationCalculator;
@@ -109,8 +107,7 @@ public class SimpleOneCameraFactory implements OneCameraFactory
                                      final Observable<Integer> exposureSetting,
                                      final Observable<Boolean> hdrSceneSetting,
                                      final BurstFacade burstFacade,
-                                     final FatalErrorHandler fatalErrorHandler)
-    {
+                                     final FatalErrorHandler fatalErrorHandler) {
         final Lifetime lifetime = new Lifetime();
 
         final ImageReaderProxy imageReader = new CloseWhenDoneImageReader(new LoggingImageReader(
@@ -129,27 +126,23 @@ public class SimpleOneCameraFactory implements OneCameraFactory
          * Finishes constructing the camera when prerequisites, e.g. the preview
          * stream and capture session, are ready.
          */
-        CameraStarter cameraStarter = new CameraStarter()
-        {
+        CameraStarter cameraStarter = new CameraStarter() {
             @Override
             public CameraStarter.CameraControls startCamera(Lifetime cameraLifetime,
                                                             CameraCaptureSessionProxy cameraCaptureSession,
                                                             Surface previewSurface,
                                                             Observable<Float> zoomState,
                                                             Updatable<TotalCaptureResultProxy> metadataCallback,
-                                                            Updatable<Boolean> readyState)
-            {
+                                                            Updatable<Boolean> readyState) {
                 // Create the FrameServer from the CaptureSession.
                 FrameServerFactory frameServerComponent = new FrameServerFactory(
                         new Lifetime(cameraLifetime), cameraCaptureSession, new HandlerFactory());
 
                 CameraCommandExecutor cameraCommandExecutor = new CameraCommandExecutor(
                         Loggers.tagFactory(),
-                        new Provider<ExecutorService>()
-                        {
+                        new Provider<ExecutorService>() {
                             @Override
-                            public ExecutorService get()
-                            {
+                            public ExecutorService get() {
                                 // Use a dynamically-expanding thread pool to
                                 // allow any number of commands to execute
                                 // simultaneously.
@@ -201,8 +194,7 @@ public class SimpleOneCameraFactory implements OneCameraFactory
                         mImageRotationCalculator.getSupplier());
 
                 if (GservicesHelper.isJankStatisticsEnabled(AndroidContext.instance().get()
-                        .getContentResolver()))
-                {
+                        .getContentResolver())) {
                     rootBuilder.addResponseListener(
                             new FramerateJankDetector(Loggers.tagFactory(),
                                     UsageStatistics.instance()));
@@ -213,14 +205,12 @@ public class SimpleOneCameraFactory implements OneCameraFactory
 
                 // Create the picture-taker.
                 PictureTaker pictureTaker;
-                if (supportLevel == OneCameraFeatureConfig.CaptureSupportLevel.LEGACY_JPEG)
-                {
+                if (supportLevel == OneCameraFeatureConfig.CaptureSupportLevel.LEGACY_JPEG) {
                     pictureTaker = new LegacyPictureTakerFactory(imageSaverBuilder,
                             cameraCommandExecutor, mainExecutor,
                             frameServerComponent.provideFrameServer(),
                             meteredZoomedRequestBuilder, managedImageReader).providePictureTaker();
-                } else
-                {
+                } else {
                     pictureTaker = PictureTakerFactory.create(Loggers.tagFactory(), mainExecutor,
                             cameraCommandExecutor, imageSaverBuilder,
                             frameServerComponent.provideFrameServer(),
@@ -235,11 +225,9 @@ public class SimpleOneCameraFactory implements OneCameraFactory
                         .provideReadyState();
                 Observable<Boolean> ready = Observables.transform(
                         Arrays.asList(availableImageCount, frameServerAvailability),
-                        new Supplier<Boolean>()
-                        {
+                        new Supplier<Boolean>() {
                             @Override
-                            public Boolean get()
-                            {
+                            public Boolean get() {
                                 boolean atLeastOneImageAvailable = availableImageCount.get() >= 1;
                                 boolean frameServerAvailable = frameServerAvailability.get();
                                 return atLeastOneImageAvailable && frameServerAvailable;

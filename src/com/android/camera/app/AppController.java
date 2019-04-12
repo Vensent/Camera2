@@ -42,34 +42,7 @@ import com.android.camera.ui.PreviewStatusListener;
 /**
  * The controller at app level.
  */
-public interface AppController
-{
-
-    /**
-     * An interface which defines the shutter events listener.
-     */
-    public interface ShutterEventsListener
-    {
-        /**
-         * Called when the shutter state is changed to pressed.
-         */
-        public void onShutterPressed();
-
-        /**
-         * Called when the shutter state is changed to released.
-         */
-        public void onShutterReleased();
-
-        /**
-         * Called when the shutter is clicked.
-         */
-        public void onShutterClicked();
-
-        /**
-         * Called when the shutter is long pressed.
-         */
-        public void onShutterLongPressed();
-    }
+public interface AppController {
 
     /**
      * @return the {@link android.content.Context} being used.
@@ -165,14 +138,14 @@ public interface AppController
      */
     public void onSettingsSelected();
 
-    /********************** UI / Camera preview **********************/
-
     /**
      * Freeze what is currently shown on screen until the next preview frame comes
      * in. This can be used for camera switch to hide the UI changes underneath
      * until preview is ready.
      */
     public void freezeScreenUntilPreviewReady();
+
+    /********************** UI / Camera preview **********************/
 
     /**
      * Returns the {@link android.graphics.SurfaceTexture} used by the preview
@@ -266,8 +239,6 @@ public interface AppController
      */
     public void unlockOrientation();
 
-    /********************** Shutter button  **********************/
-
     /**
      * Sets the shutter events listener.
      *
@@ -275,17 +246,17 @@ public interface AppController
      */
     public void setShutterEventsListener(ShutterEventsListener listener);
 
-    /**
-     * Enables/Disables the shutter.
-     */
-    public void setShutterEnabled(boolean enabled);
+    /********************** Shutter button  **********************/
 
     /**
      * Checks whether the shutter is enabled.
      */
     public boolean isShutterEnabled();
 
-    /********************** Capture animation **********************/
+    /**
+     * Enables/Disables the shutter.
+     */
+    public void setShutterEnabled(boolean enabled);
 
     /**
      * Starts flash animation with optional shorter flash.
@@ -293,6 +264,8 @@ public interface AppController
      * @param shortFlash true for shorter flash (faster cameras).
      */
     public void startFlashAnimation(boolean shortFlash);
+
+    /********************** Capture animation **********************/
 
     /**
      * Starts normal pre-capture animation.
@@ -321,14 +294,12 @@ public interface AppController
      */
     public void cancelPostCaptureAnimation();
 
-    /********************** Media saving **********************/
-
     /**
      * Notifies the app of the newly captured media.
      */
     public void notifyNewMedia(Uri uri);
 
-    /********************** App-level resources **********************/
+    /********************** Media saving **********************/
 
     /**
      * Keeps the screen turned on.
@@ -336,6 +307,8 @@ public interface AppController
      * @param enabled Whether to keep the screen on.
      */
     public void enableKeepScreenOn(boolean enabled);
+
+    /********************** App-level resources **********************/
 
     /**
      * Returns the {@link com.android.camera.app.CameraProvider}.
@@ -428,4 +401,29 @@ public interface AppController
      * Finishes the activity since the intent got canceled.
      */
     public void finishActivityWithIntentCanceled();
+
+    /**
+     * An interface which defines the shutter events listener.
+     */
+    public interface ShutterEventsListener {
+        /**
+         * Called when the shutter state is changed to pressed.
+         */
+        public void onShutterPressed();
+
+        /**
+         * Called when the shutter state is changed to released.
+         */
+        public void onShutterReleased();
+
+        /**
+         * Called when the shutter is clicked.
+         */
+        public void onShutterClicked();
+
+        /**
+         * Called when the shutter is long pressed.
+         */
+        public void onShutterLongPressed();
+    }
 }

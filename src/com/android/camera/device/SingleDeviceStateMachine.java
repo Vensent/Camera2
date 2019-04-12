@@ -48,50 +48,23 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 @ParametersAreNonnullByDefault
 public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceCloseListener,
-        SingleDeviceOpenListener<TDevice>
-{
+        SingleDeviceOpenListener<TDevice> {
     private static final Tag TAG = new Tag("DeviceStateM");
-
-    /**
-     * Physical state of the device.
-     */
-    private enum DeviceState
-    {
-        OPENING,
-        OPENED,
-        CLOSING,
-        CLOSED
-    }
-
-    /**
-     * Physical state the state machine should reach.
-     */
-    private enum TargetState
-    {
-        OPENED,
-        CLOSED
-    }
-
     private final ReentrantLock mLock;
     private final Lifetime mDeviceLifetime;
     private final SingleDeviceActions<TDevice> mDeviceActions;
     private final SingleDeviceShutdownListener<TKey> mShutdownListener;
     private final TKey mDeviceKey;
     private final Logger mLogger;
-
     @GuardedBy("mLock")
     private boolean mIsShutdown;
-
     @GuardedBy("mLock")
     private TargetState mTargetState;
-
     @GuardedBy("mLock")
     private DeviceState mDeviceState;
-
     @Nullable
     @GuardedBy("mLock")
     private SingleDeviceRequest<TDevice> mDeviceRequest;
-
     @Nullable
     @GuardedBy("mLock")
     private TDevice mOpenDevice;
@@ -103,8 +76,7 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
      */
     public SingleDeviceStateMachine(SingleDeviceActions<TDevice> deviceActions,
                                     TKey deviceKey, SingleDeviceShutdownListener<TKey> deviceShutdownListener,
-                                    Logger.Factory logFactory)
-    {
+                                    Logger.Factory logFactory) {
         mDeviceActions = deviceActions;
         mShutdownListener = deviceShutdownListener;
         mDeviceKey = deviceKey;
@@ -121,20 +93,16 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
     /**
      * Request that the state machine move towards an open state.
      */
-    public void requestOpen()
-    {
+    public void requestOpen() {
         mLock.lock();
-        try
-        {
-            if (mIsShutdown)
-            {
+        try {
+            if (mIsShutdown) {
                 return;
             }
 
             mTargetState = TargetState.OPENED;
             update();
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
     }
@@ -142,20 +110,16 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
     /**
      * Request that the state machine move towards a closed state.
      */
-    public void requestClose()
-    {
+    public void requestClose() {
         mLock.lock();
-        try
-        {
-            if (mIsShutdown)
-            {
+        try {
+            if (mIsShutdown) {
                 return;
             }
 
             mTargetState = TargetState.CLOSED;
             update();
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
     }
@@ -164,13 +128,10 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
      * When a new request is set, the previous request should be canceled
      * if it has not been completed.
      */
-    public void setRequest(final SingleDeviceRequest<TDevice> deviceRequest)
-    {
+    public void setRequest(final SingleDeviceRequest<TDevice> deviceRequest) {
         mLock.lock();
-        try
-        {
-            if (mIsShutdown)
-            {
+        try {
+            if (mIsShutdown) {
                 deviceRequest.close();
                 return;
             }
@@ -178,38 +139,30 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
             SingleDeviceRequest<TDevice> previous = mDeviceRequest;
             mDeviceRequest = deviceRequest;
             mDeviceLifetime.add(deviceRequest);
-            deviceRequest.getLifetime().add(new SafeCloseable()
-            {
+            deviceRequest.getLifetime().add(new SafeCloseable() {
                 @Override
-                public void close()
-                {
+                public void close() {
                     requestCloseIfCurrentRequest(deviceRequest);
                 }
             });
 
-            if (mOpenDevice != null)
-            {
+            if (mOpenDevice != null) {
                 mDeviceRequest.set(mOpenDevice);
             }
 
-            if (previous != null)
-            {
+            if (previous != null) {
                 previous.close();
             }
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
     }
 
     @Override
-    public void onDeviceOpened(TDevice device)
-    {
+    public void onDeviceOpened(TDevice device) {
         mLock.lock();
-        try
-        {
-            if (mIsShutdown)
-            {
+        try {
+            if (mIsShutdown) {
                 return;
             }
 
@@ -217,39 +170,31 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
             mDeviceState = DeviceState.OPENED;
 
             update();
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
     }
 
     @Override
-    public void onDeviceOpenException(Throwable throwable)
-    {
+    public void onDeviceOpenException(Throwable throwable) {
         mLock.lock();
-        try
-        {
-            if (mIsShutdown)
-            {
+        try {
+            if (mIsShutdown) {
                 return;
             }
 
             closeRequestWithException(throwable);
             shutdown();
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
     }
 
     @Override
-    public void onDeviceOpenException(TDevice tDevice)
-    {
+    public void onDeviceOpenException(TDevice tDevice) {
         mLock.lock();
-        try
-        {
-            if (mIsShutdown)
-            {
+        try {
+            if (mIsShutdown) {
                 return;
             }
 
@@ -257,20 +202,16 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
             mDeviceState = DeviceState.CLOSING;
             mTargetState = TargetState.CLOSED;
             executeClose(tDevice);
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
     }
 
     @Override
-    public void onDeviceClosed()
-    {
+    public void onDeviceClosed() {
         mLock.lock();
-        try
-        {
-            if (mIsShutdown)
-            {
+        try {
+            if (mIsShutdown) {
                 return;
             }
 
@@ -278,63 +219,49 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
             mDeviceState = DeviceState.CLOSED;
 
             update();
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
     }
 
     @Override
-    public void onDeviceClosingException(Throwable throwable)
-    {
+    public void onDeviceClosingException(Throwable throwable) {
         mLock.lock();
-        try
-        {
-            if (mIsShutdown)
-            {
+        try {
+            if (mIsShutdown) {
                 return;
             }
 
             closeRequestWithException(throwable);
             shutdown();
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
     }
 
     @GuardedBy("mLock")
-    private void update()
-    {
-        if (mIsShutdown)
-        {
+    private void update() {
+        if (mIsShutdown) {
             return;
         }
 
-        if (mDeviceState == DeviceState.CLOSED && mTargetState == TargetState.OPENED)
-        {
+        if (mDeviceState == DeviceState.CLOSED && mTargetState == TargetState.OPENED) {
             executeOpen();
-        } else if (mDeviceState == DeviceState.OPENED && mTargetState == TargetState.OPENED)
-        {
+        } else if (mDeviceState == DeviceState.OPENED && mTargetState == TargetState.OPENED) {
             executeOpened();
-        } else if (mDeviceState == DeviceState.OPENED && mTargetState == TargetState.CLOSED)
-        {
+        } else if (mDeviceState == DeviceState.OPENED && mTargetState == TargetState.CLOSED) {
             executeClose();
-        } else if (mDeviceState == DeviceState.CLOSED && mTargetState == TargetState.CLOSED)
-        {
+        } else if (mDeviceState == DeviceState.CLOSED && mTargetState == TargetState.CLOSED) {
             shutdown();
         }
     }
 
     @GuardedBy("mLock")
-    private void executeOpen()
-    {
+    private void executeOpen() {
         mDeviceState = DeviceState.OPENING;
-        try
-        {
+        try {
             mDeviceActions.executeOpen(this, mDeviceLifetime);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             onDeviceOpenException(e);
         }
         // TODO: Consider adding a timeout to the open call so that requests
@@ -342,10 +269,8 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
     }
 
     @GuardedBy("mLock")
-    private void executeOpened()
-    {
-        if (mDeviceRequest != null)
-        {
+    private void executeOpened() {
+        if (mDeviceRequest != null) {
             mDeviceRequest.set(mOpenDevice);
         }
 
@@ -354,8 +279,7 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
     }
 
     @GuardedBy("mLock")
-    private void executeClose()
-    {
+    private void executeClose() {
         // TODO: Consider adding a timeout to the close call so that requests
         // are not left un-resolved.
 
@@ -366,42 +290,33 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
     }
 
     @GuardedBy("mLock")
-    private void executeClose(@Nullable TDevice device)
-    {
-        if (device != null)
-        {
+    private void executeClose(@Nullable TDevice device) {
+        if (device != null) {
             mDeviceState = DeviceState.CLOSING;
             mTargetState = TargetState.CLOSED;
             closeRequest();
 
-            try
-            {
+            try {
                 mDeviceActions.executeClose(this, device);
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 onDeviceClosingException(e);
             }
-        } else
-        {
+        } else {
             shutdown();
         }
     }
 
     @GuardedBy("mLock")
-    private void requestCloseIfCurrentRequest(SingleDeviceRequest<TDevice> request)
-    {
-        if (mDeviceRequest == null || mDeviceRequest == request)
-        {
+    private void requestCloseIfCurrentRequest(SingleDeviceRequest<TDevice> request) {
+        if (mDeviceRequest == null || mDeviceRequest == request) {
             requestClose();
         }
     }
 
     @GuardedBy("mLock")
-    private void closeRequestWithException(Throwable exception)
-    {
+    private void closeRequestWithException(Throwable exception) {
         mOpenDevice = null;
-        if (mDeviceRequest != null)
-        {
+        if (mDeviceRequest != null) {
             mLogger.w("There was a problem closing device: " + mDeviceKey, exception);
 
             mDeviceRequest.closeWithException(exception);
@@ -410,10 +325,8 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
     }
 
     @GuardedBy("mLock")
-    private void closeRequest()
-    {
-        if (mDeviceRequest != null)
-        {
+    private void closeRequest() {
+        if (mDeviceRequest != null) {
             mDeviceRequest.close();
         }
         mDeviceRequest = null;
@@ -423,13 +336,10 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
      * Cancel requests, and set internal device state back to
      * a clean set of values.
      */
-    private void shutdown()
-    {
+    private void shutdown() {
         mLock.lock();
-        try
-        {
-            if (!mIsShutdown)
-            {
+        try {
+            if (!mIsShutdown) {
                 mIsShutdown = true;
                 mLogger.i("Shutting down the device lifecycle for: " + mDeviceKey);
                 mOpenDevice = null;
@@ -439,13 +349,29 @@ public class SingleDeviceStateMachine<TDevice, TKey> implements SingleDeviceClos
                 closeRequest();
                 mDeviceLifetime.close();
                 mShutdownListener.onShutdown(mDeviceKey);
-            } else
-            {
+            } else {
                 mLogger.w("Shutdown was called multiple times!");
             }
-        } finally
-        {
+        } finally {
             mLock.unlock();
         }
+    }
+
+    /**
+     * Physical state of the device.
+     */
+    private enum DeviceState {
+        OPENING,
+        OPENED,
+        CLOSING,
+        CLOSED
+    }
+
+    /**
+     * Physical state the state machine should reach.
+     */
+    private enum TargetState {
+        OPENED,
+        CLOSED
     }
 }

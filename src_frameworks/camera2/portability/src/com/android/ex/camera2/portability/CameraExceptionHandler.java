@@ -30,11 +30,13 @@ public class CameraExceptionHandler {
                 @Override
                 public void onCameraError(int errorCode) {
                 }
+
                 @Override
                 public void onCameraException(
                         RuntimeException e, String commandHistory, int action, int state) {
                     throw e;
                 }
+
                 @Override
                 public void onDispatchThreadException(RuntimeException e) {
                     throw e;
@@ -42,21 +44,11 @@ public class CameraExceptionHandler {
             };
 
     /**
-     * A callback helps to handle RuntimeException thrown by camera framework.
-     */
-    public static interface CameraExceptionCallback {
-        public void onCameraError(int errorCode);
-        public void onCameraException(
-                RuntimeException e, String commandHistory, int action, int state);
-        public void onDispatchThreadException(RuntimeException e);
-    }
-
-    /**
      * Construct a new instance of {@link CameraExceptionHandler} with a custom callback which will
      * be executed on a specific {@link Handler}.
      *
      * @param callback The callback which will be invoked.
-     * @param handler The handler in which the callback will be invoked in.
+     * @param handler  The handler in which the callback will be invoked in.
      */
     public CameraExceptionHandler(CameraExceptionCallback callback, Handler handler) {
         mHandler = handler;
@@ -107,9 +99,9 @@ public class CameraExceptionHandler {
 
     /**
      * Invoke @{link CameraExceptionCallback} when a runtime exception is thrown by
-     * @{link DispatchThread}.
      *
      * @param ex The runtime exception object.
+     * @{link DispatchThread}.
      */
     public void onDispatchThreadException(final RuntimeException ex) {
         mHandler.post(new Runnable() {
@@ -118,6 +110,18 @@ public class CameraExceptionHandler {
                 mCallback.onDispatchThreadException(ex);
             }
         });
+    }
+
+    /**
+     * A callback helps to handle RuntimeException thrown by camera framework.
+     */
+    public static interface CameraExceptionCallback {
+        public void onCameraError(int errorCode);
+
+        public void onCameraException(
+                RuntimeException e, String commandHistory, int action, int state);
+
+        public void onDispatchThreadException(RuntimeException e);
     }
 }
 

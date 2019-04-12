@@ -32,8 +32,7 @@ import com.android.camera.util.CameraUtil;
  * {@link com.android.camera.one.OneCamera} implementations.
  */
 @Deprecated
-public class AutoFocusHelper
-{
+public class AutoFocusHelper {
     private static final Log.Tag TAG = new Log.Tag("OneCameraAFHelp");
 
     /**
@@ -50,18 +49,15 @@ public class AutoFocusHelper
             new MeteringRectangle(0, 0, 0, 0, 0)
     };
 
-    public static MeteringRectangle[] getZeroWeightRegion()
-    {
+    public static MeteringRectangle[] getZeroWeightRegion() {
         return ZERO_WEIGHT_3A_REGION;
     }
 
     /**
      * Convert reported camera2 AF state to OneCamera AutoFocusState.
      */
-    public static OneCamera.AutoFocusState stateFromCamera2State(int state)
-    {
-        switch (state)
-        {
+    public static OneCamera.AutoFocusState stateFromCamera2State(int state) {
+        switch (state) {
             case CaptureResult.CONTROL_AF_STATE_ACTIVE_SCAN:
                 return OneCamera.AutoFocusState.ACTIVE_SCAN;
             case CaptureResult.CONTROL_AF_STATE_PASSIVE_SCAN:
@@ -83,11 +79,9 @@ public class AutoFocusHelper
      * Complain if CONTROL_AF_STATE is not present in result.
      * Could indicate bug in API implementation.
      */
-    public static boolean checkControlAfState(CaptureResult result)
-    {
+    public static boolean checkControlAfState(CaptureResult result) {
         boolean missing = result.get(CaptureResult.CONTROL_AF_STATE) == null;
-        if (missing)
-        {
+        if (missing) {
             // throw new IllegalStateException("CaptureResult missing CONTROL_AF_STATE.");
             Log.e(TAG, "\n!!!! TotalCaptureResult missing CONTROL_AF_STATE. !!!!\n ");
         }
@@ -98,21 +92,17 @@ public class AutoFocusHelper
      * Complain if LENS_STATE is not present in result.
      * Could indicate bug in API implementation.
      */
-    public static boolean checkLensState(CaptureResult result)
-    {
+    public static boolean checkLensState(CaptureResult result) {
         boolean missing = result.get(CaptureResult.LENS_STATE) == null;
-        if (missing)
-        {
+        if (missing) {
             // throw new IllegalStateException("CaptureResult missing LENS_STATE.");
             Log.e(TAG, "\n!!!! TotalCaptureResult missing LENS_STATE. !!!!\n ");
         }
         return !missing;
     }
 
-    public static void logExtraFocusInfo(CaptureResult result)
-    {
-        if (!checkControlAfState(result) || !checkLensState(result))
-        {
+    public static void logExtraFocusInfo(CaptureResult result) {
+        if (!checkControlAfState(result) || !checkLensState(result)) {
             return;
         }
 
@@ -140,8 +130,7 @@ public class AutoFocusHelper
      */
     private static MeteringRectangle[] regionsForNormalizedCoord(float nx, float ny,
                                                                  float fraction, final Rect cropRegion, int
-                                                                         sensorOrientation)
-    {
+                                                                         sensorOrientation) {
         // Compute half side length in pixels.
         int minCropEdge = Math.min(cropRegion.width(), cropRegion.height());
         int halfSideLength = (int) (0.5f * fraction * minCropEdge);
@@ -183,8 +172,7 @@ public class AutoFocusHelper
      */
     public static MeteringRectangle[] afRegionsForNormalizedCoord(float nx,
                                                                   float ny, final Rect cropRegion, int
-                                                                          sensorOrientation)
-    {
+                                                                          sensorOrientation) {
         return regionsForNormalizedCoord(nx, ny, Settings3A.getAutoFocusRegionWidth(),
                 cropRegion, sensorOrientation);
     }
@@ -201,8 +189,7 @@ public class AutoFocusHelper
      */
     public static MeteringRectangle[] aeRegionsForNormalizedCoord(float nx,
                                                                   float ny, final Rect cropRegion, int
-                                                                          sensorOrientation)
-    {
+                                                                          sensorOrientation) {
         return regionsForNormalizedCoord(nx, ny, Settings3A.getMeteringRegionWidth(),
                 cropRegion, sensorOrientation);
     }
@@ -219,8 +206,7 @@ public class AutoFocusHelper
      */
     public static MeteringRectangle[] gcamAERegionsForNormalizedCoord(float nx,
                                                                       float ny, final Rect cropRegion, int
-                                                                              sensorOrientation)
-    {
+                                                                              sensorOrientation) {
         return regionsForNormalizedCoord(nx, ny, Settings3A.getGcamMeteringRegionFraction(),
                 cropRegion, sensorOrientation);
     }
@@ -230,8 +216,7 @@ public class AutoFocusHelper
      *
      * @return Crop region.
      */
-    public static Rect cropRegionForZoom(CameraCharacteristics characteristics, float zoom)
-    {
+    public static Rect cropRegionForZoom(CameraCharacteristics characteristics, float zoom) {
         Rect sensor = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
         int xCenter = sensor.width() / 2;
         int yCenter = sensor.height() / 2;
@@ -243,10 +228,8 @@ public class AutoFocusHelper
     /**
      * Utility function: converts CaptureResult.CONTROL_AF_STATE to String.
      */
-    private static String controlAFStateToString(int controlAFState)
-    {
-        switch (controlAFState)
-        {
+    private static String controlAFStateToString(int controlAFState) {
+        switch (controlAFState) {
             case CaptureResult.CONTROL_AF_STATE_INACTIVE:
                 return "inactive";
             case CaptureResult.CONTROL_AF_STATE_PASSIVE_SCAN:
@@ -269,10 +252,8 @@ public class AutoFocusHelper
     /**
      * Utility function: converts CaptureResult.LENS_STATE to String.
      */
-    private static String lensStateToString(int lensState)
-    {
-        switch (lensState)
-        {
+    private static String lensStateToString(int lensState) {
+        switch (lensState) {
             case CaptureResult.LENS_STATE_MOVING:
                 return "moving";
             case CaptureResult.LENS_STATE_STATIONARY:

@@ -65,9 +65,9 @@ public class DispatchThread extends Thread {
     /**
      * Queues up the job and wait for it to be done.
      *
-     * @param job The job to run.
+     * @param job       The job to run.
      * @param timeoutMs Timeout limit in milliseconds.
-     * @param jobMsg The message to log when the job runs timeout.
+     * @param jobMsg    The message to log when the job runs timeout.
      * @return Whether the job finishes before timeout.
      */
     public void runJobSync(final Runnable job, Object waitLock, long timeoutMs, String jobMsg) {
@@ -95,7 +95,7 @@ public class DispatchThread extends Thread {
         synchronized (mIsEnded) {
             mIsEnded = true;
         }
-        synchronized(mJobQueue) {
+        synchronized (mJobQueue) {
             mJobQueue.notifyAll();
         }
     }
@@ -108,7 +108,7 @@ public class DispatchThread extends Thread {
 
     @Override
     public void run() {
-        while(true) {
+        while (true) {
             Runnable job = null;
             synchronized (mJobQueue) {
                 while (mJobQueue.size() == 0 && !isEnded()) {

@@ -39,8 +39,7 @@ import javax.annotation.Nonnull;
  * An implementation of {@link CaptureSession} which is used by
  * {@link CaptureIntentModule}.
  */
-public class CaptureIntentSession implements CaptureSession
-{
+public class CaptureIntentSession implements CaptureSession {
     private static final Log.Tag TAG = new Log.Tag("CapIntSession");
 
     /**
@@ -79,8 +78,7 @@ public class CaptureIntentSession implements CaptureSession
      *                              this session.
      */
     public CaptureIntentSession(String title, Location location,
-                                CaptureSessionManager captureSessionManager, SessionNotifier sessionNotifier)
-    {
+                                CaptureSessionManager captureSessionManager, SessionNotifier sessionNotifier) {
         mTitle = title;
         mLocation = location;
         mSessionManager = captureSessionManager;
@@ -89,161 +87,135 @@ public class CaptureIntentSession implements CaptureSession
     }
 
     @Override
-    public String getTitle()
-    {
+    public String getTitle() {
         return mTitle;
     }
 
     @Override
-    public Location getLocation()
-    {
+    public Location getLocation() {
         return mLocation;
     }
 
     @Override
-    public void setLocation(Location location)
-    {
+    public void setLocation(Location location) {
         mLocation = location;
     }
 
     // TODO: Support progress in the future once HDR is enabled for capture intent.
     @Override
-    public synchronized int getProgress()
-    {
+    public synchronized int getProgress() {
         return 0;
     }
 
     @Override
-    public synchronized void setProgress(int percent)
-    {
+    public synchronized void setProgress(int percent) {
         // Do nothing.
     }
 
     @Override
-    public synchronized int getProgressMessageId()
-    {
+    public synchronized int getProgressMessageId() {
         return -1;
     }
 
     @Override
-    public synchronized void setProgressMessage(int messageId)
-    {
+    public synchronized void setProgressMessage(int messageId) {
     }
 
     @Override
-    public void updateThumbnail(Bitmap bitmap)
-    {
+    public void updateThumbnail(Bitmap bitmap) {
         mSessionNotifier.notifySessionThumbnailAvailable(bitmap);
     }
 
     @Override
-    public void updateCaptureIndicatorThumbnail(Bitmap indicator, int rotationDegrees)
-    {
+    public void updateCaptureIndicatorThumbnail(Bitmap indicator, int rotationDegrees) {
         // Do nothing
     }
 
     @Override
-    public synchronized void startEmpty(ImageLifecycleListener listener, @Nonnull Size pictureSize)
-    {
+    public synchronized void startEmpty(ImageLifecycleListener listener, @Nonnull Size pictureSize) {
         isStarted = true;
     }
 
     @Override
     public synchronized void startSession(ImageLifecycleListener listener, @Nonnull Bitmap placeholder,
-                                          int progressMessageId)
-    {
+                                          int progressMessageId) {
         throw new RuntimeException("Not supported.");
     }
 
     @Override
     public synchronized void startSession(ImageLifecycleListener listener, @Nonnull byte[] placeholder,
-                                          int progressMessageId)
-    {
+                                          int progressMessageId) {
         throw new RuntimeException("Not supported.");
     }
 
     @Override
     public synchronized void startSession(ImageLifecycleListener listener, @Nonnull Uri uri,
-                                          @Nonnull int progressMessageId)
-    {
+                                          @Nonnull int progressMessageId) {
         throw new RuntimeException("Not supported.");
     }
 
     @Override
-    public synchronized void cancel()
-    {
+    public synchronized void cancel() {
     }
 
     @Override
     public synchronized ListenableFuture<Optional<Uri>> saveAndFinish(byte[] data, int width,
-                                                                      int height, int orientation, ExifInterface exif)
-    {
+                                                                      int height, int orientation, ExifInterface exif) {
         mSessionNotifier.notifySessionPictureDataAvailable(data, orientation);
         return Futures.immediateFuture(Optional.<Uri>absent());
     }
 
     @Override
-    public StackSaver getStackSaver()
-    {
+    public StackSaver getStackSaver() {
         return null;
     }
 
     @Override
-    public void finish()
-    {
+    public void finish() {
         // Do nothing.
     }
 
     @Override
-    public TemporarySessionFile getTempOutputFile()
-    {
+    public TemporarySessionFile getTempOutputFile() {
         throw new RuntimeException("Not supported.");
     }
 
     @Override
-    public Uri getUri()
-    {
+    public Uri getUri() {
         throw new RuntimeException("Not supported.");
     }
 
     @Override
-    public void updatePreview()
-    {
+    public void updatePreview() {
         throw new RuntimeException("Not supported.");
     }
 
     @Override
-    public void finishWithFailure(int progressMessageId, boolean removeFromFilmstrip)
-    {
+    public void finishWithFailure(int progressMessageId, boolean removeFromFilmstrip) {
         throw new RuntimeException("Not supported.");
     }
 
     @Override
-    public void finalizeSession()
-    {
+    public void finalizeSession() {
         // Do nothing.
     }
 
     @Override
-    public void addProgressListener(CaptureSession.ProgressListener listener)
-    {
+    public void addProgressListener(CaptureSession.ProgressListener listener) {
         // Do nothing.
     }
 
     @Override
-    public void removeProgressListener(CaptureSession.ProgressListener listener)
-    {
+    public void removeProgressListener(CaptureSession.ProgressListener listener) {
         // Do nothing.
     }
 
     @Override
-    public CaptureSessionStatsCollector getCollector()
-    {
+    public CaptureSessionStatsCollector getCollector() {
         return mCaptureSessionStatsCollector;
     }
 
-    private boolean isStarted()
-    {
+    private boolean isStarted() {
         return isStarted;
     }
 }

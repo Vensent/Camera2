@@ -62,8 +62,7 @@ import com.android.ex.camera2.portability.CameraAgent;
 /**
  * The camera module that handles image capture intent.
  */
-public class CaptureIntentModule extends CameraModule
-{
+public class CaptureIntentModule extends CameraModule {
     private static final Log.Tag TAG = new Log.Tag("CapIntModule");
 
     /**
@@ -80,12 +79,82 @@ public class CaptureIntentModule extends CameraModule
      * The module state machine.
      */
     private final StateMachine mStateMachine;
+    /**
+     * The listener to listen events from the UI.
+     */
+    private final CaptureIntentModuleUI.Listener mUIListener =
+            new CaptureIntentModuleUI.Listener() {
+                @Override
+                public void onZoomRatioChanged(final float zoomRatio) {
+                    mStateMachine.processEvent(new EventZoomRatioChanged(zoomRatio));
+                }
+            };
+    /**
+     * The listener to listen events from the preview.
+     */
+    private final PreviewStatusListener mPreviewStatusListener = new PreviewStatusListener() {
+        @Override
+        public void onPreviewLayoutChanged(View v, int left, int top, int right,
+                                           int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            final Size previewLayoutSize = new Size(right - left, bottom - top);
+            mStateMachine.processEvent(new EventOnTextureViewLayoutChanged(previewLayoutSize));
+        }
 
+        @Override
+        public boolean shouldAutoAdjustTransformMatrixOnLayout() {
+            return CaptureIntentConfig.WORKAROUND_PREVIEW_STRETCH_BUG_NEXUS4;
+        }
+
+        @Override
+        public void onPreviewFlipped() {
+            // Do nothing because when preview is flipped, TextureView will lay
+            // itself out again, which will then trigger a transform matrix
+            // update.
+        }
+
+        @Override
+        public GestureDetector.OnGestureListener getGestureListener() {
+            return new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent ev) {
+                    final Point tapPoint = new Point((int) ev.getX(), (int) ev.getY());
+                    mStateMachine.processEvent(new EventTapOnPreview(tapPoint));
+                    return true;
+                }
+            };
+        }
+
+        @Override
+        public View.OnTouchListener getTouchListener() {
+            return null;
+        }
+
+        @Override
+        public void onSurfaceTextureAvailable(
+                final SurfaceTexture surfaceTexture, int width, int height) {
+            mStateMachine.processEvent(new EventOnSurfaceTextureAvailable(surfaceTexture));
+        }
+
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            mStateMachine.processEvent(new EventOnSurfaceTextureDestroyed());
+            return true;
+        }
+
+        @Override
+        public void onSurfaceTextureSizeChanged(
+                SurfaceTexture surfaceTexture, int width, int height) {
+        }
+
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+            mStateMachine.processEvent(new EventOnSurfaceTextureUpdated());
+        }
+    };
     private TouchCoordinate mTouchPointInsideShutterButton;
 
     public CaptureIntentModule(AppController appController, Intent intent,
-                               String settingScopeNamespace) throws OneCameraException
-    {
+                               String settingScopeNamespace) throws OneCameraException {
         super(appController);
         mModuleUI = new CaptureIntentModuleUI(
                 appController.getCameraAppUI(),
@@ -112,50 +181,42 @@ public class CaptureIntentModule extends CameraModule
     }
 
     @Override
-    public void onCameraAvailable(CameraAgent.CameraProxy cameraProxy)
-    {
+    public void onCameraAvailable(CameraAgent.CameraProxy cameraProxy) {
         // Do nothing for capture intent.
     }
 
     @Override
-    public void onShutterButtonFocus(boolean pressed)
-    {
+    public void onShutterButtonFocus(boolean pressed) {
         // Do nothing for capture intent.
     }
 
     @Override
-    public void onShutterCoordinate(TouchCoordinate touchCoordinate)
-    {
+    public void onShutterCoordinate(TouchCoordinate touchCoordinate) {
         mTouchPointInsideShutterButton = touchCoordinate;
     }
 
     @Override
-    public void onShutterButtonClick()
-    {
+    public void onShutterButtonClick() {
         mStateMachine.processEvent(new EventTapOnShutterButton(mTouchPointInsideShutterButton));
     }
 
     @Override
-    public void onShutterButtonLongPressed()
-    {
+    public void onShutterButtonLongPressed() {
         // Do nothing for capture intent.
     }
 
     @Override
     public void init(
-            final CameraActivity activity, boolean isSecureCamera, boolean isCaptureIntent)
-    {
+            final CameraActivity activity, boolean isSecureCamera, boolean isCaptureIntent) {
         mResourceConstructed.get().getAppController()
                 .setPreviewStatusListener(mPreviewStatusListener);
 
         // Issue cancel countdown event when the button is pressed.
         // TODO: Make this part of the official API the way shutter button events are.
         mResourceConstructed.get().getAppController().getCameraAppUI()
-                .setCancelShutterButtonListener(new View.OnClickListener()
-                {
+                .setCancelShutterButtonListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(View v)
-                    {
+                    public void onClick(View v) {
                         mStateMachine.processEvent(new EventTapOnCancelShutterButton());
                     }
                 });
@@ -163,47 +224,40 @@ public class CaptureIntentModule extends CameraModule
     }
 
     @Override
-    public void resume()
-    {
+    public void resume() {
         mModuleUI.onModuleResumed();
         mStateMachine.processEvent(new EventResume());
     }
 
     @Override
-    public void pause()
-    {
+    public void pause() {
         mModuleUI.setCountdownFinishedListener(null);
         mModuleUI.onModulePaused();
         mStateMachine.processEvent(new EventPause());
     }
 
     @Override
-    public void destroy()
-    {
+    public void destroy() {
         // Never called. Do nothing here.
     }
 
     @Override
-    public void onPreviewVisibilityChanged(int visibility)
-    {
+    public void onPreviewVisibilityChanged(int visibility) {
         // Do nothing.
     }
 
     @Override
-    public void onLayoutOrientationChanged(boolean isLandscape)
-    {
+    public void onLayoutOrientationChanged(boolean isLandscape) {
         // Do nothing.
     }
 
     @Override
-    public void hardResetSettings(SettingsManager settingsManager)
-    {
+    public void hardResetSettings(SettingsManager settingsManager) {
         // Do nothing.
     }
 
     @Override
-    public HardwareSpec getHardwareSpec()
-    {
+    public HardwareSpec getHardwareSpec() {
         /**
          * Instead of passively providing CameraAppUI the hardware spec here,
          * {@link com.android.camera.captureintent.state.StateOpeningCamera}
@@ -213,8 +267,7 @@ public class CaptureIntentModule extends CameraModule
     }
 
     @Override
-    public CameraAppUI.BottomBarUISpec getBottomBarSpec()
-    {
+    public CameraAppUI.BottomBarUISpec getBottomBarSpec() {
         /**
          * Instead of passively providing CameraAppUI the bottom bar spec here,
          * {@link com.android.camera.captureintent.state.StateOpeningCamera}
@@ -224,23 +277,19 @@ public class CaptureIntentModule extends CameraModule
     }
 
     @Override
-    public boolean isUsingBottomBar()
-    {
+    public boolean isUsingBottomBar() {
         return true;
     }
 
     @Override
-    public String getPeekAccessibilityString()
-    {
+    public String getPeekAccessibilityString() {
         return mResourceConstructed.get().getContext().getResources()
                 .getString(R.string.photo_accessibility_peek);
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        switch (keyCode)
-        {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
             case KeyEvent.KEYCODE_CAMERA:
             case KeyEvent.KEYCODE_DPAD_CENTER:
                 mStateMachine.processEvent(new EventClickOnCameraKey());
@@ -254,10 +303,8 @@ public class CaptureIntentModule extends CameraModule
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event)
-    {
-        switch (keyCode)
-        {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode) {
             case KeyEvent.KEYCODE_VOLUME_UP:
             case KeyEvent.KEYCODE_VOLUME_DOWN:
                 mStateMachine.processEvent(new EventClickOnCameraKey());
@@ -265,92 +312,4 @@ public class CaptureIntentModule extends CameraModule
         }
         return false;
     }
-
-    /**
-     * The listener to listen events from the UI.
-     */
-    private final CaptureIntentModuleUI.Listener mUIListener =
-            new CaptureIntentModuleUI.Listener()
-            {
-                @Override
-                public void onZoomRatioChanged(final float zoomRatio)
-                {
-                    mStateMachine.processEvent(new EventZoomRatioChanged(zoomRatio));
-                }
-            };
-
-    /**
-     * The listener to listen events from the preview.
-     */
-    private final PreviewStatusListener mPreviewStatusListener = new PreviewStatusListener()
-    {
-        @Override
-        public void onPreviewLayoutChanged(View v, int left, int top, int right,
-                                           int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom)
-        {
-            final Size previewLayoutSize = new Size(right - left, bottom - top);
-            mStateMachine.processEvent(new EventOnTextureViewLayoutChanged(previewLayoutSize));
-        }
-
-        @Override
-        public boolean shouldAutoAdjustTransformMatrixOnLayout()
-        {
-            return CaptureIntentConfig.WORKAROUND_PREVIEW_STRETCH_BUG_NEXUS4;
-        }
-
-        @Override
-        public void onPreviewFlipped()
-        {
-            // Do nothing because when preview is flipped, TextureView will lay
-            // itself out again, which will then trigger a transform matrix
-            // update.
-        }
-
-        @Override
-        public GestureDetector.OnGestureListener getGestureListener()
-        {
-            return new GestureDetector.SimpleOnGestureListener()
-            {
-                @Override
-                public boolean onSingleTapUp(MotionEvent ev)
-                {
-                    final Point tapPoint = new Point((int) ev.getX(), (int) ev.getY());
-                    mStateMachine.processEvent(new EventTapOnPreview(tapPoint));
-                    return true;
-                }
-            };
-        }
-
-        @Override
-        public View.OnTouchListener getTouchListener()
-        {
-            return null;
-        }
-
-        @Override
-        public void onSurfaceTextureAvailable(
-                final SurfaceTexture surfaceTexture, int width, int height)
-        {
-            mStateMachine.processEvent(new EventOnSurfaceTextureAvailable(surfaceTexture));
-        }
-
-        @Override
-        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface)
-        {
-            mStateMachine.processEvent(new EventOnSurfaceTextureDestroyed());
-            return true;
-        }
-
-        @Override
-        public void onSurfaceTextureSizeChanged(
-                SurfaceTexture surfaceTexture, int width, int height)
-        {
-        }
-
-        @Override
-        public void onSurfaceTextureUpdated(SurfaceTexture surface)
-        {
-            mStateMachine.processEvent(new EventOnSurfaceTextureUpdated());
-        }
-    };
 }

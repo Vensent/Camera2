@@ -23,8 +23,7 @@ import com.android.ex.camera2.portability.CameraExceptionHandler;
 /**
  * An interface which defines the camera provider.
  */
-public interface CameraProvider
-{
+public interface CameraProvider {
 
     /**
      * Requests the camera device. If the camera device of the same ID is

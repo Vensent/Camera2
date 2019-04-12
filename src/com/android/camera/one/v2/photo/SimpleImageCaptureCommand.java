@@ -16,8 +16,6 @@
 
 package com.android.camera.one.v2.photo;
 
-import static com.android.camera.one.v2.core.ResponseListeners.forFrameExposure;
-
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
 
@@ -37,19 +35,19 @@ import java.util.Arrays;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import static com.android.camera.one.v2.core.ResponseListeners.forFrameExposure;
+
 /**
  * Captures single images.
  */
 @ParametersAreNonnullByDefault
-class SimpleImageCaptureCommand implements ImageCaptureCommand
-{
+class SimpleImageCaptureCommand implements ImageCaptureCommand {
     private final FrameServer mFrameServer;
     private final RequestBuilder.Factory mBuilderFactory;
     private final ManagedImageReader mImageReader;
 
     public SimpleImageCaptureCommand(FrameServer frameServer, RequestBuilder.Factory builder,
-                                     ManagedImageReader imageReader)
-    {
+                                     ManagedImageReader imageReader) {
         mFrameServer = frameServer;
         mBuilderFactory = builder;
         mImageReader = imageReader;
@@ -61,11 +59,9 @@ class SimpleImageCaptureCommand implements ImageCaptureCommand
     @Override
     public void run(Updatable<Void> imageExposureUpdatable, ImageSaver imageSaver) throws
             InterruptedException, CameraAccessException, CameraCaptureSessionClosedException,
-            ResourceAcquisitionFailedException
-    {
+            ResourceAcquisitionFailedException {
         try (FrameServer.Session session = mFrameServer.createExclusiveSession();
-             ImageStream imageStream = mImageReader.createStream(1))
-        {
+             ImageStream imageStream = mImageReader.createStream(1)) {
             UpdatableCountDownLatch<Void> exposureLatch = new UpdatableCountDownLatch<>(1);
             RequestBuilder photoRequest = mBuilderFactory.create(CameraDevice
                     .TEMPLATE_STILL_CAPTURE);
@@ -84,13 +80,11 @@ class SimpleImageCaptureCommand implements ImageCaptureCommand
 
             ImageProxy image = imageStream.getNext();
             imageSaver.addFullSizeImage(image, metadataFuture.getMetadata());
-        } catch (BufferQueue.BufferQueueClosedException e)
-        {
+        } catch (BufferQueue.BufferQueueClosedException e) {
             // If we get here, the request was submitted, but the image
             // never arrived.
             // TODO Log failure and notify the caller
-        } finally
-        {
+        } finally {
             imageSaver.close();
         }
     }

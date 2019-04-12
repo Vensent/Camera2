@@ -53,8 +53,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * further documentation on the state machine this class implements.
  */
 @ParametersAreNonnullByDefault
-public final class AETriggerResult implements Updatable<CaptureResultProxy>
-{
+public final class AETriggerResult implements Updatable<CaptureResultProxy> {
     private static final Set<Integer> TRIGGER_DONE_STATES = ImmutableSet.of(
             CaptureResult.CONTROL_AE_STATE_INACTIVE,
             CaptureResult.CONTROL_AE_STATE_FLASH_REQUIRED,
@@ -64,8 +63,7 @@ public final class AETriggerResult implements Updatable<CaptureResultProxy>
     private final TriggerStateMachine mStateMachine;
     private final SettableFuture<Boolean> mFutureResult;
 
-    public AETriggerResult()
-    {
+    public AETriggerResult() {
         mStateMachine = new TriggerStateMachine(
                 CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START,
                 TRIGGER_DONE_STATES);
@@ -73,15 +71,13 @@ public final class AETriggerResult implements Updatable<CaptureResultProxy>
     }
 
     @Override
-    public void update(CaptureResultProxy result)
-    {
+    public void update(CaptureResultProxy result) {
         Integer state = result.get(CaptureResult.CONTROL_AE_STATE);
         boolean done = mStateMachine.update(
                 result.getFrameNumber(),
                 result.getRequest().get(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER),
                 state);
-        if (done)
-        {
+        if (done) {
             boolean flashRequired = Objects.equal(state, CaptureResult
                     .CONTROL_AE_STATE_FLASH_REQUIRED);
             mFutureResult.set(flashRequired);
@@ -94,13 +90,10 @@ public final class AETriggerResult implements Updatable<CaptureResultProxy>
      * @return Whether the scene requires flash to be properly exposed.
      * @throws InterruptedException
      */
-    public boolean get() throws InterruptedException
-    {
-        try
-        {
+    public boolean get() throws InterruptedException {
+        try {
             return mFutureResult.get();
-        } catch (ExecutionException impossible)
-        {
+        } catch (ExecutionException impossible) {
             throw new RuntimeException(impossible);
         }
     }
@@ -112,13 +105,10 @@ public final class AETriggerResult implements Updatable<CaptureResultProxy>
      * @throws InterruptedException
      */
     public boolean get(long timeout, TimeUnit timeUnit) throws InterruptedException,
-            TimeoutException
-    {
-        try
-        {
+            TimeoutException {
+        try {
             return mFutureResult.get(timeout, timeUnit);
-        } catch (ExecutionException impossible)
-        {
+        } catch (ExecutionException impossible) {
             throw new RuntimeException(impossible);
         }
     }

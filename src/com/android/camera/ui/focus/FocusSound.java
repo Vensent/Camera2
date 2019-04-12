@@ -24,14 +24,12 @@ import com.android.camera.SoundPlayer;
  * <p>
  * TODO: This needs some way to better manage the sound lifetimes
  */
-public class FocusSound
-{
+public class FocusSound {
     private static final float DEFAULT_VOLUME = 0.6f;
     private final SoundPlayer mPlayer;
     private final int mSoundId;
 
-    public FocusSound(SoundPlayer player, int soundId)
-    {
+    public FocusSound(SoundPlayer player, int soundId) {
         mPlayer = player;
         mSoundId = soundId;
 
@@ -42,10 +40,8 @@ public class FocusSound
      * Play the focus sound with the sound player at the default
      * volume.
      */
-    public void play()
-    {
-        if (!mPlayer.isReleased())
-        {
+    public void play() {
+        if (!mPlayer.isReleased()) {
             mPlayer.play(mSoundId, DEFAULT_VOLUME);
         }
     }

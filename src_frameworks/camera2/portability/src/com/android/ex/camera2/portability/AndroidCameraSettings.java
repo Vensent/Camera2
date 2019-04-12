@@ -17,6 +17,7 @@
 package com.android.ex.camera2.portability;
 
 import android.hardware.Camera;
+
 import com.android.ex.camera2.portability.debug.Log;
 
 /**

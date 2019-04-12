@@ -44,7 +44,8 @@ public class Camera2CaptureCallbackForwarder extends CaptureCallback {
             @Override
             public void run() {
                 mListener.onCaptureCompleted(session, request, result);
-            }});
+            }
+        });
     }
 
     @Override
@@ -54,7 +55,8 @@ public class Camera2CaptureCallbackForwarder extends CaptureCallback {
             @Override
             public void run() {
                 mListener.onCaptureFailed(session, request, failure);
-            }});
+            }
+        });
     }
 
     @Override
@@ -65,7 +67,8 @@ public class Camera2CaptureCallbackForwarder extends CaptureCallback {
             @Override
             public void run() {
                 mListener.onCaptureProgressed(session, request, partialResult);
-            }});
+            }
+        });
     }
 
     @Override
@@ -74,7 +77,8 @@ public class Camera2CaptureCallbackForwarder extends CaptureCallback {
             @Override
             public void run() {
                 mListener.onCaptureSequenceAborted(session, sequenceId);
-            }});
+            }
+        });
     }
 
     @Override
@@ -84,7 +88,8 @@ public class Camera2CaptureCallbackForwarder extends CaptureCallback {
             @Override
             public void run() {
                 mListener.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
-            }});
+            }
+        });
     }
 
     @Override
@@ -94,6 +99,7 @@ public class Camera2CaptureCallbackForwarder extends CaptureCallback {
             @Override
             public void run() {
                 mListener.onCaptureStarted(session, request, timestamp, frameNumber);
-            }});
+            }
+        });
     }
 }

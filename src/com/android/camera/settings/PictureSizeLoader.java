@@ -30,7 +30,6 @@ import com.google.common.base.Optional;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -40,37 +39,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * layer to access the camera metadata.
  */
 @ParametersAreNonnullByDefault
-public class PictureSizeLoader
-{
-    /**
-     * Holds the sizes for the back- and front cameras which will be available
-     * to the user for selection form settings.
-     */
-    @ParametersAreNonnullByDefault
-    public static class PictureSizes
-    {
-        public final List<Size> backCameraSizes;
-        public final List<Size> frontCameraSizes;
-        public final Optional<SelectedVideoQualities> videoQualitiesBack;
-        public final Optional<SelectedVideoQualities> videoQualitiesFront;
-
-        PictureSizes(List<Size> backCameraSizes,
-                     List<Size> frontCameraSizes,
-                     Optional<SelectedVideoQualities> videoQualitiesBack,
-                     Optional<SelectedVideoQualities> videoQualitiesFront)
-        {
-            this.backCameraSizes = backCameraSizes;
-            this.frontCameraSizes = frontCameraSizes;
-            this.videoQualitiesBack = videoQualitiesBack;
-            this.videoQualitiesFront = videoQualitiesFront;
-        }
-    }
-
+public class PictureSizeLoader {
     private final Context mContext;
     private final ContentResolver mContentResolver;
     private final CameraDeviceInfo mCameraDeviceInfo;
     private final boolean mCachedOnly;
-
     /**
      * Initializes a new picture size loader.
      * <p>
@@ -79,8 +52,7 @@ public class PictureSizeLoader
      *
      * @param context used to load caches sizes from preferences.
      */
-    public PictureSizeLoader(Context context)
-    {
+    public PictureSizeLoader(Context context) {
         this(context, false);
     }
 
@@ -92,8 +64,7 @@ public class PictureSizeLoader
      *                   sizes. If the cache is empty, this will NOT attempt to open
      *                   the camera devices in order to obtain the sizes.
      */
-    public PictureSizeLoader(Context context, boolean cachedOnly)
-    {
+    public PictureSizeLoader(Context context, boolean cachedOnly) {
         mContext = context;
         mContentResolver = context.getContentResolver();
         mCameraDeviceInfo = CameraAgentFactory
@@ -102,8 +73,7 @@ public class PictureSizeLoader
         mCachedOnly = cachedOnly;
     }
 
-    public void release()
-    {
+    public void release() {
         CameraAgentFactory.recycle(CameraAgentFactory.CameraApi.API_1);
     }
 
@@ -117,8 +87,7 @@ public class PictureSizeLoader
      * We then calculate the resolutions that should be available and in the end
      * filter it in case a resolution is on the blacklist for this device.
      */
-    public PictureSizes computePictureSizes()
-    {
+    public PictureSizes computePictureSizes() {
         List<Size> backCameraSizes = computeSizesForCamera(SettingsUtil.CAMERA_FACING_BACK);
         List<Size> frontCameraSizes = computeSizesForCamera(SettingsUtil.CAMERA_FACING_FRONT);
         Optional<SelectedVideoQualities> videoQualitiesBack =
@@ -129,23 +98,18 @@ public class PictureSizeLoader
                 videoQualitiesFront);
     }
 
-    private List<Size> computeSizesForCamera(CameraDeviceSelector facingSelector)
-    {
+    private List<Size> computeSizesForCamera(CameraDeviceSelector facingSelector) {
         List<Size> sizes;
         int cameraId = SettingsUtil.getCameraId(mCameraDeviceInfo, facingSelector);
-        if (cameraId >= 0)
-        {
-            if (mCachedOnly)
-            {
+        if (cameraId >= 0) {
+            if (mCachedOnly) {
                 sizes = CameraPictureSizesCacher.getCachedSizesForCamera(cameraId, mContext)
                         .orNull();
-            } else
-            {
+            } else {
                 sizes = CameraPictureSizesCacher.getSizesForCamera(cameraId, mContext);
             }
 
-            if (sizes != null)
-            {
+            if (sizes != null) {
                 sizes = ResolutionUtil
                         .getDisplayableSizesFromSupported(sizes,
                                 facingSelector == SettingsUtil.CAMERA_FACING_BACK);
@@ -159,14 +123,34 @@ public class PictureSizeLoader
     }
 
     private Optional<SelectedVideoQualities> computeQualitiesForCamera(
-            CameraDeviceSelector facingSelector)
-    {
+            CameraDeviceSelector facingSelector) {
         int cameraId = SettingsUtil.getCameraId(mCameraDeviceInfo, facingSelector);
-        if (cameraId >= 0)
-        {
+        if (cameraId >= 0) {
             // This is guaranteed not to be null/absent.
             return Optional.of(SettingsUtil.getSelectedVideoQualities(cameraId));
         }
         return Optional.absent();
+    }
+
+    /**
+     * Holds the sizes for the back- and front cameras which will be available
+     * to the user for selection form settings.
+     */
+    @ParametersAreNonnullByDefault
+    public static class PictureSizes {
+        public final List<Size> backCameraSizes;
+        public final List<Size> frontCameraSizes;
+        public final Optional<SelectedVideoQualities> videoQualitiesBack;
+        public final Optional<SelectedVideoQualities> videoQualitiesFront;
+
+        PictureSizes(List<Size> backCameraSizes,
+                     List<Size> frontCameraSizes,
+                     Optional<SelectedVideoQualities> videoQualitiesBack,
+                     Optional<SelectedVideoQualities> videoQualitiesFront) {
+            this.backCameraSizes = backCameraSizes;
+            this.frontCameraSizes = frontCameraSizes;
+            this.videoQualitiesBack = videoQualitiesBack;
+            this.videoQualitiesFront = videoQualitiesFront;
+        }
     }
 }

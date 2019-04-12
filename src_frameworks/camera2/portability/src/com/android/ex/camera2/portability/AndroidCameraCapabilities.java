@@ -29,11 +29,11 @@ import java.util.List;
  */
 class AndroidCameraCapabilities extends CameraCapabilities {
 
-    private static Log.Tag TAG = new Log.Tag("AndCamCapabs");
-
-    /** Conversion from ratios to percentages. */
+    /**
+     * Conversion from ratios to percentages.
+     */
     public static final float ZOOM_MULTIPLIER = 100f;
-
+    private static Log.Tag TAG = new Log.Tag("AndCamCapabs");
     private FpsComparator mFpsComparator = new FpsComparator();
     private SizeComparator mSizeComparator = new SizeComparator();
 

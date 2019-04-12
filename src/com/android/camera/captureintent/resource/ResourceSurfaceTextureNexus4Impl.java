@@ -16,12 +16,12 @@
 
 package com.android.camera.captureintent.resource;
 
+import android.graphics.SurfaceTexture;
+
 import com.android.camera.async.RefCountBase;
 import com.android.camera.captureintent.PreviewTransformCalculator;
 import com.android.camera.util.AspectRatio;
 import com.android.camera.util.Size;
-
-import android.graphics.SurfaceTexture;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -39,9 +39,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * with 16:9 aspect ratio to get correct transform matrix.
  */
 @ParametersAreNonnullByDefault
-public final class ResourceSurfaceTextureNexus4Impl extends ResourceSurfaceTextureImpl
-{
+public final class ResourceSurfaceTextureNexus4Impl extends ResourceSurfaceTextureImpl {
     private static final Size LARGEST_4x3_PREVIEW_SIZE_NEXUS4 = new Size(1280, 960);
+
+    private ResourceSurfaceTextureNexus4Impl(
+            RefCountBase<ResourceConstructed> resourceConstructed,
+            SurfaceTexture surfaceTexture,
+            PreviewTransformCalculator previewTransformCalculator) {
+        super(resourceConstructed, surfaceTexture, previewTransformCalculator);
+    }
 
     /**
      * Creates a reference counted {@link ResourceSurfaceTextureNexus4Impl}
@@ -49,8 +55,7 @@ public final class ResourceSurfaceTextureNexus4Impl extends ResourceSurfaceTextu
      */
     public static RefCountBase<ResourceSurfaceTexture> create(
             RefCountBase<ResourceConstructed> resourceConstructed,
-            SurfaceTexture surfaceTexture)
-    {
+            SurfaceTexture surfaceTexture) {
         ResourceSurfaceTexture resourceSurfaceTexture = new ResourceSurfaceTextureNexus4Impl(
                 resourceConstructed,
                 surfaceTexture,
@@ -58,25 +63,14 @@ public final class ResourceSurfaceTextureNexus4Impl extends ResourceSurfaceTextu
         return new RefCountBase<>(resourceSurfaceTexture);
     }
 
-    private ResourceSurfaceTextureNexus4Impl(
-            RefCountBase<ResourceConstructed> resourceConstructed,
-            SurfaceTexture surfaceTexture,
-            PreviewTransformCalculator previewTransformCalculator)
-    {
-        super(resourceConstructed, surfaceTexture, previewTransformCalculator);
-    }
-
     @Override
-    public void setPreviewSize(Size previewSize)
-    {
+    public void setPreviewSize(Size previewSize) {
         super.setPreviewSize(previewSize);
 
         final AspectRatio previewAspectRatio = AspectRatio.of(previewSize);
-        getResourceConstructed().get().getMainThread().execute(new Runnable()
-        {
+        getResourceConstructed().get().getMainThread().execute(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 getResourceConstructed().get().getModuleUI()
                         .updatePreviewAspectRatio(previewAspectRatio.toFloat());
             }
@@ -85,15 +79,13 @@ public final class ResourceSurfaceTextureNexus4Impl extends ResourceSurfaceTextu
         // Override the preview selection logic to the largest N4 4:3
         // preview size but pass in 16:9 aspect ratio in
         // updatePreviewTransform() later.
-        if (previewAspectRatio.equals(AspectRatio.of16x9()))
-        {
+        if (previewAspectRatio.equals(AspectRatio.of16x9())) {
             updateSurfaceTextureDefaultBufferSize(LARGEST_4x3_PREVIEW_SIZE_NEXUS4);
         }
     }
 
     @Override
-    public void updatePreviewTransform()
-    {
+    public void updatePreviewTransform() {
         // Override and let it be no-op since TextureViewHelper auto transform
         // is enabled!
     }

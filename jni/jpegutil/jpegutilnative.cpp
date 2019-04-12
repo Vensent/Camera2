@@ -67,37 +67,37 @@ using namespace jpegutil;
  */
 extern "C" JNIEXPORT jint JNICALL
 Java_com_android_camera_util_JpegUtilNative_compressJpegFromYUV420pNative(
-    JNIEnv* env, jclass clazz __unused,
-    /** Input image dimensions */
-    jint width, jint height,
-    /** Y Plane */
-    jobject yBuf, jint yPStride, jint yRStride,
-    /** Cb Plane */
-    jobject cbBuf, jint cbPStride, jint cbRStride,
-    /** Cr Plane */
-    jobject crBuf, jint crPStride, jint crRStride,
-    /** Output */
-    jobject outBuf, jint outBufCapacity,
-    /** Jpeg compression parameters */
-    jint quality,
-    /** Crop */
-    jint cropLeft, jint cropTop, jint cropRight, jint cropBottom,
-    /** Rotation (multiple of 90).  For example, rot90 = 1 implies a 90 degree
-     * rotation. */
-    jint rot90) {
-  jbyte* y = (jbyte*)env->GetDirectBufferAddress(yBuf);
-  jbyte* cb = (jbyte*)env->GetDirectBufferAddress(cbBuf);
-  jbyte* cr = (jbyte*)env->GetDirectBufferAddress(crBuf);
-  jbyte* out = (jbyte*)env->GetDirectBufferAddress(outBuf);
+        JNIEnv *env, jclass clazz __unused,
+        /** Input image dimensions */
+        jint width, jint height,
+        /** Y Plane */
+        jobject yBuf, jint yPStride, jint yRStride,
+        /** Cb Plane */
+        jobject cbBuf, jint cbPStride, jint cbRStride,
+        /** Cr Plane */
+        jobject crBuf, jint crPStride, jint crRStride,
+        /** Output */
+        jobject outBuf, jint outBufCapacity,
+        /** Jpeg compression parameters */
+        jint quality,
+        /** Crop */
+        jint cropLeft, jint cropTop, jint cropRight, jint cropBottom,
+        /** Rotation (multiple of 90).  For example, rot90 = 1 implies a 90 degree
+         * rotation. */
+        jint rot90) {
+    jbyte *y = (jbyte *) env->GetDirectBufferAddress(yBuf);
+    jbyte *cb = (jbyte *) env->GetDirectBufferAddress(cbBuf);
+    jbyte *cr = (jbyte *) env->GetDirectBufferAddress(crBuf);
+    jbyte *out = (jbyte *) env->GetDirectBufferAddress(outBuf);
 
-  return Compress(width, height,                                //
-                  (unsigned char*)y, yPStride, yRStride,        //
-                  (unsigned char*)cb, cbPStride, cbRStride,     //
-                  (unsigned char*)cr, crPStride, crRStride,     //
-                  (unsigned char*)out, (size_t)outBufCapacity,  //
-                  quality,                                      //
-                  cropLeft, cropTop, cropRight, cropBottom,     //
-                  rot90);
+    return Compress(width, height,                                //
+                    (unsigned char *) y, yPStride, yRStride,        //
+                    (unsigned char *) cb, cbPStride, cbRStride,     //
+                    (unsigned char *) cr, crPStride, crRStride,     //
+                    (unsigned char *) out, (size_t) outBufCapacity,  //
+                    quality,                                      //
+                    cropLeft, cropTop, cropRight, cropBottom,     //
+                    rot90);
 }
 
 /**
@@ -116,52 +116,52 @@ Java_com_android_camera_util_JpegUtilNative_compressJpegFromYUV420pNative(
  */
 extern "C" JNIEXPORT void JNICALL
 Java_com_android_camera_util_JpegUtilNative_copyImagePlaneToBitmap(
-    JNIEnv* env, jclass clazz __unused, jint width, jint height, jobject planeBuf,
-    jint pStride, jint rStride, jobject outBitmap, jint rot90) {
-  jbyte* src = (jbyte*)env->GetDirectBufferAddress(planeBuf);
+        JNIEnv *env, jclass clazz __unused, jint width, jint height, jobject planeBuf,
+        jint pStride, jint rStride, jobject outBitmap, jint rot90) {
+    jbyte *src = (jbyte *) env->GetDirectBufferAddress(planeBuf);
 
-  char* dst = 0;
-  AndroidBitmap_lockPixels(env, outBitmap, (void**)&dst);
+    char *dst = 0;
+    AndroidBitmap_lockPixels(env, outBitmap, (void **) &dst);
 
-  if (rot90 == 0) {
-    // No rotation
-    for (int y = 0; y < height; y++) {
-      char* srcPtr = reinterpret_cast<char*>(&src[y * rStride]);
-      char* dstPtr = &dst[y * width];
-      for (int x = 0; x < width; x++) {
-        *dstPtr = *srcPtr;
-        srcPtr += pStride;
-        dstPtr++;
-      }
+    if (rot90 == 0) {
+        // No rotation
+        for (int y = 0; y < height; y++) {
+            char *srcPtr = reinterpret_cast<char *>(&src[y * rStride]);
+            char *dstPtr = &dst[y * width];
+            for (int x = 0; x < width; x++) {
+                *dstPtr = *srcPtr;
+                srcPtr += pStride;
+                dstPtr++;
+            }
+        }
+    } else if (rot90 == 1) {
+        // 90-degree rotation
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int srcX = height - 1 - y;
+                int srcY = x;
+                dst[y * width + x] = src[srcX * pStride + rStride * srcY];
+            }
+        }
+    } else if (rot90 == 2) {
+        // 180-degree rotation
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int srcX = width - 1 - x;
+                int srcY = height - 1 - y;
+                dst[y * width + x] = src[srcX * pStride + rStride * srcY];
+            }
+        }
+    } else if (rot90 == 3) {
+        // 270-degree rotation
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int srcX = y;
+                int srcY = width - 1 - x;
+                dst[y * width + x] = src[srcX * pStride + rStride * srcY];
+            }
+        }
     }
-  } else if (rot90 == 1) {
-    // 90-degree rotation
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        int srcX = height - 1 - y;
-        int srcY = x;
-        dst[y * width + x] = src[srcX * pStride + rStride * srcY];
-      }
-    }
-  } else if (rot90 == 2) {
-    // 180-degree rotation
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        int srcX = width - 1 - x;
-        int srcY = height - 1 - y;
-        dst[y * width + x] = src[srcX * pStride + rStride * srcY];
-      }
-    }
-  } else if (rot90 == 3) {
-    // 270-degree rotation
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        int srcX = y;
-        int srcY = width - 1 - x;
-        dst[y * width + x] = src[srcX * pStride + rStride * srcY];
-      }
-    }
-  }
 
-  AndroidBitmap_unlockPixels(env, outBitmap);
+    AndroidBitmap_unlockPixels(env, outBitmap);
 }

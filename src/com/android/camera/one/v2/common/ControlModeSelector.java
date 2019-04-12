@@ -25,8 +25,7 @@ import com.google.common.base.Supplier;
 /**
  * Select a control mode based on the HdrSettings and face detection modes.
  */
-public class ControlModeSelector implements Supplier<Integer>
-{
+public class ControlModeSelector implements Supplier<Integer> {
     private final Supplier<Boolean> mHdrSetting;
     private final Supplier<FaceDetectMode> mFaceDetectMode;
     private final SupportedHardwareLevel mSupportedHardwareLevel;
@@ -34,27 +33,22 @@ public class ControlModeSelector implements Supplier<Integer>
     public ControlModeSelector(
             Supplier<Boolean> hdrSetting,
             Supplier<FaceDetectMode> faceDetectMode,
-            SupportedHardwareLevel supportedHardwareLevel)
-    {
+            SupportedHardwareLevel supportedHardwareLevel) {
         mHdrSetting = hdrSetting;
         mFaceDetectMode = faceDetectMode;
         mSupportedHardwareLevel = supportedHardwareLevel;
     }
 
     @Override
-    public Integer get()
-    {
-        if (mSupportedHardwareLevel == SupportedHardwareLevel.LEGACY)
-        {
-            if (mHdrSetting.get())
-            {
+    public Integer get() {
+        if (mSupportedHardwareLevel == SupportedHardwareLevel.LEGACY) {
+            if (mHdrSetting.get()) {
                 return CaptureRequest.CONTROL_MODE_USE_SCENE_MODE;
             }
         }
 
         if (mFaceDetectMode.get() == FaceDetectMode.FULL ||
-                mFaceDetectMode.get() == FaceDetectMode.SIMPLE)
-        {
+                mFaceDetectMode.get() == FaceDetectMode.SIMPLE) {
             return CaptureRequest.CONTROL_MODE_USE_SCENE_MODE;
         }
 

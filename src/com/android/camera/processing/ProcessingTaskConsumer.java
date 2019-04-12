@@ -16,16 +16,9 @@
 
 package com.android.camera.processing;
 
-import android.content.Context;
-import android.location.Location;
-
-import com.android.camera.app.CameraServices;
-import com.android.camera.session.CaptureSession;
-
 /**
  * An interface for tasks to be processed by a {@code ProcessingService}.
  */
-public interface ProcessingTaskConsumer
-{
+public interface ProcessingTaskConsumer {
     public void enqueueTask(ProcessingTask task);
 }

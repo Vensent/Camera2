@@ -45,8 +45,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
-public class Storage
-{
+public class Storage {
     public static final String DCIM =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString();
     public static final String DIRECTORY = DCIM + "/Camera";
@@ -65,11 +64,9 @@ public class Storage
     private static HashMap<Uri, Uri> sContentUrisToSessions = new HashMap<>();
     private static LruCache<Uri, Bitmap> sSessionsToPlaceholderBitmap =
             // 20MB cache as an upper bound for session bitmap storage
-            new LruCache<Uri, Bitmap>(20 * 1024 * 1024)
-            {
+            new LruCache<Uri, Bitmap>(20 * 1024 * 1024) {
                 @Override
-                protected int sizeOf(Uri key, Bitmap value)
-                {
+                protected int sizeOf(Uri key, Bitmap value) {
                     return value.getByteCount();
                 }
             };
@@ -93,8 +90,7 @@ public class Storage
      */
     public static Uri addImage(ContentResolver resolver, String title, long date,
                                Location location, int orientation, ExifInterface exif, byte[] jpeg, int width,
-                               int height) throws IOException
-    {
+                               int height) throws IOException {
 
         return addImage(resolver, title, date, location, orientation, exif, jpeg, width, height,
                 FilmstripItemData.MIME_TYPE_JPEG);
@@ -123,13 +119,11 @@ public class Storage
      */
     public static Uri addImage(ContentResolver resolver, String title, long date,
                                Location location, int orientation, ExifInterface exif, byte[] data, int width,
-                               int height, String mimeType) throws IOException
-    {
+                               int height, String mimeType) throws IOException {
 
         String path = generateFilepath(title, mimeType);
         long fileLength = writeFile(path, data, exif);
-        if (fileLength >= 0)
-        {
+        if (fileLength >= 0) {
             return addImageToMediaStore(resolver, title, date, location, orientation, fileLength,
                     path, width, height, mimeType);
         }
@@ -155,19 +149,16 @@ public class Storage
     public static Uri addImageToMediaStore(ContentResolver resolver, String title, long date,
                                            Location location, int orientation, long jpegLength, String path, int
                                                    width, int height,
-                                           String mimeType)
-    {
+                                           String mimeType) {
         // Insert into MediaStore.
         ContentValues values =
                 getContentValuesForData(title, date, location, orientation, jpegLength, path, width,
                         height, mimeType);
 
         Uri uri = null;
-        try
-        {
+        try {
             uri = resolver.insert(Images.Media.EXTERNAL_CONTENT_URI, values);
-        } catch (Throwable th)
-        {
+        } catch (Throwable th) {
             // This can happen when the external volume is already mounted, but
             // MediaScanner has not notify MediaProvider to add that volume.
             // The picture is still safe and MediaScanner will find it and
@@ -181,8 +172,7 @@ public class Storage
     // Get a ContentValues object for the given photo data
     public static ContentValues getContentValuesForData(String title,
                                                         long date, Location location, int orientation, long jpegLength,
-                                                        String path, int width, int height, String mimeType)
-    {
+                                                        String path, int width, int height, String mimeType) {
 
         File file = new File(path);
         long dateModifiedSeconds = TimeUnit.MILLISECONDS.toSeconds(file.lastModified());
@@ -200,8 +190,7 @@ public class Storage
 
         setImageSize(values, width, height);
 
-        if (location != null)
-        {
+        if (location != null) {
             values.put(ImageColumns.LATITUDE, location.getLatitude());
             values.put(ImageColumns.LONGITUDE, location.getLongitude());
         }
@@ -214,8 +203,7 @@ public class Storage
      * @param placeholder the placeholder image
      * @return A new URI used to reference this placeholder
      */
-    public static Uri addPlaceholder(Bitmap placeholder)
-    {
+    public static Uri addPlaceholder(Bitmap placeholder) {
         Uri uri = generateUniquePlaceholderUri();
         replacePlaceholder(uri, placeholder);
         return uri;
@@ -224,8 +212,7 @@ public class Storage
     /**
      * Remove a placeholder from in memory storage.
      */
-    public static void removePlaceholder(Uri uri)
-    {
+    public static void removePlaceholder(Uri uri) {
         sSessionsToSizes.remove(uri);
         sSessionsToPlaceholderBitmap.remove(uri);
         sSessionsToPlaceholderVersions.remove(uri);
@@ -239,8 +226,7 @@ public class Storage
      * @param placeholder the placeholder image
      * @return A URI used to reference this placeholder
      */
-    public static void replacePlaceholder(Uri uri, Bitmap placeholder)
-    {
+    public static void replacePlaceholder(Uri uri, Bitmap placeholder) {
         Log.v(TAG, "session bitmap cache size: " + sSessionsToPlaceholderBitmap.size());
         Point size = new Point(placeholder.getWidth(), placeholder.getHeight());
         sSessionsToSizes.put(uri, size);
@@ -256,8 +242,7 @@ public class Storage
      * @return A new URI used to reference this placeholder
      */
     @Nonnull
-    public static Uri addEmptyPlaceholder(@Nonnull Size size)
-    {
+    public static Uri addEmptyPlaceholder(@Nonnull Size size) {
         Uri uri = generateUniquePlaceholderUri();
         sSessionsToSizes.put(uri, new Point(size.getWidth(), size.getHeight()));
         sSessionsToPlaceholderBitmap.remove(uri);
@@ -285,27 +270,23 @@ public class Storage
      */
     public static Uri updateImage(Uri imageUri, ContentResolver resolver, String title, long date,
                                   Location location, int orientation, ExifInterface exif,
-                                  byte[] jpeg, int width, int height, String mimeType) throws IOException
-    {
+                                  byte[] jpeg, int width, int height, String mimeType) throws IOException {
         String path = generateFilepath(title, mimeType);
         writeFile(path, jpeg, exif);
         return updateImage(imageUri, resolver, title, date, location, orientation, jpeg.length, path,
                 width, height, mimeType);
     }
 
-    private static Uri generateUniquePlaceholderUri()
-    {
+    private static Uri generateUniquePlaceholderUri() {
         Uri.Builder builder = new Uri.Builder();
         String uuid = UUID.randomUUID().toString();
         builder.scheme(CAMERA_SESSION_SCHEME).authority(GOOGLE_COM).appendPath(uuid);
         return builder.build();
     }
 
-    private static void setImageSize(ContentValues values, int width, int height)
-    {
+    private static void setImageSize(ContentValues values, int width, int height) {
         // The two fields are available since ICS but got published in JB
-        if (ApiHelper.HAS_MEDIA_COLUMNS_WIDTH_AND_HEIGHT)
-        {
+        if (ApiHelper.HAS_MEDIA_COLUMNS_WIDTH_AND_HEIGHT) {
             values.put(MediaColumns.WIDTH, width);
             values.put(MediaColumns.HEIGHT, height);
         }
@@ -320,20 +301,16 @@ public class Storage
      * @param exif The EXIF info. Can be {@code null}.
      * @return The size of the file. -1 if failed.
      */
-    public static long writeFile(String path, byte[] jpeg, ExifInterface exif) throws IOException
-    {
-        if (!createDirectoryIfNeeded(path))
-        {
+    public static long writeFile(String path, byte[] jpeg, ExifInterface exif) throws IOException {
+        if (!createDirectoryIfNeeded(path)) {
             Log.e(TAG, "Failed to create parent directory for file: " + path);
             return -1;
         }
-        if (exif != null)
-        {
+        if (exif != null) {
             exif.writeExif(jpeg, path);
             File f = new File(path);
             return f.length();
-        } else
-        {
+        } else {
             return writeFile(path, jpeg);
         }
         //        return -1;
@@ -349,20 +326,16 @@ public class Storage
      * @param newFilePath the new path of the file
      * @return false if rename was not successful
      */
-    public static boolean renameFile(File inputPath, File newFilePath)
-    {
-        if (newFilePath.exists())
-        {
+    public static boolean renameFile(File inputPath, File newFilePath) {
+        if (newFilePath.exists()) {
             Log.e(TAG, "File path already exists: " + newFilePath.getAbsolutePath());
             return false;
         }
-        if (inputPath.isDirectory())
-        {
+        if (inputPath.isDirectory()) {
             Log.e(TAG, "Input path is directory: " + inputPath.getAbsolutePath());
             return false;
         }
-        if (!createDirectoryIfNeeded(newFilePath.getAbsolutePath()))
-        {
+        if (!createDirectoryIfNeeded(newFilePath.getAbsolutePath())) {
             Log.e(TAG, "Failed to create parent directory for file: " +
                     newFilePath.getAbsolutePath());
             return false;
@@ -377,24 +350,18 @@ public class Storage
      * @param data The data to save.
      * @return The size of the file. -1 if failed.
      */
-    private static long writeFile(String path, byte[] data)
-    {
+    private static long writeFile(String path, byte[] data) {
         FileOutputStream out = null;
-        try
-        {
+        try {
             out = new FileOutputStream(path);
             out.write(data);
             return data.length;
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.e(TAG, "Failed to write data", e);
-        } finally
-        {
-            try
-            {
+        } finally {
+            try {
                 out.close();
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 Log.e(TAG, "Failed to close file after write", e);
             }
         }
@@ -410,14 +377,12 @@ public class Storage
      * cannot be written to since the parent directory could not be
      * created.
      */
-    private static boolean createDirectoryIfNeeded(String filePath)
-    {
+    private static boolean createDirectoryIfNeeded(String filePath) {
         File parentFile = new File(filePath).getParentFile();
 
         // If the parent exists, return 'true' if it is a directory. If it's a
         // file, return 'false'.
-        if (parentFile.exists())
-        {
+        if (parentFile.exists()) {
             return parentFile.isDirectory();
         }
 
@@ -431,45 +396,37 @@ public class Storage
      */
     private static Uri updateImage(Uri imageUri, ContentResolver resolver, String title,
                                    long date, Location location, int orientation, int jpegLength,
-                                   String path, int width, int height, String mimeType)
-    {
+                                   String path, int width, int height, String mimeType) {
 
         ContentValues values =
                 getContentValuesForData(title, date, location, orientation, jpegLength, path,
                         width, height, mimeType);
 
         Uri resultUri = imageUri;
-        if (Storage.isSessionUri(imageUri))
-        {
+        if (Storage.isSessionUri(imageUri)) {
             // If this is a session uri, then we need to add the image
             resultUri = addImageToMediaStore(resolver, title, date, location, orientation,
                     jpegLength, path, width, height, mimeType);
             sSessionsToContentUris.put(imageUri, resultUri);
             sContentUrisToSessions.put(resultUri, imageUri);
-        } else
-        {
+        } else {
             // Update the MediaStore
             resolver.update(imageUri, values, null, null);
         }
         return resultUri;
     }
 
-    private static String generateFilepath(String title, String mimeType)
-    {
+    private static String generateFilepath(String title, String mimeType) {
         return generateFilepath(DIRECTORY, title, mimeType);
     }
 
-    public static String generateFilepath(String directory, String title, String mimeType)
-    {
+    public static String generateFilepath(String directory, String title, String mimeType) {
         String extension = null;
-        if (FilmstripItemData.MIME_TYPE_JPEG.equals(mimeType))
-        {
+        if (FilmstripItemData.MIME_TYPE_JPEG.equals(mimeType)) {
             extension = JPEG_POSTFIX;
-        } else if (FilmstripItemData.MIME_TYPE_GIF.equals(mimeType))
-        {
+        } else if (FilmstripItemData.MIME_TYPE_GIF.equals(mimeType)) {
             extension = GIF_POSTFIX;
-        } else
-        {
+        } else {
             throw new IllegalArgumentException("Invalid mimeType: " + mimeType);
         }
         return (new File(directory, title + extension)).getAbsolutePath();
@@ -481,8 +438,7 @@ public class Storage
      * @param uri the session uri to look up
      * @return The bitmap or null
      */
-    public static Optional<Bitmap> getPlaceholderForSession(Uri uri)
-    {
+    public static Optional<Bitmap> getPlaceholderForSession(Uri uri) {
         return Optional.fromNullable(sSessionsToPlaceholderBitmap.get(uri));
     }
 
@@ -490,8 +446,7 @@ public class Storage
      * @return Whether a placeholder size for the session with the given URI
      * exists.
      */
-    public static boolean containsPlaceholderSize(Uri uri)
-    {
+    public static boolean containsPlaceholderSize(Uri uri) {
         return sSessionsToSizes.containsKey(uri);
     }
 
@@ -501,8 +456,7 @@ public class Storage
      * @param uri the session uri to look up
      * @return The size
      */
-    public static Point getSizeForSession(Uri uri)
-    {
+    public static Point getSizeForSession(Uri uri) {
         return sSessionsToSizes.get(uri);
     }
 
@@ -512,8 +466,7 @@ public class Storage
      * @param uri the uri of the session that was replaced
      * @return The uri of the new media item, if it exists, or null.
      */
-    public static Uri getContentUriForSessionUri(Uri uri)
-    {
+    public static Uri getContentUriForSessionUri(Uri uri) {
         return sSessionsToContentUris.get(uri);
     }
 
@@ -523,8 +476,7 @@ public class Storage
      * @param contentUri the uri of the media store content
      * @return The session uri of the original session, if it exists, or null.
      */
-    public static Uri getSessionUriFromContentUri(Uri contentUri)
-    {
+    public static Uri getSessionUriFromContentUri(Uri contentUri) {
         return sContentUrisToSessions.get(contentUri);
     }
 
@@ -534,37 +486,30 @@ public class Storage
      * @param uri the uri to check
      * @return true if it is a session uri.
      */
-    public static boolean isSessionUri(Uri uri)
-    {
+    public static boolean isSessionUri(Uri uri) {
         return uri.getScheme().equals(CAMERA_SESSION_SCHEME);
     }
 
-    public static long getAvailableSpace()
-    {
+    public static long getAvailableSpace() {
         String state = Environment.getExternalStorageState();
         Log.d(TAG, "External storage state=" + state);
-        if (Environment.MEDIA_CHECKING.equals(state))
-        {
+        if (Environment.MEDIA_CHECKING.equals(state)) {
             return PREPARING;
         }
-        if (!Environment.MEDIA_MOUNTED.equals(state))
-        {
+        if (!Environment.MEDIA_MOUNTED.equals(state)) {
             return UNAVAILABLE;
         }
 
         File dir = new File(DIRECTORY);
         dir.mkdirs();
-        if (!dir.isDirectory() || !dir.canWrite())
-        {
+        if (!dir.isDirectory() || !dir.canWrite()) {
             return UNAVAILABLE;
         }
 
-        try
-        {
+        try {
             StatFs stat = new StatFs(DIRECTORY);
             return stat.getAvailableBlocks() * (long) stat.getBlockSize();
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.i(TAG, "Fail to access external storage", e);
         }
         return UNKNOWN_SIZE;
@@ -574,11 +519,9 @@ public class Storage
      * OSX requires plugged-in USB storage to have path /DCIM/NNNAAAAA to be
      * imported. This is a temporary fix for bug#1655552.
      */
-    public static void ensureOSXCompatible()
-    {
+    public static void ensureOSXCompatible() {
         File nnnAAAAA = new File(DCIM, "100ANDRO");
-        if (!(nnnAAAAA.exists() || nnnAAAAA.mkdirs()))
-        {
+        if (!(nnnAAAAA.exists() || nnnAAAAA.mkdirs())) {
             Log.e(TAG, "Failed to create " + nnnAAAAA.getPath());
         }
     }

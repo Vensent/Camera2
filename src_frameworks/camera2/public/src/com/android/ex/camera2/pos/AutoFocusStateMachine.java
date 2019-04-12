@@ -16,9 +16,9 @@
 package com.android.ex.camera2.pos;
 
 import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CaptureResult.Key;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.CaptureResult.Key;
 import android.util.Log;
 
 import com.android.ex.camera2.utils.SysTrace;
@@ -31,57 +31,18 @@ import com.android.ex.camera2.utils.SysTrace;
  */
 public class AutoFocusStateMachine {
 
-    /**
-     * Observe state AF state transitions triggered by
-     * {@link AutoFocusStateMachine#onCaptureCompleted onCaptureCompleted}.
-     */
-    public interface AutoFocusStateListener {
-        /**
-         * The camera is currently focused (either active or passive).
-         *
-         * @param locked True if the lens has been locked from moving, false otherwise.
-         */
-        void onAutoFocusSuccess(CaptureResult result, boolean locked);
-
-        /**
-         * The camera is currently not focused (either active or passive).
-         *
-         * @param locked False if the AF is still scanning, true if needs a restart.
-         */
-        void onAutoFocusFail(CaptureResult result, boolean locked);
-
-        /**
-         * The camera is currently scanning (either active or passive)
-         * and has not yet converged.
-         *
-         * <p>This is not called for results where the AF either succeeds or fails.</p>
-         */
-        void onAutoFocusScan(CaptureResult result);
-
-        /**
-         * The camera is currently not doing anything with the autofocus.
-         *
-         * <p>Autofocus could be off, or this could be an intermediate state transition as
-         * scanning restarts.</p>
-         */
-        void onAutoFocusInactive(CaptureResult result);
-    }
-
     private static final String TAG = "AutoFocusStateMachine";
     private static final boolean DEBUG_LOGGING = Log.isLoggable(TAG, Log.DEBUG);
     private static final boolean VERBOSE_LOGGING = Log.isLoggable(TAG, Log.VERBOSE);
     private static final int AF_UNINITIALIZED = -1;
-
     private final AutoFocusStateListener mListener;
     private int mLastAfState = AF_UNINITIALIZED;
     private int mLastAfMode = AF_UNINITIALIZED;
     private int mCurrentAfMode = AF_UNINITIALIZED;
     private int mCurrentAfTrigger = AF_UNINITIALIZED;
-
     private int mCurrentAfCookie = AF_UNINITIALIZED;
     private String mCurrentAfTrace = "";
     private int mLastAfCookie = 0;
-
     public AutoFocusStateMachine(AutoFocusStateListener listener) {
         if (listener == null) {
             throw new IllegalArgumentException("listener should not be null");
@@ -139,16 +100,20 @@ public class AutoFocusStateMachine {
             return;
         }
 
-        if (DEBUG_LOGGING) Log.d(TAG, "onCaptureCompleted - new AF mode = " + afMode +
-                " new AF state = " + afState);
+        if (DEBUG_LOGGING) {
+            Log.d(TAG, "onCaptureCompleted - new AF mode = " + afMode +
+                    " new AF state = " + afState);
+        }
 
         if (mLastAfState == afState && afMode == mLastAfMode) {
             // Same AF state as last time, nothing else needs to be done.
             return;
         }
 
-        if (VERBOSE_LOGGING) Log.v(TAG, "onCaptureCompleted - new AF mode = " + afMode +
-                " new AF state = " + afState);
+        if (VERBOSE_LOGGING) {
+            Log.v(TAG, "onCaptureCompleted - new AF mode = " + afMode +
+                    " new AF state = " + afState);
+        }
 
         mLastAfState = afState;
         mLastAfMode = afMode;
@@ -191,7 +156,9 @@ public class AutoFocusStateMachine {
      * </p>
      */
     public synchronized void resetState() {
-        if (VERBOSE_LOGGING) Log.v(TAG, "resetState - last state was " + mLastAfState);
+        if (VERBOSE_LOGGING) {
+            Log.v(TAG, "resetState - last state was " + mLastAfState);
+        }
 
         mLastAfState = AF_UNINITIALIZED;
     }
@@ -211,13 +178,14 @@ public class AutoFocusStateMachine {
      * invoked.</p>
      *
      * @param repeatingBuilder Builder for a repeating request.
-     * @param requestBuilder Builder for a non-repeating request.
-     *
+     * @param requestBuilder   Builder for a non-repeating request.
      */
     public synchronized void lockAutoFocus(CaptureRequest.Builder repeatingBuilder,
-            CaptureRequest.Builder requestBuilder) {
+                                           CaptureRequest.Builder requestBuilder) {
 
-        if (VERBOSE_LOGGING) Log.v(TAG, "lockAutoFocus");
+        if (VERBOSE_LOGGING) {
+            Log.v(TAG, "lockAutoFocus");
+        }
 
         if (mCurrentAfMode == AF_UNINITIALIZED) {
             throw new IllegalStateException("AF mode was not enabled");
@@ -254,13 +222,14 @@ public class AutoFocusStateMachine {
      * </p>
      *
      * @param repeatingBuilder Builder for a repeating request.
-     * @param requestBuilder Builder for a non-repeating request.
-     *
+     * @param requestBuilder   Builder for a non-repeating request.
      */
     public synchronized void unlockAutoFocus(CaptureRequest.Builder repeatingBuilder,
-            CaptureRequest.Builder requestBuilder) {
+                                             CaptureRequest.Builder requestBuilder) {
 
-        if (VERBOSE_LOGGING) Log.v(TAG, "unlockAutoFocus");
+        if (VERBOSE_LOGGING) {
+            Log.v(TAG, "unlockAutoFocus");
+        }
 
         if (mCurrentAfMode == AF_UNINITIALIZED) {
             throw new IllegalStateException("AF mode was not enabled");
@@ -297,13 +266,14 @@ public class AutoFocusStateMachine {
      * repeating request.</p>
      *
      * @param repeatingBuilder Builder for a repeating request.
-     * @param requestBuilder Builder for a non-repeating request.
-     *
+     * @param requestBuilder   Builder for a non-repeating request.
      * @param repeatingBuilder Builder for a repeating request.
      */
     public synchronized void setActiveAutoFocus(CaptureRequest.Builder repeatingBuilder,
-            CaptureRequest.Builder requestBuilder) {
-        if (VERBOSE_LOGGING) Log.v(TAG, "setActiveAutoFocus");
+                                                CaptureRequest.Builder requestBuilder) {
+        if (VERBOSE_LOGGING) {
+            Log.v(TAG, "setActiveAutoFocus");
+        }
 
         beginTraceAsync("AFSM_setActiveAutoFocus");
 
@@ -329,11 +299,13 @@ public class AutoFocusStateMachine {
      * invoked.</p>
      *
      * @param repeatingBuilder Builder for a repeating request.
-     * @param picture True for still capture AF, false for video AF.
+     * @param picture          True for still capture AF, false for video AF.
      */
     public synchronized void setPassiveAutoFocus(boolean picture,
-            CaptureRequest.Builder repeatingBuilder) {
-        if (VERBOSE_LOGGING) Log.v(TAG, "setPassiveAutoFocus - picture " + picture);
+                                                 CaptureRequest.Builder repeatingBuilder) {
+        if (VERBOSE_LOGGING) {
+            Log.v(TAG, "setPassiveAutoFocus - picture " + picture);
+        }
 
         if (picture) {
             mCurrentAfMode = CaptureResult.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
@@ -386,5 +358,41 @@ public class AutoFocusStateMachine {
         }
 
         repeatingBuilder.set(CaptureRequest.CONTROL_AF_MODE, mCurrentAfMode);
+    }
+
+    /**
+     * Observe state AF state transitions triggered by
+     * {@link AutoFocusStateMachine#onCaptureCompleted onCaptureCompleted}.
+     */
+    public interface AutoFocusStateListener {
+        /**
+         * The camera is currently focused (either active or passive).
+         *
+         * @param locked True if the lens has been locked from moving, false otherwise.
+         */
+        void onAutoFocusSuccess(CaptureResult result, boolean locked);
+
+        /**
+         * The camera is currently not focused (either active or passive).
+         *
+         * @param locked False if the AF is still scanning, true if needs a restart.
+         */
+        void onAutoFocusFail(CaptureResult result, boolean locked);
+
+        /**
+         * The camera is currently scanning (either active or passive)
+         * and has not yet converged.
+         *
+         * <p>This is not called for results where the AF either succeeds or fails.</p>
+         */
+        void onAutoFocusScan(CaptureResult result);
+
+        /**
+         * The camera is currently not doing anything with the autofocus.
+         *
+         * <p>Autofocus could be off, or this could be an intermediate state transition as
+         * scanning restarts.</p>
+         */
+        void onAutoFocusInactive(CaptureResult result);
     }
 }

@@ -27,8 +27,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  * An image to be processed by the image backend. Contains an ImageProxy and
  * parameters required to process the image.
  */
-public class ImageToProcess
-{
+public class ImageToProcess {
     public final ImageProxy proxy;
     public final OrientationManager.DeviceOrientation rotation;
     public final ListenableFuture<TotalCaptureResultProxy> metadata;
@@ -44,8 +43,7 @@ public class ImageToProcess
      *                      (0, 0)-(proxy.width, proxy.height) is a no-op.
      */
     public ImageToProcess(ImageProxy proxy, OrientationManager.DeviceOrientation imageRotation,
-                          ListenableFuture<TotalCaptureResultProxy> metadata, Rect crop)
-    {
+                          ListenableFuture<TotalCaptureResultProxy> metadata, Rect crop) {
         this.proxy = proxy;
         this.rotation = imageRotation;
         this.metadata = metadata;
@@ -60,8 +58,7 @@ public class ImageToProcess
      * @param metadata      The capture result metadata associated with this image.
      */
     public ImageToProcess(ImageProxy proxy, OrientationManager.DeviceOrientation imageRotation,
-                          ListenableFuture<TotalCaptureResultProxy> metadata)
-    {
+                          ListenableFuture<TotalCaptureResultProxy> metadata) {
         this(proxy, imageRotation, metadata, new Rect(0, 0, proxy.getWidth(), proxy.getHeight()));
     }
 }

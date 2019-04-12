@@ -26,12 +26,15 @@ import java.lang.reflect.Method;
 public final class SystemProperties {
     private static final Log.Tag TAG = new Log.Tag("SysProps");
 
+    private SystemProperties() {
+    }
+
     /**
      * Gets system properties set by <code>adb shell setprop <em>key</em> <em>value</em></code>
      *
-     * @param key the property key.
+     * @param key          the property key.
      * @param defaultValue the value to return if the property is undefined or empty (this parameter
-     *            may be {@code null}).
+     *                     may be {@code null}).
      * @return the system property value or the default value.
      */
     public static String get(String key, String defaultValue) {
@@ -44,8 +47,5 @@ public final class SystemProperties {
             Log.e(TAG, "Exception while getting system property: ", e);
             return defaultValue;
         }
-    }
-
-    private SystemProperties() {
     }
 }

@@ -35,29 +35,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class CloseWhenDoneImageReader extends ForwardingImageReader implements
-        ImageReaderProxy
-{
-    private class ImageDecorator extends ForwardingImageProxy
-    {
-        private final AtomicBoolean mClosed;
-
-        public ImageDecorator(ImageProxy proxy)
-        {
-            super(proxy);
-            mClosed = new AtomicBoolean(false);
-        }
-
-        @Override
-        public void close()
-        {
-            if (!mClosed.getAndSet(true))
-            {
-                super.close();
-                decrementImageCount();
-            }
-        }
-    }
-
+        ImageReaderProxy {
     private final Object mLock;
     @GuardedBy("mLock")
     private boolean mClosePending;
@@ -65,22 +43,17 @@ public final class CloseWhenDoneImageReader extends ForwardingImageReader implem
     private boolean mClosed;
     @GuardedBy("mLock")
     private int mOpenImages;
-
-    public CloseWhenDoneImageReader(ImageReaderProxy delegate)
-    {
+    public CloseWhenDoneImageReader(ImageReaderProxy delegate) {
         super(delegate);
         mLock = new Object();
         mClosed = false;
         mOpenImages = 0;
     }
 
-    private void decrementImageCount()
-    {
-        synchronized (mLock)
-        {
+    private void decrementImageCount() {
+        synchronized (mLock) {
             mOpenImages--;
-            if (mClosePending && !mClosed && mOpenImages == 0)
-            {
+            if (mClosePending && !mClosed && mOpenImages == 0) {
                 mClosed = true;
                 super.close();
             }
@@ -89,15 +62,11 @@ public final class CloseWhenDoneImageReader extends ForwardingImageReader implem
 
     @Override
     @Nullable
-    public ImageProxy acquireNextImage()
-    {
-        synchronized (mLock)
-        {
-            if (!mClosePending && !mClosed)
-            {
+    public ImageProxy acquireNextImage() {
+        synchronized (mLock) {
+            if (!mClosePending && !mClosed) {
                 ImageProxy image = super.acquireNextImage();
-                if (image != null)
-                {
+                if (image != null) {
                     mOpenImages++;
                     return new ImageDecorator(image);
                 }
@@ -108,15 +77,11 @@ public final class CloseWhenDoneImageReader extends ForwardingImageReader implem
 
     @Override
     @Nullable
-    public ImageProxy acquireLatestImage()
-    {
-        synchronized (mLock)
-        {
-            if (!mClosePending && !mClosed)
-            {
+    public ImageProxy acquireLatestImage() {
+        synchronized (mLock) {
+            if (!mClosePending && !mClosed) {
                 ImageProxy image = super.acquireLatestImage();
-                if (image != null)
-                {
+                if (image != null) {
                     mOpenImages++;
                     return new ImageDecorator(image);
                 }
@@ -126,19 +91,32 @@ public final class CloseWhenDoneImageReader extends ForwardingImageReader implem
     }
 
     @Override
-    public void close()
-    {
-        synchronized (mLock)
-        {
-            if (mClosed || mClosePending)
-            {
+    public void close() {
+        synchronized (mLock) {
+            if (mClosed || mClosePending) {
                 return;
             }
             mClosePending = true;
-            if (mOpenImages == 0)
-            {
+            if (mOpenImages == 0) {
                 mClosed = true;
                 super.close();
+            }
+        }
+    }
+
+    private class ImageDecorator extends ForwardingImageProxy {
+        private final AtomicBoolean mClosed;
+
+        public ImageDecorator(ImageProxy proxy) {
+            super(proxy);
+            mClosed = new AtomicBoolean(false);
+        }
+
+        @Override
+        public void close() {
+            if (!mClosed.getAndSet(true)) {
+                super.close();
+                decrementImageCount();
             }
         }
     }

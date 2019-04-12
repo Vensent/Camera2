@@ -27,14 +27,12 @@ import java.util.Objects;
  * Helpful logging extensions for including more detailed info about
  * the objects and threads involved in the logging.
  */
-public class LogUtil
-{
+public class LogUtil {
     /**
      * Prefixes a message with with a hashcode tag of the object,
      * and a [ui] tag if the method was executed on the main thread.
      */
-    public static String addTags(Object object, String msg)
-    {
+    public static String addTags(Object object, String msg) {
         return hashCodeTag(object) + mainThreadTag() + " " + msg;
     }
 
@@ -43,13 +41,11 @@ public class LogUtil
      * tag list, along with a hashcode tag of the object, and a
      * [ui] tag if the method was executed on the main thread.
      */
-    public static String addTags(Object object, String msg, String tagList)
-    {
+    public static String addTags(Object object, String msg, String tagList) {
         return hashCodeTag(object) + mainThreadTag() + formatTags(tagList) + " " + msg;
     }
 
-    private static String formatTags(String tagList)
-    {
+    private static String formatTags(String tagList) {
         // Split on common "divider" characters:
         // * All whitespace, except spaces: \x00-\x1F
         // * () Characters: \x28-\x29
@@ -63,32 +59,26 @@ public class LogUtil
         Collections.sort(tags);
         String result = "";
         // Convert all non-empty entries to tags.
-        for (String tag : tags)
-        {
+        for (String tag : tags) {
             String trimmed = tag.trim();
-            if (trimmed.length() > 0)
-            {
+            if (trimmed.length() > 0) {
                 result += "[" + trimmed + "]";
             }
         }
         return result;
     }
 
-    private static String hashCodeTag(Object object)
-    {
+    private static String hashCodeTag(Object object) {
         final String tag;
-        if (object == null)
-        {
+        if (object == null) {
             tag = "null";
-        } else
-        {
+        } else {
             tag = Integer.toHexString(Objects.hashCode(object));
         }
         return String.format("[%-9s]", "@" + tag);
     }
 
-    private static String mainThreadTag()
-    {
+    private static String mainThreadTag() {
         return MainThread.isMainThread() ? "[ui]" : "";
     }
 }

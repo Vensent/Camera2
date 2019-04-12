@@ -23,7 +23,6 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 

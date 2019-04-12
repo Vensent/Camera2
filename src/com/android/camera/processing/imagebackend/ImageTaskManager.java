@@ -23,8 +23,7 @@ import java.util.concurrent.Executor;
  * The interface by which Task derived off of TaskImageContainer can describe
  * its task dependencies and manage its image references.
  */
-public interface ImageTaskManager
-{
+public interface ImageTaskManager {
 
     /**
      * Spawns dependent tasks from internal implementation of set of tasks. If a

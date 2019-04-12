@@ -16,30 +16,23 @@
 
 package com.android.camera.hardware;
 
-import com.android.camera.debug.Log;
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import com.android.camera.debug.Log;
+
 /**
  * A virtual sensor that reports device heading based on information
  * provided by accelerometer sensor or magnetic sensor.
  */
-public class HeadingSensor implements SensorEventListener
-{
-    private static final Log.Tag TAG = new Log.Tag("HeadingSensor");
-
+public class HeadingSensor implements SensorEventListener {
     /**
      * Invalid heading values.
      */
     public static final int INVALID_HEADING = -1;
-    /**
-     * Current device heading.
-     */
-    private int mHeading = INVALID_HEADING;
-
+    private static final Log.Tag TAG = new Log.Tag("HeadingSensor");
     /**
      * Device sensor manager.
      */
@@ -52,7 +45,6 @@ public class HeadingSensor implements SensorEventListener
      * Compass.
      */
     private final Sensor mMagneticSensor;
-
     /**
      * Accelerometer data.
      */
@@ -65,6 +57,10 @@ public class HeadingSensor implements SensorEventListener
      * Temporary rotation matrix.
      */
     private final float[] mRotationMatrix = new float[16];
+    /**
+     * Current device heading.
+     */
+    private int mHeading = INVALID_HEADING;
 
     /**
      * Constructs a heading sensor.
@@ -72,8 +68,7 @@ public class HeadingSensor implements SensorEventListener
      * @param sensorManager A {#link android.hardware.SensorManager} that
      *                      provides access to device sensors.
      */
-    public HeadingSensor(SensorManager sensorManager)
-    {
+    public HeadingSensor(SensorManager sensorManager) {
         mSensorManager = sensorManager;
         mAccelerometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagneticSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -85,8 +80,7 @@ public class HeadingSensor implements SensorEventListener
      * @return current device heading in degrees. INVALID_HEADING if sensors
      * are not available.
      */
-    public int getCurrentHeading()
-    {
+    public int getCurrentHeading() {
         return mHeading;
     }
 
@@ -94,16 +88,13 @@ public class HeadingSensor implements SensorEventListener
      * Activates corresponding device sensors to start calculating device heading.
      * This would increase power consumption.
      */
-    public void activate()
-    {
+    public void activate() {
         // Get events from the accelerometer and magnetic sensor.
-        if (mAccelerometerSensor != null)
-        {
+        if (mAccelerometerSensor != null) {
             mSensorManager.registerListener(this, mAccelerometerSensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
         }
-        if (mMagneticSensor != null)
-        {
+        if (mMagneticSensor != null) {
             mSensorManager.registerListener(this, mMagneticSensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
         }
@@ -112,38 +103,30 @@ public class HeadingSensor implements SensorEventListener
     /**
      * Deactivates corresponding device sensors to stop calculating device heading.
      */
-    public void deactivate()
-    {
+    public void deactivate() {
         // Unregister the sensors.
-        if (mAccelerometerSensor != null)
-        {
+        if (mAccelerometerSensor != null) {
             mSensorManager.unregisterListener(this, mAccelerometerSensor);
         }
-        if (mMagneticSensor != null)
-        {
+        if (mMagneticSensor != null) {
             mSensorManager.unregisterListener(this, mMagneticSensor);
         }
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event)
-    {
+    public void onSensorChanged(SensorEvent event) {
         // This is literally the same as the GCamModule implementation.
         int type = event.sensor.getType();
         float[] data;
-        if (type == Sensor.TYPE_ACCELEROMETER)
-        {
+        if (type == Sensor.TYPE_ACCELEROMETER) {
             data = mGData;
-        } else if (type == Sensor.TYPE_MAGNETIC_FIELD)
-        {
+        } else if (type == Sensor.TYPE_MAGNETIC_FIELD) {
             data = mMData;
-        } else
-        {
+        } else {
             Log.w(TAG, String.format("Unexpected sensor type %s", event.sensor.getName()));
             return;
         }
-        for (int i = 0; i < 3; i++)
-        {
+        for (int i = 0; i < 3; i++) {
             data[i] = event.values[i];
         }
         float[] orientation = new float[3];
@@ -151,14 +134,12 @@ public class HeadingSensor implements SensorEventListener
         SensorManager.getOrientation(mRotationMatrix, orientation);
         mHeading = (int) (orientation[0] * 180f / Math.PI) % 360;
 
-        if (mHeading < 0)
-        {
+        if (mHeading < 0) {
             mHeading += 360;
         }
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy)
-    {
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 }

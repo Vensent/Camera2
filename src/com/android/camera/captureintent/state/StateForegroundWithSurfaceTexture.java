@@ -31,28 +31,14 @@ import com.google.common.base.Optional;
 /**
  * Represents a state that the surface texture is available to the module.
  */
-public final class StateForegroundWithSurfaceTexture extends StateImpl
-{
+public final class StateForegroundWithSurfaceTexture extends StateImpl {
     private final RefCountBase<ResourceConstructed> mResourceConstructed;
     private final RefCountBase<ResourceSurfaceTexture> mResourceSurfaceTexture;
-
-    // Used to transition from BackgroundWithSurfaceTexture on module is resumed.
-    public static StateForegroundWithSurfaceTexture from(
-            State previousState,
-            RefCountBase<ResourceConstructed> resourceConstructed,
-            RefCountBase<ResourceSurfaceTexture> resourceSurfaceTexture)
-    {
-        return new StateForegroundWithSurfaceTexture(
-                previousState,
-                resourceConstructed,
-                resourceSurfaceTexture);
-    }
 
     private StateForegroundWithSurfaceTexture(
             State previousState,
             RefCountBase<ResourceConstructed> resourceConstructed,
-            RefCountBase<ResourceSurfaceTexture> resourceSurfaceTexture)
-    {
+            RefCountBase<ResourceSurfaceTexture> resourceSurfaceTexture) {
         super(previousState);
         mResourceConstructed = resourceConstructed;
         mResourceConstructed.addRef();     // Will be balanced in onLeave().
@@ -60,11 +46,20 @@ public final class StateForegroundWithSurfaceTexture extends StateImpl
         mResourceSurfaceTexture.addRef();
     }
 
+    // Used to transition from BackgroundWithSurfaceTexture on module is resumed.
+    public static StateForegroundWithSurfaceTexture from(
+            State previousState,
+            RefCountBase<ResourceConstructed> resourceConstructed,
+            RefCountBase<ResourceSurfaceTexture> resourceSurfaceTexture) {
+        return new StateForegroundWithSurfaceTexture(
+                previousState,
+                resourceConstructed,
+                resourceSurfaceTexture);
+    }
+
     @Override
-    public Optional<State> onEnter()
-    {
-        try
-        {
+    public Optional<State> onEnter() {
+        try {
             // Pick a preview size with the right aspect ratio.
             final OneCamera.Facing cameraFacing =
                     mResourceConstructed.get().getCameraFacingSetting().getCameraFacing();
@@ -77,22 +72,19 @@ public final class StateForegroundWithSurfaceTexture extends StateImpl
                             key);
             return Optional.of((State) StateOpeningCamera.from(this, mResourceConstructed,
                     mResourceSurfaceTexture, cameraFacing, key, characteristics));
-        } catch (OneCameraAccessException ex)
-        {
+        } catch (OneCameraAccessException ex) {
             return Optional.of((State) StateFatal.from(this, mResourceConstructed));
         }
     }
 
     @Override
-    public void onLeave()
-    {
+    public void onLeave() {
         mResourceConstructed.close();
         mResourceSurfaceTexture.close();
     }
 
     @VisibleForTesting
-    public RefCountBase<ResourceSurfaceTexture> getResourceSurfaceTexture()
-    {
+    public RefCountBase<ResourceSurfaceTexture> getResourceSurfaceTexture() {
         return mResourceSurfaceTexture;
     }
 }

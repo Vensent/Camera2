@@ -51,7 +51,6 @@ public class Camera2RequestSettingsSet {
      * Perform a deep copy of the defined settings and revision number.
      *
      * @param other The reference instance.
-     *
      * @throws NullPointerException If {@code other} is {@code null}.
      */
     public Camera2RequestSettingsSet(Camera2RequestSettingsSet other) {
@@ -72,12 +71,11 @@ public class Camera2RequestSettingsSet {
      * {@link #union}. This method increments the revision identifier if the new
      * choice is different than the existing selection.</p>
      *
-     * @param key Which setting to alter.
+     * @param key   Which setting to alter.
      * @param value The new selection for that setting, or {@code null} to force
      *              the use of the template's default selection for this field.
      * @return Whether the settings were updated, which only occurs if the
-     *         {@code value} is different from any already stored.
-     *
+     * {@code value} is different from any already stored.
      * @throws NullPointerException If {@code key} is {@code null}.
      */
     public <T> boolean set(Key<T> key, T value) {
@@ -104,8 +102,7 @@ public class Camera2RequestSettingsSet {
      *
      * @param key Which setting to reset.
      * @return Whether the settings were updated, which only occurs if the
-     *         specified setting already had a value or was forced to default.
-     *
+     * specified setting already had a value or was forced to default.
      * @throws NullPointerException If {@code key} is {@code null}.
      */
     public boolean unset(Key<?> key) {
@@ -126,8 +123,7 @@ public class Camera2RequestSettingsSet {
      *
      * @param key Which setting to check.
      * @return The current selection for that setting, or {@code null} if the
-     *         setting is unset or forced to the template-defined default.
-     *
+     * setting is unset or forced to the template-defined default.
      * @throws NullPointerException If {@code key} is {@code null}.
      */
     @SuppressWarnings("unchecked")
@@ -149,7 +145,6 @@ public class Camera2RequestSettingsSet {
      *
      * @param key Which setting to look for.
      * @return Whether that setting has a value that will propagate with unions.
-     *
      * @throws NullPointerException If {@code key} is {@code null}.
      */
     public boolean contains(Key<?> key) {
@@ -165,7 +160,7 @@ public class Camera2RequestSettingsSet {
      * <p>This method uses the {@code T} type's {@code equals} method, but is
      * {@code null}-tolerant.</p>
      *
-     * @param key Which of this class's settings to check.
+     * @param key   Which of this class's settings to check.
      * @param value Value to test for equality against.
      * @return Whether they are the same.
      */
@@ -182,7 +177,7 @@ public class Camera2RequestSettingsSet {
      * revision on the same object does imply that they've stayed the same.</p>
      *
      * @return The number of modifications made since the beginning of this
-     *         object's heritage.
+     * object's heritage.
      */
     public long getRevision() {
         return mRevision;
@@ -200,7 +195,7 @@ public class Camera2RequestSettingsSet {
      * @param moreSettings The source of the additional settings ({@code null}
      *                     is allowed here).
      * @return Whether these settings were updated, which can only fail if the
-     *         target itself is also given as the argument.
+     * target itself is also given as the argument.
      */
     public boolean union(Camera2RequestSettingsSet moreSettings) {
         if (moreSettings == null || moreSettings == this) {
@@ -216,14 +211,13 @@ public class Camera2RequestSettingsSet {
      * Create a {@link CaptureRequest} specialized for the specified
      * {@link CameraDevice} and targeting the given {@link Surface}s.
      *
-     * @param camera The camera from which to capture.
+     * @param camera   The camera from which to capture.
      * @param template A {@link CaptureRequest} template defined in
      *                 {@link CameraDevice}.
-     * @param targets The location(s) to draw the resulting image onto.
+     * @param targets  The location(s) to draw the resulting image onto.
      * @return The request, ready to be passed to the camera framework.
-     *
      * @throws CameraAccessException Upon an underlying framework API failure.
-     * @throws NullPointerException If any argument is {@code null}.
+     * @throws NullPointerException  If any argument is {@code null}.
      */
     public CaptureRequest createRequest(CameraDevice camera, int template, Surface... targets)
             throws CameraAccessException {

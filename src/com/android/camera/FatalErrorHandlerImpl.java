@@ -23,20 +23,17 @@ import com.android.camera.stats.UsageStatistics;
 import com.android.camera.util.CameraUtil;
 import com.google.common.logging.eventprotos;
 
-public final class FatalErrorHandlerImpl implements FatalErrorHandler
-{
+public final class FatalErrorHandlerImpl implements FatalErrorHandler {
     private static final Log.Tag TAG = new Log.Tag("FatalErrorHandler");
 
     private final Activity mActivity;
 
-    public FatalErrorHandlerImpl(Activity activity)
-    {
+    public FatalErrorHandlerImpl(Activity activity) {
         mActivity = activity;
     }
 
     @Override
-    public void onMediaStorageFailure()
-    {
+    public void onMediaStorageFailure() {
         Exception ex = new Exception();
         // Log a stack trace to be sure we can track the source.
         Log.e(TAG, "Handling Media Storage Failure:", ex);
@@ -51,8 +48,7 @@ public final class FatalErrorHandlerImpl implements FatalErrorHandler
     }
 
     @Override
-    public void onCameraOpenFailure()
-    {
+    public void onCameraOpenFailure() {
         Exception ex = new Exception();
         // Log a stack trace to be sure we can track the source.
         Log.e(TAG, "Handling Camera Open Failure:", ex);
@@ -68,8 +64,7 @@ public final class FatalErrorHandlerImpl implements FatalErrorHandler
     }
 
     @Override
-    public void onCameraReconnectFailure()
-    {
+    public void onCameraReconnectFailure() {
         Exception ex = new Exception();
         // Log a stack trace to be sure we can track the source.
         Log.e(TAG, "Handling Camera Reconnect Failure:", ex);
@@ -85,8 +80,7 @@ public final class FatalErrorHandlerImpl implements FatalErrorHandler
     }
 
     @Override
-    public void onGenericCameraAccessFailure()
-    {
+    public void onGenericCameraAccessFailure() {
         Exception ex = new Exception();
         // Log a stack trace to be sure we can track the source.
         Log.e(TAG, "Handling Camera Access Failure:", ex);
@@ -102,8 +96,7 @@ public final class FatalErrorHandlerImpl implements FatalErrorHandler
     }
 
     @Override
-    public void onCameraDisabledFailure()
-    {
+    public void onCameraDisabledFailure() {
         Exception ex = new Exception();
         // Log a stack trace to be sure we can track the source.
         Log.e(TAG, "Handling Camera Disabled Failure:", ex);
@@ -120,8 +113,7 @@ public final class FatalErrorHandlerImpl implements FatalErrorHandler
     }
 
     @Override
-    public void handleFatalError(Reason reason)
-    {
+    public void handleFatalError(Reason reason) {
         Exception ex = new Exception();
         // Log a stack trace to be sure we can track the source.
         Log.e(TAG, "Handling Fatal Error:", ex);

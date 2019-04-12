@@ -22,38 +22,12 @@ public class Log {
      * Additionally, the prefix itself is checked in isLoggable and
      * serves as an override. So, to toggle all logs allowed by the
      * current {@link Configuration}, you can set properties:
-     *
+     * <p>
      * adb shell setprop log.tag.CAM2PORT_ VERBOSE
      * adb shell setprop log.tag.CAM2PORT_ ""
      */
     public static final String CAMERA_LOGTAG_PREFIX = "CAM2PORT_";
     private static final Log.Tag TAG = new Log.Tag("Log");
-
-    /**
-     * This class restricts the length of the log tag to be less than the
-     * framework limit and also prepends the common tag prefix defined by
-     * {@code CAMERA_LOGTAG_PREFIX}.
-     */
-    public static final class Tag {
-
-        // The length limit from Android framework is 23.
-        private static final int MAX_TAG_LEN = 23 - CAMERA_LOGTAG_PREFIX.length();
-
-        final String mValue;
-
-        public Tag(String tag) {
-            final int lenDiff = tag.length() - MAX_TAG_LEN;
-            if (lenDiff > 0) {
-                w(TAG, "Tag " + tag + " is " + lenDiff + " chars longer than limit.");
-            }
-            mValue = CAMERA_LOGTAG_PREFIX + (lenDiff > 0 ? tag.substring(0, MAX_TAG_LEN) : tag);
-        }
-
-        @Override
-        public String toString() {
-            return mValue;
-        }
-    }
 
     public static void d(Tag tag, String msg) {
         if (isLoggable(tag, android.util.Log.DEBUG)) {
@@ -130,6 +104,32 @@ public class Log {
         } catch (IllegalArgumentException ex) {
             e(TAG, "Tag too long:" + tag);
             return false;
+        }
+    }
+
+    /**
+     * This class restricts the length of the log tag to be less than the
+     * framework limit and also prepends the common tag prefix defined by
+     * {@code CAMERA_LOGTAG_PREFIX}.
+     */
+    public static final class Tag {
+
+        // The length limit from Android framework is 23.
+        private static final int MAX_TAG_LEN = 23 - CAMERA_LOGTAG_PREFIX.length();
+
+        final String mValue;
+
+        public Tag(String tag) {
+            final int lenDiff = tag.length() - MAX_TAG_LEN;
+            if (lenDiff > 0) {
+                w(TAG, "Tag " + tag + " is " + lenDiff + " chars longer than limit.");
+            }
+            mValue = CAMERA_LOGTAG_PREFIX + (lenDiff > 0 ? tag.substring(0, MAX_TAG_LEN) : tag);
+        }
+
+        @Override
+        public String toString() {
+            return mValue;
         }
     }
 }

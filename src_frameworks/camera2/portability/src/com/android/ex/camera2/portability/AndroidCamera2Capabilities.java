@@ -16,10 +16,7 @@
 
 package com.android.ex.camera2.portability;
 
-import static android.hardware.camera2.CameraCharacteristics.*;
-
 import android.graphics.ImageFormat;
-import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.params.StreamConfigurationMap;
@@ -29,8 +26,52 @@ import android.util.Rational;
 
 import com.android.ex.camera2.portability.debug.Log;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AF_MODE_AUTO;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AF_MODE_CONTINUOUS_VIDEO;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AF_MODE_EDOF;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AF_MODE_MACRO;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AF_MODE_OFF;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AVAILABLE_SCENE_MODES;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_MODE_AUTO;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_MODE_DAYLIGHT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_MODE_FLUORESCENT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_MODE_INCANDESCENT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_MODE_SHADE;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_MODE_TWILIGHT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_AWB_MODE_WARM_FLUORESCENT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_MAX_REGIONS_AE;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_MAX_REGIONS_AF;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_ACTION;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_BARCODE;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_BEACH;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_CANDLELIGHT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_DISABLED;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_FIREWORKS;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_HDR;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_LANDSCAPE;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_NIGHT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_PARTY;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_PORTRAIT;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_SNOW;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_SPORTS;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_STEADYPHOTO;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_SUNSET;
+import static android.hardware.camera2.CameraCharacteristics.CONTROL_SCENE_MODE_THEATRE;
+import static android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE;
+import static android.hardware.camera2.CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM;
+import static android.hardware.camera2.CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP;
+import static android.hardware.camera2.CameraCharacteristics.STATISTICS_INFO_MAX_FACE_COUNT;
 
 /**
  * The subclass of {@link CameraCapabilities} for Android Camera 2 API.
@@ -44,7 +85,7 @@ public class AndroidCamera2Capabilities extends CameraCapabilities {
         StreamConfigurationMap s = p.get(SCALER_STREAM_CONFIGURATION_MAP);
 
         for (Range<Integer> fpsRange : p.get(CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES)) {
-            mSupportedPreviewFpsRange.add(new int[] { fpsRange.getLower(), fpsRange.getUpper() });
+            mSupportedPreviewFpsRange.add(new int[]{fpsRange.getLower(), fpsRange.getUpper()});
         }
 
         // TODO: We only support TextureView preview rendering
@@ -104,63 +145,13 @@ public class AndroidCamera2Capabilities extends CameraCapabilities {
         // TODO: Detect other features
     }
 
-    private void buildSceneModes(CameraCharacteristics p) {
-        int[] scenes = p.get(CONTROL_AVAILABLE_SCENE_MODES);
-        if (scenes != null) {
-            for (int scene : scenes) {
-                SceneMode equiv = sceneModeFromInt(scene);
-                if (equiv != null) {
-                    mSupportedSceneModes.add(equiv);
-                }
-            }
-        }
-    }
-
-    private void buildFlashModes(CameraCharacteristics p) {
-        mSupportedFlashModes.add(FlashMode.OFF);
-        if (p.get(FLASH_INFO_AVAILABLE)) {
-            mSupportedFlashModes.add(FlashMode.AUTO);
-            mSupportedFlashModes.add(FlashMode.ON);
-            mSupportedFlashModes.add(FlashMode.TORCH);
-            for (int expose : p.get(CONTROL_AE_AVAILABLE_MODES)) {
-                if (expose == CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE) {
-                    mSupportedFlashModes.add(FlashMode.RED_EYE);
-                }
-            }
-        }
-    }
-
-    private void buildFocusModes(CameraCharacteristics p) {
-        int[] focuses = p.get(CONTROL_AF_AVAILABLE_MODES);
-        if (focuses != null) {
-            for (int focus : focuses) {
-                FocusMode equiv = focusModeFromInt(focus);
-                if (equiv != null) {
-                    mSupportedFocusModes.add(equiv);
-                }
-            }
-        }
-    }
-
-    private void buildWhiteBalances(CameraCharacteristics p) {
-        int[] bals = p.get(CONTROL_AWB_AVAILABLE_MODES);
-        if (bals != null) {
-            for (int bal : bals) {
-                WhiteBalance equiv = whiteBalanceFromInt(bal);
-                if (equiv != null) {
-                    mSupportedWhiteBalances.add(equiv);
-                }
-            }
-        }
-    }
-
     /**
      * Converts the API-related integer representation of the focus mode to the
      * abstract representation.
      *
      * @param fm The integral representation.
      * @return The mode represented by the input integer, or {@code null} if it
-     *         cannot be converted.
+     * cannot be converted.
      */
     public static FocusMode focusModeFromInt(int fm) {
         switch (fm) {
@@ -188,7 +179,7 @@ public class AndroidCamera2Capabilities extends CameraCapabilities {
      *
      * @param sm The integral representation.
      * @return The mode represented by the input integer, or {@code null} if it
-     *         cannot be converted.
+     * cannot be converted.
      */
     public static SceneMode sceneModeFromInt(int sm) {
         switch (sm) {
@@ -238,7 +229,7 @@ public class AndroidCamera2Capabilities extends CameraCapabilities {
      *
      * @param wb The integral representation.
      * @return The balance represented by the input integer, or {@code null} if
-     *         it cannot be converted.
+     * it cannot be converted.
      */
     public static WhiteBalance whiteBalanceFromInt(int wb) {
         switch (wb) {
@@ -261,5 +252,55 @@ public class AndroidCamera2Capabilities extends CameraCapabilities {
         }
         Log.w(TAG, "Unable to convert from API 2 white balance: " + wb);
         return null;
+    }
+
+    private void buildSceneModes(CameraCharacteristics p) {
+        int[] scenes = p.get(CONTROL_AVAILABLE_SCENE_MODES);
+        if (scenes != null) {
+            for (int scene : scenes) {
+                SceneMode equiv = sceneModeFromInt(scene);
+                if (equiv != null) {
+                    mSupportedSceneModes.add(equiv);
+                }
+            }
+        }
+    }
+
+    private void buildFlashModes(CameraCharacteristics p) {
+        mSupportedFlashModes.add(FlashMode.OFF);
+        if (p.get(FLASH_INFO_AVAILABLE)) {
+            mSupportedFlashModes.add(FlashMode.AUTO);
+            mSupportedFlashModes.add(FlashMode.ON);
+            mSupportedFlashModes.add(FlashMode.TORCH);
+            for (int expose : p.get(CONTROL_AE_AVAILABLE_MODES)) {
+                if (expose == CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE) {
+                    mSupportedFlashModes.add(FlashMode.RED_EYE);
+                }
+            }
+        }
+    }
+
+    private void buildFocusModes(CameraCharacteristics p) {
+        int[] focuses = p.get(CONTROL_AF_AVAILABLE_MODES);
+        if (focuses != null) {
+            for (int focus : focuses) {
+                FocusMode equiv = focusModeFromInt(focus);
+                if (equiv != null) {
+                    mSupportedFocusModes.add(equiv);
+                }
+            }
+        }
+    }
+
+    private void buildWhiteBalances(CameraCharacteristics p) {
+        int[] bals = p.get(CONTROL_AWB_AVAILABLE_MODES);
+        if (bals != null) {
+            for (int bal : bals) {
+                WhiteBalance equiv = whiteBalanceFromInt(bal);
+                if (equiv != null) {
+                    mSupportedWhiteBalances.add(equiv);
+                }
+            }
+        }
     }
 }

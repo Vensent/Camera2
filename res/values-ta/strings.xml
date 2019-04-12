@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--  Copyright (C) 2007 The Android Open Source Project
+<?xml version="1.0" encoding="UTF-8"?><!--  Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,8 +13,7 @@
      limitations under the License.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name" msgid="1175086483881127797">"கேமரா"</string>
     <string name="video_camera_label" msgid="1723708322021743770">"கேம்கார்டர்"</string>
     <string name="details_ms" msgid="6618163484662724641">"%1$02d:%2$02d"</string>
@@ -71,9 +69,9 @@
     <string name="error_permissions" msgid="3454167403425651254">"இயக்குவதற்குத் தேவைப்படும் முக்கியமான அனுமதிகள் பயன்பாட்டில் இல்லை. உங்கள் அனுமதிகளின் அமைப்புகளைச் சரிபார்க்கவும்."</string>
     <string name="reason_storage_failure" msgid="6818898304774654969">"படத்தைச் சேமிப்பதில் தோல்வி."</string>
     <string name="wait" msgid="765601745709933047">"காத்திருக்கவும்…"</string>
-    <string name="no_storage" product="default" msgid="5922012950780548098">"கேமராவைப் பயன்படுத்துவதற்கு முன், SD கார்டைச் செருகவும்."</string>
-    <string name="preparing_sd" product="default" msgid="7435693655017362767">"SD கார்டைத் தயார் செய்கிறது..."</string>
-    <string name="access_sd_fail" product="default" msgid="2634861611082499811">"SD கார்டை அணுக முடியவில்லை."</string>
+    <string name="no_storage" msgid="5922012950780548098" product="default">"கேமராவைப் பயன்படுத்துவதற்கு முன், SD கார்டைச் செருகவும்."</string>
+    <string name="preparing_sd" msgid="7435693655017362767" product="default">"SD கார்டைத் தயார் செய்கிறது..."</string>
+    <string name="access_sd_fail" msgid="2634861611082499811" product="default">"SD கார்டை அணுக முடியவில்லை."</string>
     <string name="time_lapse_title" msgid="3267978566401228497">"இடைவெளிக்கான நேரம் பதிவாகிறது"</string>
     <string name="feedback_description_camera_access" msgid="419090951070170132">"பயன்பாட்டை கேமராவுடன் இணைக்க முடியவில்லை"</string>
     <string name="feedback_description_save_photo" msgid="8658767358989083228">"சாதனத்தில் படம் அல்லது வீடியோ சேமிக்கப்படவில்லை."</string>
@@ -160,7 +158,7 @@
     <string name="dialog_cancel" msgid="692365061128351656">"ரத்துசெய்"</string>
     <string name="dialog_report" msgid="7616428760369876209">"புகாரளி"</string>
     <string name="dialog_dismiss" msgid="1382550604990470119">"நிராகரி"</string>
-    <string name="spaceIsLow_content" product="default" msgid="4522771065344332702">"SD கார்டில் இடம் இல்லை. தர அமைப்புகளை மாற்றவும் அல்லது சில படங்களையோ, பிற கோப்புகளையோ நீக்கவும்."</string>
+    <string name="spaceIsLow_content" msgid="4522771065344332702" product="default">"SD கார்டில் இடம் இல்லை. தர அமைப்புகளை மாற்றவும் அல்லது சில படங்களையோ, பிற கோப்புகளையோ நீக்கவும்."</string>
     <string name="video_reach_size_limit" msgid="9196836111505731836">"அளவிற்கான வரம்பை அடைந்துவிட்டீர்கள்."</string>
     <string name="pano_too_fast_prompt" msgid="2503148095578052177">"மிகவும் விரைவானது"</string>
     <string name="pano_dialog_prepare_preview" msgid="4445235163599534263">"பனோரமாவை உருவாக்குகிறது"</string>

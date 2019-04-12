@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--  Copyright (C) 2007 The Android Open Source Project
+<?xml version="1.0" encoding="UTF-8"?><!--  Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,8 +13,7 @@
      limitations under the License.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name" msgid="1175086483881127797">"કૅમેરો"</string>
     <string name="video_camera_label" msgid="1723708322021743770">"કેમકોર્ડર"</string>
     <string name="details_ms" msgid="6618163484662724641">"%1$02d:%2$02d"</string>
@@ -71,9 +69,9 @@
     <string name="error_permissions" msgid="3454167403425651254">"ઍપ્લિકેશન પાસે શરૂ થવા માટેની મહત્વપૂર્ણ પરવાનગીઓ નથી. કૃપા કરીને તમારી પરવાનગીઓ સેટિંગ્સ તપાસો."</string>
     <string name="reason_storage_failure" msgid="6818898304774654969">"ફોટો સ્ટોરેજ નિષ્ફળતા."</string>
     <string name="wait" msgid="765601745709933047">"કૃપા કરીને રાહ જુઓ..."</string>
-    <string name="no_storage" product="default" msgid="5922012950780548098">"કૅમેરાનો ઉપયોગ કરતાં પહેલાં એક SD કાર્ડ દાખલ કરો."</string>
-    <string name="preparing_sd" product="default" msgid="7435693655017362767">"SD કાર્ડ તૈયાર કરી રહ્યું છે…"</string>
-    <string name="access_sd_fail" product="default" msgid="2634861611082499811">"SD કાર્ડ ઍક્સેસ કરી શકાયું નથી."</string>
+    <string name="no_storage" msgid="5922012950780548098" product="default">"કૅમેરાનો ઉપયોગ કરતાં પહેલાં એક SD કાર્ડ દાખલ કરો."</string>
+    <string name="preparing_sd" msgid="7435693655017362767" product="default">"SD કાર્ડ તૈયાર કરી રહ્યું છે…"</string>
+    <string name="access_sd_fail" msgid="2634861611082499811" product="default">"SD કાર્ડ ઍક્સેસ કરી શકાયું નથી."</string>
     <string name="time_lapse_title" msgid="3267978566401228497">"સમય વીતી ગયો રેકોર્ડિંગ"</string>
     <string name="feedback_description_camera_access" msgid="419090951070170132">"ઍપ્લિકેશન કૅમેરાથી કનેક્ટ થઈ શકી નથી"</string>
     <string name="feedback_description_save_photo" msgid="8658767358989083228">"ઉપકરણ પર ફોટો અથવા વિડિઓ સાચવી નહોતી."</string>
@@ -160,7 +158,7 @@
     <string name="dialog_cancel" msgid="692365061128351656">"રદ કરો"</string>
     <string name="dialog_report" msgid="7616428760369876209">"જાણ કરો"</string>
     <string name="dialog_dismiss" msgid="1382550604990470119">"કાઢી નાખો"</string>
-    <string name="spaceIsLow_content" product="default" msgid="4522771065344332702">"તમારા SD કાર્ડમાં સ્થાન સમાપ્ત થયું છે. ગુણવત્તા સેટિંગ બદલો અથવા કેટલીક છબીઓ અથવા અન્ય ફાઇલો કાઢી નાખો."</string>
+    <string name="spaceIsLow_content" msgid="4522771065344332702" product="default">"તમારા SD કાર્ડમાં સ્થાન સમાપ્ત થયું છે. ગુણવત્તા સેટિંગ બદલો અથવા કેટલીક છબીઓ અથવા અન્ય ફાઇલો કાઢી નાખો."</string>
     <string name="video_reach_size_limit" msgid="9196836111505731836">"કદની સીમાએ પહોંચી ગયા."</string>
     <string name="pano_too_fast_prompt" msgid="2503148095578052177">"ખૂબ ઝડપથી"</string>
     <string name="pano_dialog_prepare_preview" msgid="4445235163599534263">"પેનોરમા તૈયાર કરી રહ્યું છે"</string>

@@ -16,12 +16,6 @@
 
 package com.android.camera.one.v2.common;
 
-import android.hardware.camera2.CaptureFailure;
-import android.hardware.camera2.CaptureResult;
-import android.hardware.camera2.TotalCaptureResult;
-
-import com.android.camera.async.ConcurrentBufferQueue;
-import com.android.camera.async.BufferQueue;
 import com.android.camera.async.Updatable;
 import com.android.camera.one.v2.core.ResponseListener;
 import com.android.camera.one.v2.core.ResponseListeners;
@@ -32,18 +26,15 @@ import com.android.camera.one.v2.core.ResponseListeners;
  * @deprecated Use {@link ResponseListeners} instead.
  */
 @Deprecated
-public class TimestampResponseListener extends ResponseListener
-{
+public class TimestampResponseListener extends ResponseListener {
     private final Updatable<Long> mTimestamps;
 
-    public TimestampResponseListener(Updatable<Long> timestamps)
-    {
+    public TimestampResponseListener(Updatable<Long> timestamps) {
         mTimestamps = timestamps;
     }
 
     @Override
-    public void onStarted(long timestamp)
-    {
+    public void onStarted(long timestamp) {
         mTimestamps.update(timestamp);
     }
 }

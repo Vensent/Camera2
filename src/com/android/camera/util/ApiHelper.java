@@ -20,16 +20,10 @@ import android.os.Build;
 
 import java.lang.reflect.Field;
 
-public class ApiHelper
-{
-    // Documented value of CPU_ABI on x86 architectures
-    private static final String X86ABI = "x86";
-
+public class ApiHelper {
     public static final boolean AT_LEAST_16 = Build.VERSION.SDK_INT >= 16;
-
     public static final boolean HAS_APP_GALLERY =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1;
-
     public static final boolean HAS_ANNOUNCE_FOR_ACCESSIBILITY =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
     public static final boolean HAS_AUTO_FOCUS_MOVE_CALLBACK =
@@ -44,25 +38,17 @@ public class ApiHelper
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
     public static final boolean HAS_ROBOTO_MEDIUM_FONT =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
-
     public static final boolean HAS_CAMERA_HDR_PLUS = isKitKatOrHigher();
     public static final boolean HDR_PLUS_CAN_USE_ARBITRARY_ASPECT_RATIOS = isKitKatMR2OrHigher();
     public static final boolean HAS_CAMERA_HDR =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
     public static final boolean HAS_DISPLAY_LISTENER =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
-
     public static final boolean HAS_ORIENTATION_LOCK =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
     public static final boolean HAS_ROTATION_ANIMATION =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
-
     public static final boolean HAS_HIDEYBARS = isKitKatOrHigher();
-
-    // Don't use renderscript for x86 K, L is OK. See b/18435492
-    public static final boolean HAS_RENDERSCRIPT =
-            !(Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT && X86ABI.equals(Build.CPU_ABI));
-
     public static final boolean IS_NEXUS_4 = "mako".equalsIgnoreCase(Build.DEVICE);
     public static final boolean IS_NEXUS_5 = "LGE".equalsIgnoreCase(Build.MANUFACTURER)
             && "hammerhead".equalsIgnoreCase(Build.DEVICE);
@@ -71,60 +57,54 @@ public class ApiHelper
     public static final boolean IS_NEXUS_9 = "htc".equalsIgnoreCase(Build.MANUFACTURER)
             && ("flounder".equalsIgnoreCase(Build.DEVICE)
             || "flounder_lte".equalsIgnoreCase(Build.DEVICE));
-
     public static final boolean HAS_CAMERA_2_API = isLOrHigher();
+    // Documented value of CPU_ABI on x86 architectures
+    private static final String X86ABI = "x86";
+    // Don't use renderscript for x86 K, L is OK. See b/18435492
+    public static final boolean HAS_RENDERSCRIPT =
+            !(Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT && X86ABI.equals(Build.CPU_ABI));
 
     public static int getIntFieldIfExists(Class<?> klass, String fieldName,
-                                          Class<?> obj, int defaultVal)
-    {
-        try
-        {
+                                          Class<?> obj, int defaultVal) {
+        try {
             Field f = klass.getDeclaredField(fieldName);
             return f.getInt(obj);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             return defaultVal;
         }
     }
 
-    public static boolean isKitKatOrHigher()
-    {
+    public static boolean isKitKatOrHigher() {
         // TODO: Remove CODENAME check as soon as VERSION_CODES.KITKAT is final.
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
                 || "KeyLimePie".equals(Build.VERSION.CODENAME);
     }
 
-    public static boolean isKitKatMR2OrHigher()
-    {
+    public static boolean isKitKatMR2OrHigher() {
         return isLOrHigher()
                 || (isKitKatOrHigher() &&
                 ("4.4.4".equals(Build.VERSION.RELEASE) || "4.4.3".equals(Build.VERSION.RELEASE)));
     }
 
-    public static boolean isLollipop()
-    {
+    public static boolean isLollipop() {
         return Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP;
     }
 
-    public static boolean isLOrHigher()
-    {
+    public static boolean isLOrHigher() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 || "L".equals(Build.VERSION.CODENAME) || "LOLLIPOP".equals(Build.VERSION.CODENAME);
     }
 
-    public static boolean isLMr1OrHigher()
-    {
+    public static boolean isLMr1OrHigher() {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP;
     }
 
-    public static boolean isLorLMr1()
-    {
+    public static boolean isLorLMr1() {
         return Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP
                 || Build.VERSION.SDK_INT == 22; // Lollipop MR1
     }
 
-    public static boolean isMOrHigher()
-    {
+    public static boolean isMOrHigher() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 || "MNC".equals(Build.VERSION.CODENAME);
     }

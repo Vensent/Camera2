@@ -19,11 +19,9 @@ package com.android.camera.ui.motion;
 /**
  * Various static helper functions for interpolating between values.
  */
-public class InterpolateUtils
-{
+public class InterpolateUtils {
 
-    private InterpolateUtils()
-    {
+    private InterpolateUtils() {
     }
 
     /**
@@ -34,8 +32,7 @@ public class InterpolateUtils
      * @param t  value in the range of 0 to 1.
      * @return the value between v0 and v1 as a ratio between 0 and 1 defined by t.
      */
-    public static float lerp(float v0, float v1, float t)
-    {
+    public static float lerp(float v0, float v1, float t) {
         return v0 + t * (v1 - v0);
     }
 
@@ -51,8 +48,7 @@ public class InterpolateUtils
      * @return the ratio of the value in the source number space as a value in the to(Min/Max)
      * number space.
      */
-    public static float scale(float v, float vMin, float vMax, float pMin, float pMax)
-    {
+    public static float scale(float v, float vMin, float vMax, float pMin, float pMax) {
         return (pMax - pMin) * (v - vMin) / (vMax - vMin) + pMin;
     }
 
@@ -60,10 +56,8 @@ public class InterpolateUtils
      * Value between 0 and 1 as a ratio between tBegin over tDuration
      * with no upper bound.
      */
-    public static float unitRatio(long t, long tBegin, float tDuration)
-    {
-        if (t <= tBegin)
-        {
+    public static float unitRatio(long t, long tBegin, float tDuration) {
+        if (t <= tBegin) {
             return 0.0f;
         }
 

@@ -30,8 +30,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 @ParametersAreNonnullByDefault
-public final class ResettingRunnableCameraCommand implements Runnable
-{
+public final class ResettingRunnableCameraCommand implements Runnable {
     private final CameraCommandExecutor mExecutor;
     private final CameraCommand mCommand;
     private final Object mLock;
@@ -42,8 +41,7 @@ public final class ResettingRunnableCameraCommand implements Runnable
     @Nonnull
     private Future<?> mInProgressCommand;
 
-    public ResettingRunnableCameraCommand(CameraCommandExecutor executor, CameraCommand command)
-    {
+    public ResettingRunnableCameraCommand(CameraCommandExecutor executor, CameraCommand command) {
         mExecutor = executor;
         mCommand = command;
         mLock = new Object();
@@ -51,10 +49,8 @@ public final class ResettingRunnableCameraCommand implements Runnable
     }
 
     @Override
-    public void run()
-    {
-        synchronized (mLock)
-        {
+    public void run() {
+        synchronized (mLock) {
             // Cancel, via interruption, the already-running command, one has
             // been started and has not yet completed.
             mInProgressCommand.cancel(true /* mayInterruptIfRunning */);

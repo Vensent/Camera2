@@ -41,87 +41,18 @@ import java.util.Map;
  * at the same time.
  */
 @VisibleForTesting
-public class TagDispatchCaptureSession implements FrameServer.Session
-{
-    private static class CaptureCallback implements CameraCaptureSessionProxy.CaptureCallback
-    {
-        private final Map<Object, ResponseListener> mListeners;
-
-        /**
-         * @param listeners A map from tag objects to the listener to be invoked
-         *                  for events related to the request with that tag.
-         */
-        public CaptureCallback(Map<Object, ResponseListener> listeners)
-        {
-            mListeners = new HashMap<>(listeners);
-        }
-
-        @Override
-        public void onCaptureStarted(CameraCaptureSessionProxy session, CaptureRequest request,
-                                     long timestamp, long frameNumber)
-        {
-            Object tag = request.getTag();
-            mListeners.get(tag).onStarted(timestamp);
-        }
-
-        @Override
-        public void onCaptureProgressed(CameraCaptureSessionProxy session, CaptureRequest request,
-                                        CaptureResult partialResult)
-        {
-            Object tag = request.getTag();
-            mListeners.get(tag).onProgressed(partialResult);
-        }
-
-        @Override
-        public void onCaptureCompleted(CameraCaptureSessionProxy session, CaptureRequest request,
-                                       TotalCaptureResult result)
-        {
-            Object tag = request.getTag();
-            mListeners.get(tag).onCompleted(result);
-        }
-
-        @Override
-        public void onCaptureFailed(CameraCaptureSessionProxy session, CaptureRequest request,
-                                    CaptureFailure failure)
-        {
-            Object tag = request.getTag();
-            mListeners.get(tag).onFailed(failure);
-        }
-
-        @Override
-        public void onCaptureSequenceAborted(CameraCaptureSessionProxy session, int sequenceId)
-        {
-            for (ResponseListener listener : mListeners.values())
-            {
-                listener.onSequenceAborted(sequenceId);
-            }
-        }
-
-        @Override
-        public void onCaptureSequenceCompleted(CameraCaptureSessionProxy session, int sequenceId,
-                                               long frameNumber)
-        {
-            for (ResponseListener listener : mListeners.values())
-            {
-                listener.onSequenceCompleted(sequenceId, frameNumber);
-            }
-        }
-    }
-
+public class TagDispatchCaptureSession implements FrameServer.Session {
     private final CameraCaptureSessionProxy mCaptureSession;
     private final Handler mCameraHandler;
     private long mTagCounter;
-
     public TagDispatchCaptureSession(CameraCaptureSessionProxy captureSession, Handler
-            cameraHandler)
-    {
+            cameraHandler) {
         mCaptureSession = captureSession;
         mCameraHandler = cameraHandler;
         mTagCounter = 0;
     }
 
-    private Object generateTag()
-    {
+    private Object generateTag() {
         Object tag = Long.valueOf(mTagCounter);
         mTagCounter++;
         return tag;
@@ -146,15 +77,12 @@ public class TagDispatchCaptureSession implements FrameServer.Session
     public void submitRequest(List<Request> burstRequests, FrameServer.RequestType requestType)
             throws
             CameraAccessException, InterruptedException, CameraCaptureSessionClosedException,
-            ResourceAcquisitionFailedException
-    {
-        try
-        {
+            ResourceAcquisitionFailedException {
+        try {
             Map<Object, ResponseListener> tagListenerMap = new HashMap<Object, ResponseListener>();
             List<CaptureRequest> captureRequests = new ArrayList<>(burstRequests.size());
 
-            for (Request request : burstRequests)
-            {
+            for (Request request : burstRequests) {
                 Object tag = generateTag();
 
                 tagListenerMap.put(tag, request.getResponseListener());
@@ -164,27 +92,77 @@ public class TagDispatchCaptureSession implements FrameServer.Session
                 captureRequests.add(builder.build());
             }
 
-            if (requestType == FrameServer.RequestType.REPEATING)
-            {
+            if (requestType == FrameServer.RequestType.REPEATING) {
                 mCaptureSession.setRepeatingBurst(captureRequests, new
                         CaptureCallback(tagListenerMap), mCameraHandler);
-            } else
-            {
+            } else {
                 mCaptureSession.captureBurst(captureRequests, new
                         CaptureCallback(tagListenerMap), mCameraHandler);
             }
-        } catch (Exception e)
-        {
-            for (Request r : burstRequests)
-            {
+        } catch (Exception e) {
+            for (Request r : burstRequests) {
                 r.abort();
             }
             throw e;
         }
     }
 
-    public void close()
-    {
+    public void close() {
         // Do nothing.
+    }
+
+    private static class CaptureCallback implements CameraCaptureSessionProxy.CaptureCallback {
+        private final Map<Object, ResponseListener> mListeners;
+
+        /**
+         * @param listeners A map from tag objects to the listener to be invoked
+         *                  for events related to the request with that tag.
+         */
+        public CaptureCallback(Map<Object, ResponseListener> listeners) {
+            mListeners = new HashMap<>(listeners);
+        }
+
+        @Override
+        public void onCaptureStarted(CameraCaptureSessionProxy session, CaptureRequest request,
+                                     long timestamp, long frameNumber) {
+            Object tag = request.getTag();
+            mListeners.get(tag).onStarted(timestamp);
+        }
+
+        @Override
+        public void onCaptureProgressed(CameraCaptureSessionProxy session, CaptureRequest request,
+                                        CaptureResult partialResult) {
+            Object tag = request.getTag();
+            mListeners.get(tag).onProgressed(partialResult);
+        }
+
+        @Override
+        public void onCaptureCompleted(CameraCaptureSessionProxy session, CaptureRequest request,
+                                       TotalCaptureResult result) {
+            Object tag = request.getTag();
+            mListeners.get(tag).onCompleted(result);
+        }
+
+        @Override
+        public void onCaptureFailed(CameraCaptureSessionProxy session, CaptureRequest request,
+                                    CaptureFailure failure) {
+            Object tag = request.getTag();
+            mListeners.get(tag).onFailed(failure);
+        }
+
+        @Override
+        public void onCaptureSequenceAborted(CameraCaptureSessionProxy session, int sequenceId) {
+            for (ResponseListener listener : mListeners.values()) {
+                listener.onSequenceAborted(sequenceId);
+            }
+        }
+
+        @Override
+        public void onCaptureSequenceCompleted(CameraCaptureSessionProxy session, int sequenceId,
+                                               long frameNumber) {
+            for (ResponseListener listener : mListeners.values()) {
+                listener.onSequenceCompleted(sequenceId, frameNumber);
+            }
+        }
     }
 }

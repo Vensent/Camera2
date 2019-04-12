@@ -31,10 +31,8 @@ import com.google.common.base.Optional;
  * Factory methods and functions for selecting and creating instances of
  * OneCamera objects.
  */
-public final class OneCameraModule
-{
-    private OneCameraModule()
-    {
+public final class OneCameraModule {
+    private OneCameraModule() {
     }
 
     /**
@@ -47,16 +45,13 @@ public final class OneCameraModule
             OneCameraFeatureConfig featureConfig,
             Context context,
             ActiveCameraDeviceTracker activeCameraDeviceTracker,
-            DisplayMetrics displayMetrics) throws OneCameraException
-    {
+            DisplayMetrics displayMetrics) throws OneCameraException {
         Optional<OneCameraOpener> manager = Camera2OneCameraOpenerImpl.create(
                 featureConfig, context, activeCameraDeviceTracker, displayMetrics);
-        if (!manager.isPresent())
-        {
+        if (!manager.isPresent()) {
             manager = LegacyOneCameraOpenerImpl.create();
         }
-        if (!manager.isPresent())
-        {
+        if (!manager.isPresent()) {
             throw new OneCameraException("No camera manager is available.");
         }
         return manager.get();
@@ -69,18 +64,15 @@ public final class OneCameraModule
      *                            access the camera which may occur when accessing the legacy
      *                            hardware manager.
      */
-    public static OneCameraManager provideOneCameraManager() throws OneCameraException
-    {
+    public static OneCameraManager provideOneCameraManager() throws OneCameraException {
         Optional<Camera2OneCameraManagerImpl> camera2HwManager = Camera2OneCameraManagerImpl
                 .create();
-        if (camera2HwManager.isPresent())
-        {
+        if (camera2HwManager.isPresent()) {
             return camera2HwManager.get();
         }
 
         Optional<LegacyOneCameraManagerImpl> legacyHwManager = LegacyOneCameraManagerImpl.instance();
-        if (legacyHwManager.isPresent())
-        {
+        if (legacyHwManager.isPresent()) {
             return legacyHwManager.get();
         }
 

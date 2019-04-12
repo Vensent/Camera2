@@ -17,7 +17,7 @@ buildscript {
      * of the Gradle plugin for the buildscript.
      */
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.2'
     }
 }
 
@@ -35,7 +35,7 @@ allprojects {
  * only apply the com.android.application plugin. Applying the Java plugin as
  * well will result in a build error.
  */
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 /**
  * The android{} block configures all of the parameters for the Android build.
@@ -47,7 +47,7 @@ android {
     buildToolsVersion "28.0.3"
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 26
         targetSdkVersion 28
 
         // 10,00,000 major-minor-dev
@@ -67,7 +67,12 @@ android {
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src', 'src_pd', 'src_pd_gcam', 'src_frameworks/camera2/portability/src', 'src_frameworks/camera2/public/src', 'src_frameworks/camera2/utils/src']
+            java.srcDirs = ['src',
+                            'src_pd',
+                            'src_pd_gcam',
+                            'src_frameworks/camera2/portability/src',
+                            'src_frameworks/camera2/public/src',
+                            'src_frameworks/camera2/utils/src']
             jni.srcDirs = ['jni']
             jniLibs.srcDirs = ['jniLibs']
             // renderscript.srcDirs = ['src/main/renderscript']
@@ -107,9 +112,10 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     // Add other library dependencies here (see the next step)
     implementation 'com.github.bumptech.glide:glide:3.8.0'
-    implementation 'com.google.guava:guava:19.0'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.support:support-v13:28.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.google.guava:guava:18.0'
     implementation 'com.adobe.xmp:xmpcore:6.1.10'
-    implementation 'androidx.annotation:annotation:1.0.1'
-    implementation 'androidx.fragment:fragment:1.0.0'
 }
 

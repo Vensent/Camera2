@@ -45,8 +45,7 @@ import java.util.List;
  * xmpMeta.setPropertyBoolean(PanoConstants.GOOGLE_PANO_NAMESPACE, "bool_property_name", "true");
  * XmpUtil.writeXMPMeta(filename, xmpMeta);
  */
-public class XmpUtil
-{
+public class XmpUtil {
     private static final Log.Tag TAG = new Log.Tag("XmpUtil");
     private static final int XMP_HEADER_SIZE = 29;
     private static final String XMP_HEADER = "http://ns.adobe.com/xap/1.0/\0";
@@ -59,25 +58,16 @@ public class XmpUtil
     private static final int M_APP1 = 0xe1; // Marker for Exif or XMP.
     private static final int M_SOS = 0xda; // Image data marker.
 
-    // Jpeg file is composed of many sections and image data. This class is used
-    // to hold the section data from image file.
-    private static class Section
-    {
-        public int marker;
-        public int length;
-        public byte[] data;
-    }
-
-    static
-    {
-        try
-        {
+    static {
+        try {
             XMPMetaFactory.getSchemaRegistry().registerNamespace(
                     GOOGLE_PANO_NAMESPACE, PANO_PREFIX);
-        } catch (XMPException e)
-        {
+        } catch (XMPException e) {
             e.printStackTrace();
         }
+    }
+
+    private XmpUtil() {
     }
 
     /**
@@ -86,20 +76,16 @@ public class XmpUtil
      * @param filename JPEG image file name.
      * @return Extracted XMPMeta or null.
      */
-    public static XMPMeta extractXMPMeta(String filename)
-    {
+    public static XMPMeta extractXMPMeta(String filename) {
         if (!filename.toLowerCase().endsWith(".jpg")
-                && !filename.toLowerCase().endsWith(".jpeg"))
-        {
+                && !filename.toLowerCase().endsWith(".jpeg")) {
             Log.d(TAG, "XMP parse: only jpeg file is supported");
             return null;
         }
 
-        try
-        {
+        try {
             return extractXMPMeta(new FileInputStream(filename));
-        } catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             Log.e(TAG, "Could not read file: " + filename, e);
             return null;
         }
@@ -111,28 +97,22 @@ public class XmpUtil
      * @param is the input stream containing the JPEG image file.
      * @return Extracted XMPMeta or null.
      */
-    public static XMPMeta extractXMPMeta(InputStream is)
-    {
+    public static XMPMeta extractXMPMeta(InputStream is) {
         List<Section> sections = parse(is, true);
-        if (sections == null)
-        {
+        if (sections == null) {
             return null;
         }
         // Now we don't support extended xmp.
-        for (Section section : sections)
-        {
-            if (hasXMPHeader(section.data))
-            {
+        for (Section section : sections) {
+            if (hasXMPHeader(section.data)) {
                 int end = getXMPContentEnd(section.data);
                 byte[] buffer = new byte[end - XMP_HEADER_SIZE];
                 System.arraycopy(
                         section.data, XMP_HEADER_SIZE, buffer, 0, buffer.length);
-                try
-                {
+                try {
                     XMPMeta result = XMPMetaFactory.parseFromBuffer(buffer);
                     return result;
-                } catch (XMPException e)
-                {
+                } catch (XMPException e) {
                     Log.d(TAG, "XMP parse error", e);
                     return null;
                 }
@@ -144,16 +124,14 @@ public class XmpUtil
     /**
      * Creates a new XMPMeta.
      */
-    public static XMPMeta createXMPMeta()
-    {
+    public static XMPMeta createXMPMeta() {
         return XMPMetaFactory.create();
     }
 
     /**
      * Tries to extract XMP meta from image file first, if failed, create one.
      */
-    public static XMPMeta extractOrCreateXMPMeta(String filename)
-    {
+    public static XMPMeta extractOrCreateXMPMeta(String filename) {
         XMPMeta meta = extractXMPMeta(filename);
         return meta == null ? createXMPMeta() : meta;
     }
@@ -161,47 +139,36 @@ public class XmpUtil
     /**
      * Writes the XMPMeta to the jpeg image file.
      */
-    public static boolean writeXMPMeta(String filename, XMPMeta meta)
-    {
+    public static boolean writeXMPMeta(String filename, XMPMeta meta) {
         if (!filename.toLowerCase().endsWith(".jpg")
-                && !filename.toLowerCase().endsWith(".jpeg"))
-        {
+                && !filename.toLowerCase().endsWith(".jpeg")) {
             Log.d(TAG, "XMP parse: only jpeg file is supported");
             return false;
         }
         List<Section> sections = null;
-        try
-        {
+        try {
             sections = parse(new FileInputStream(filename), false);
             sections = insertXMPSection(sections, meta);
-            if (sections == null)
-            {
+            if (sections == null) {
                 return false;
             }
-        } catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             Log.e(TAG, "Could not read file: " + filename, e);
             return false;
         }
         FileOutputStream os = null;
-        try
-        {
+        try {
             // Overwrite the image file with the new meta data.
             os = new FileOutputStream(filename);
             writeJpegFile(os, sections);
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             Log.d(TAG, "Write file failed:" + filename, e);
             return false;
-        } finally
-        {
-            if (os != null)
-            {
-                try
-                {
+        } finally {
+            if (os != null) {
+                try {
                     os.close();
-                } catch (IOException e)
-                {
+                } catch (IOException e) {
                     // Ignore.
                 }
             }
@@ -213,31 +180,23 @@ public class XmpUtil
      * Updates a jpeg file from inputStream with XMPMeta to outputStream.
      */
     public static boolean writeXMPMeta(InputStream inputStream, OutputStream outputStream,
-                                       XMPMeta meta)
-    {
+                                       XMPMeta meta) {
         List<Section> sections = parse(inputStream, false);
         sections = insertXMPSection(sections, meta);
-        if (sections == null)
-        {
+        if (sections == null) {
             return false;
         }
-        try
-        {
+        try {
             // Overwrite the image file with the new meta data.
             writeJpegFile(outputStream, sections);
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             Log.d(TAG, "Write to stream failed", e);
             return false;
-        } finally
-        {
-            if (outputStream != null)
-            {
-                try
-                {
+        } finally {
+            if (outputStream != null) {
+                try {
                     outputStream.close();
-                } catch (IOException e)
-                {
+                } catch (IOException e) {
                     // Ignore.
                 }
             }
@@ -249,17 +208,14 @@ public class XmpUtil
      * Write a list of sections to a Jpeg file.
      */
     private static void writeJpegFile(OutputStream os, List<Section> sections)
-            throws IOException
-    {
+            throws IOException {
         // Writes the jpeg file header.
         os.write(0xff);
         os.write(M_SOI);
-        for (Section section : sections)
-        {
+        for (Section section : sections) {
             os.write(0xff);
             os.write(section.marker);
-            if (section.length > 0)
-            {
+            if (section.length > 0) {
                 // It's not the image data.
                 int lh = section.length >> 8;
                 int ll = section.length & 0xff;
@@ -271,15 +227,12 @@ public class XmpUtil
     }
 
     private static List<Section> insertXMPSection(
-            List<Section> sections, XMPMeta meta)
-    {
-        if (sections == null || sections.size() <= 1)
-        {
+            List<Section> sections, XMPMeta meta) {
+        if (sections == null || sections.size() <= 1) {
             return null;
         }
         byte[] buffer;
-        try
-        {
+        try {
             SerializeOptions options = new SerializeOptions();
             options.setUseCompactFormat(true);
             // We have to omit packet wrapper here because
@@ -287,13 +240,11 @@ public class XmpUtil
             // fails to parse the packet end <?xpacket end="w"?> in android.
             options.setOmitPacketWrapper(true);
             buffer = XMPMetaFactory.serializeToBuffer(meta, options);
-        } catch (XMPException e)
-        {
+        } catch (XMPException e) {
             Log.d(TAG, "Serialize xmp failed", e);
             return null;
         }
-        if (buffer.length > MAX_XMP_BUFFER_SIZE)
-        {
+        if (buffer.length > MAX_XMP_BUFFER_SIZE) {
             // Do not support extended xmp now.
             return null;
         }
@@ -307,12 +258,10 @@ public class XmpUtil
         xmpSection.length = xmpdata.length + 2;
         xmpSection.data = xmpdata;
 
-        for (int i = 0; i < sections.size(); ++i)
-        {
+        for (int i = 0; i < sections.size(); ++i) {
             // If we can find the old xmp section, replace it with the new one.
             if (sections.get(i).marker == M_APP1
-                    && hasXMPHeader(sections.get(i).data))
-            {
+                    && hasXMPHeader(sections.get(i).data)) {
                 // Replace with the new xmp data.
                 sections.set(i, xmpSection);
                 return sections;
@@ -334,22 +283,17 @@ public class XmpUtil
      *
      * @param data Xmp metadata.
      */
-    private static boolean hasXMPHeader(byte[] data)
-    {
-        if (data.length < XMP_HEADER_SIZE)
-        {
+    private static boolean hasXMPHeader(byte[] data) {
+        if (data.length < XMP_HEADER_SIZE) {
             return false;
         }
-        try
-        {
+        try {
             byte[] header = new byte[XMP_HEADER_SIZE];
             System.arraycopy(data, 0, header, 0, XMP_HEADER_SIZE);
-            if (new String(header, "UTF-8").equals(XMP_HEADER))
-            {
+            if (new String(header, "UTF-8").equals(XMP_HEADER)) {
                 return true;
             }
-        } catch (UnsupportedEncodingException e)
-        {
+        } catch (UnsupportedEncodingException e) {
             return false;
         }
         return false;
@@ -365,14 +309,10 @@ public class XmpUtil
      * @param data xmp metadata bytes.
      * @return The end of the xmp metadata content.
      */
-    private static int getXMPContentEnd(byte[] data)
-    {
-        for (int i = data.length - 1; i >= 1; --i)
-        {
-            if (data[i] == '>')
-            {
-                if (data[i - 1] != '?')
-                {
+    private static int getXMPContentEnd(byte[] data) {
+        for (int i = data.length - 1; i >= 1; --i) {
+            if (data[i] == '>') {
+                if (data[i - 1] != '?') {
                     return i + 1;
                 }
             }
@@ -390,37 +330,28 @@ public class XmpUtil
      * @param readMetaOnly Whether only reads the metadata in jpg.
      * @return The parse result.
      */
-    private static List<Section> parse(InputStream is, boolean readMetaOnly)
-    {
-        try
-        {
-            if (is.read() != 0xff || is.read() != M_SOI)
-            {
+    private static List<Section> parse(InputStream is, boolean readMetaOnly) {
+        try {
+            if (is.read() != 0xff || is.read() != M_SOI) {
                 return null;
             }
             List<Section> sections = new ArrayList<Section>();
             int c;
-            while ((c = is.read()) != -1)
-            {
-                if (c != 0xff)
-                {
+            while ((c = is.read()) != -1) {
+                if (c != 0xff) {
                     return null;
                 }
                 // Skip padding bytes.
-                while ((c = is.read()) == 0xff)
-                {
+                while ((c = is.read()) == 0xff) {
                 }
-                if (c == -1)
-                {
+                if (c == -1) {
                     return null;
                 }
                 int marker = c;
-                if (marker == M_SOS)
-                {
+                if (marker == M_SOS) {
                     // M_SOS indicates the image data will follow and no metadata after
                     // that, so read all data at one time.
-                    if (!readMetaOnly)
-                    {
+                    if (!readMetaOnly) {
                         Section section = new Section();
                         section.marker = marker;
                         section.length = -1;
@@ -432,47 +363,43 @@ public class XmpUtil
                 }
                 int lh = is.read();
                 int ll = is.read();
-                if (lh == -1 || ll == -1)
-                {
+                if (lh == -1 || ll == -1) {
                     return null;
                 }
                 int length = lh << 8 | ll;
-                if (!readMetaOnly || c == M_APP1)
-                {
+                if (!readMetaOnly || c == M_APP1) {
                     Section section = new Section();
                     section.marker = marker;
                     section.length = length;
                     section.data = new byte[length - 2];
                     is.read(section.data, 0, length - 2);
                     sections.add(section);
-                } else
-                {
+                } else {
                     // Skip this section since all exif/xmp meta will be in M_APP1
                     // section.
                     is.skip(length - 2);
                 }
             }
             return sections;
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             Log.d(TAG, "Could not parse file.", e);
             return null;
-        } finally
-        {
-            if (is != null)
-            {
-                try
-                {
+        } finally {
+            if (is != null) {
+                try {
                     is.close();
-                } catch (IOException e)
-                {
+                } catch (IOException e) {
                     // Ignore.
                 }
             }
         }
     }
 
-    private XmpUtil()
-    {
+    // Jpeg file is composed of many sections and image data. This class is used
+    // to hold the section data from image file.
+    private static class Section {
+        public int marker;
+        public int length;
+        public byte[] data;
     }
 }

@@ -28,68 +28,6 @@ import java.util.List;
  */
 public class Size {
     public static final String DELIMITER = ",";
-
-    /**
-     * An helper method to build a list of this class from a list of
-     * {@link android.hardware.Camera.Size}.
-     *
-     * @param cameraSizes Source.
-     * @return The built list.
-     */
-    public static List<Size> buildListFromCameraSizes(List<Camera.Size> cameraSizes) {
-        ArrayList<Size> list = new ArrayList<Size>(cameraSizes.size());
-        for (Camera.Size cameraSize : cameraSizes) {
-            list.add(new Size(cameraSize));
-        }
-        return list;
-    }
-
-    /**
-     * A helper method to build a list of this class from a list of {@link android.util.Size}.
-     *
-     * @param cameraSizes Source.
-     * @return The built list.
-     */
-    public static List<Size> buildListFromAndroidSizes(List<android.util.Size> androidSizes) {
-        ArrayList<Size> list = new ArrayList<Size>(androidSizes.size());
-        for (android.util.Size androidSize : androidSizes) {
-            list.add(new Size(androidSize));
-        }
-        return list;
-    }
-
-    /**
-     * Encode List of this class as comma-separated list of integers.
-     *
-     * @param sizes List of this class to encode.
-     * @return encoded string.
-     */
-    public static String listToString(List<Size> sizes) {
-        ArrayList<Integer> flatSizes = new ArrayList<>();
-        for (Size s : sizes) {
-            flatSizes.add(s.width());
-            flatSizes.add(s.height());
-        }
-        return TextUtils.join(DELIMITER, flatSizes);
-    }
-
-    /**
-     * Decode comma-separated even-length list of integers into a List of this class.
-     *
-     * @param encodedSizes encoded string.
-     * @return List of this class.
-     */
-    public static List<Size> stringToList(String encodedSizes) {
-        String[] flatSizes = TextUtils.split(encodedSizes, DELIMITER);
-        ArrayList<Size> list = new ArrayList<>();
-        for (int i = 0; i < flatSizes.length; i += 2) {
-            int width = Integer.parseInt(flatSizes[i]);
-            int height = Integer.parseInt(flatSizes[i + 1]);
-            list.add(new Size(width,height));
-        }
-        return list;
-    }
-
     private final Point val;
 
     /**
@@ -147,6 +85,67 @@ public class Size {
         } else {
             val = new Point(p);
         }
+    }
+
+    /**
+     * An helper method to build a list of this class from a list of
+     * {@link android.hardware.Camera.Size}.
+     *
+     * @param cameraSizes Source.
+     * @return The built list.
+     */
+    public static List<Size> buildListFromCameraSizes(List<Camera.Size> cameraSizes) {
+        ArrayList<Size> list = new ArrayList<Size>(cameraSizes.size());
+        for (Camera.Size cameraSize : cameraSizes) {
+            list.add(new Size(cameraSize));
+        }
+        return list;
+    }
+
+    /**
+     * A helper method to build a list of this class from a list of {@link android.util.Size}.
+     *
+     * @param cameraSizes Source.
+     * @return The built list.
+     */
+    public static List<Size> buildListFromAndroidSizes(List<android.util.Size> androidSizes) {
+        ArrayList<Size> list = new ArrayList<Size>(androidSizes.size());
+        for (android.util.Size androidSize : androidSizes) {
+            list.add(new Size(androidSize));
+        }
+        return list;
+    }
+
+    /**
+     * Encode List of this class as comma-separated list of integers.
+     *
+     * @param sizes List of this class to encode.
+     * @return encoded string.
+     */
+    public static String listToString(List<Size> sizes) {
+        ArrayList<Integer> flatSizes = new ArrayList<>();
+        for (Size s : sizes) {
+            flatSizes.add(s.width());
+            flatSizes.add(s.height());
+        }
+        return TextUtils.join(DELIMITER, flatSizes);
+    }
+
+    /**
+     * Decode comma-separated even-length list of integers into a List of this class.
+     *
+     * @param encodedSizes encoded string.
+     * @return List of this class.
+     */
+    public static List<Size> stringToList(String encodedSizes) {
+        String[] flatSizes = TextUtils.split(encodedSizes, DELIMITER);
+        ArrayList<Size> list = new ArrayList<>();
+        for (int i = 0; i < flatSizes.length; i += 2) {
+            int width = Integer.parseInt(flatSizes[i]);
+            int height = Integer.parseInt(flatSizes[i + 1]);
+            list.add(new Size(width, height));
+        }
+        return list;
     }
 
     public int width() {

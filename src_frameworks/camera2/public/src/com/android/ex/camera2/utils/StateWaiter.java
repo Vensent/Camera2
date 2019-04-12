@@ -49,7 +49,9 @@ public final class StateWaiter {
     private final int mStateCount;
     private final StateChangeListener mListener;
 
-    /** Guard waitForState, waitForAnyState to only have one waiter */
+    /**
+     * Guard waitForState, waitForAnyState to only have one waiter
+     */
     private final AtomicBoolean mWaiting = new AtomicBoolean(false);
 
     private final LinkedBlockingQueue<Integer> mQueuedStates = new LinkedBlockingQueue<>();
@@ -87,15 +89,14 @@ public final class StateWaiter {
      *
      * <p>Note: Only one waiter allowed at a time!</p>
      *
-     * @param state state to observe a transition to
+     * @param state     state to observe a transition to
      * @param timeoutMs how long to wait in milliseconds
-     *
      * @throws IllegalArgumentException if {@code state} was out of range
-     * @throws TimeoutRuntimeException if the desired state is not observed before timeout.
-     * @throws IllegalStateException if another thread is already waiting for a state transition
+     * @throws TimeoutRuntimeException  if the desired state is not observed before timeout.
+     * @throws IllegalStateException    if another thread is already waiting for a state transition
      */
     public void waitForState(int state, long timeoutMs) {
-        Integer[] stateArray = { checkStateInRange(state) };
+        Integer[] stateArray = {checkStateInRange(state)};
 
         waitForAnyOfStates(Arrays.asList(stateArray), timeoutMs);
     }
@@ -108,14 +109,12 @@ public final class StateWaiter {
      *
      * <p>Note: Only one waiter allowed at a time!</p>
      *
-     * @param states Set of desired states to observe a transition to.
+     * @param states    Set of desired states to observe a transition to.
      * @param timeoutMs how long to wait in milliseconds
-     *
      * @return the state reached
-     *
      * @throws IllegalArgumentException if {@code state} was out of range
-     * @throws TimeoutRuntimeException if none of the states is observed before timeout.
-     * @throws IllegalStateException if another thread is already waiting for a state transition
+     * @throws TimeoutRuntimeException  if none of the states is observed before timeout.
+     * @throws IllegalStateException    if another thread is already waiting for a state transition
      */
     public int waitForAnyOfStates(Collection<Integer> states, final long timeoutMs) {
         checkStateCollectionInRange(states);
@@ -192,7 +191,9 @@ public final class StateWaiter {
     }
 
     private void queueStateTransition(int state) {
-        if (VERBOSE) Log.v(TAG, "setCurrentState - state now " + getStateName(state));
+        if (VERBOSE) {
+            Log.v(TAG, "setCurrentState - state now " + getStateName(state));
+        }
 
         try {
             mQueuedStates.put(state);

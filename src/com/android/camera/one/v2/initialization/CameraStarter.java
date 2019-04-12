@@ -32,30 +32,7 @@ import com.android.camera.one.v2.photo.PictureTaker;
  * <p>
  * Device-specific features should typically be wired together here.
  */
-public interface CameraStarter
-{
-    public static class CameraControls
-    {
-        private final PictureTaker mPictureTaker;
-        private final ManualAutoFocus mManualAutoFocus;
-
-        public CameraControls(PictureTaker pictureTaker, ManualAutoFocus manualAutoFocus)
-        {
-            mPictureTaker = pictureTaker;
-            mManualAutoFocus = manualAutoFocus;
-        }
-
-        public PictureTaker getPictureTaker()
-        {
-            return mPictureTaker;
-        }
-
-        public ManualAutoFocus getManualAutoFocus()
-        {
-            return mManualAutoFocus;
-        }
-    }
-
+public interface CameraStarter {
     /**
      * Implementations should start a preview and return controls for taking
      * pictures and triggering focus.
@@ -72,4 +49,22 @@ public interface CameraStarter
             Observable<Float> zoomState,
             Updatable<TotalCaptureResultProxy> metadataCallback,
             Updatable<Boolean> readyStateCallback);
+
+    public static class CameraControls {
+        private final PictureTaker mPictureTaker;
+        private final ManualAutoFocus mManualAutoFocus;
+
+        public CameraControls(PictureTaker pictureTaker, ManualAutoFocus manualAutoFocus) {
+            mPictureTaker = pictureTaker;
+            mManualAutoFocus = manualAutoFocus;
+        }
+
+        public PictureTaker getPictureTaker() {
+            return mPictureTaker;
+        }
+
+        public ManualAutoFocus getManualAutoFocus() {
+            return mManualAutoFocus;
+        }
+    }
 }

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2014 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2014 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -15,25 +14,28 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              style="@style/start_up_dialog_content"
-              android:orientation="horizontal"
-              android:gravity="center_horizontal"
-              android:paddingTop="28dp">
+    style="@style/start_up_dialog_content"
+    android:gravity="center_horizontal"
+    android:orientation="horizontal"
+    android:paddingTop="28dp">
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
         android:layout_marginLeft="16dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
         <TextView
+            style="@style/fullscreen_dialog_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/remember_location_title"
-            style="@style/fullscreen_dialog_title"
             android:layout_marginLeft="28dp"
             android:layout_marginRight="28dp"
-            android:layout_marginBottom="28dp" />
+            android:layout_marginBottom="28dp"
+            android:text="@string/remember_location_title" />
+
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -46,10 +48,12 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_weight="1">
+
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical">
+
             <CheckBox
                 android:id="@+id/check_box"
                 style="@style/DialogCheckBox"
@@ -60,12 +64,13 @@
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:text="@string/remember_location_prompt" />
+
             <Button
                 android:id="@+id/confirm_button"
                 style="@style/BlueButton"
                 android:layout_gravity="bottom|center_horizontal"
                 android:text="@string/startup_dialog_button_next" />
         </FrameLayout>
-</FrameLayout>
+    </FrameLayout>
 
 </LinearLayout>

@@ -27,8 +27,7 @@ package com.android.camera.device;
  *
  * @param <TDevice> The type of camera device the actions produce.
  */
-public interface CameraDeviceActionProvider<TDevice>
-{
+public interface CameraDeviceActionProvider<TDevice> {
 
     /**
      * Return a new set of device and api specific actions for the given

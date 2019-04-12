@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--  Copyright (C) 2007 The Android Open Source Project
+<?xml version="1.0" encoding="UTF-8"?><!--  Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,8 +13,7 @@
      limitations under the License.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name" msgid="1175086483881127797">"ক্যামেরা"</string>
     <string name="video_camera_label" msgid="1723708322021743770">"ক্যামকর্ডার"</string>
     <string name="details_ms" msgid="6618163484662724641">"%1$02d:%2$02d"</string>
@@ -71,9 +69,9 @@
     <string name="error_permissions" msgid="3454167403425651254">"অ্যাপ্লিকেশাটি চালানোর জন্য কোনো গুরুত্বপূর্ণ অনুমতির প্রয়োজন নেই৷ অনুগ্রহ করে আপনার অনুমতি সেটিংস পরীক্ষা করুন৷"</string>
     <string name="reason_storage_failure" msgid="6818898304774654969">"ফটো সঞ্চয় করতে ব্যর্থ হয়েছে৷"</string>
     <string name="wait" msgid="765601745709933047">"দয়া করে অপেক্ষা করুন..."</string>
-    <string name="no_storage" product="default" msgid="5922012950780548098">"ক্যামেরা ব্যবহার করার পূর্বে একটি SD কার্ড ঢোকান।"</string>
-    <string name="preparing_sd" product="default" msgid="7435693655017362767">"SD কার্ড প্রস্তুত করা হচ্ছে..."</string>
-    <string name="access_sd_fail" product="default" msgid="2634861611082499811">"SD কার্ড অ্যাক্সেস করা যায়নি৷"</string>
+    <string name="no_storage" msgid="5922012950780548098" product="default">"ক্যামেরা ব্যবহার করার পূর্বে একটি SD কার্ড ঢোকান।"</string>
+    <string name="preparing_sd" msgid="7435693655017362767" product="default">"SD কার্ড প্রস্তুত করা হচ্ছে..."</string>
+    <string name="access_sd_fail" msgid="2634861611082499811" product="default">"SD কার্ড অ্যাক্সেস করা যায়নি৷"</string>
     <string name="time_lapse_title" msgid="3267978566401228497">"সময় ব্যয় রেকর্ডিং"</string>
     <string name="feedback_description_camera_access" msgid="419090951070170132">"অ্যাপ্লিকেশানটি ক্যামেরার সাথে সংযোগ করা যায়নি।"</string>
     <string name="feedback_description_save_photo" msgid="8658767358989083228">"ফটো বা ভিডিও ডিভাইসে সংরক্ষণ করা যায়নি৷"</string>
@@ -160,7 +158,7 @@
     <string name="dialog_cancel" msgid="692365061128351656">"বাতিল"</string>
     <string name="dialog_report" msgid="7616428760369876209">"অভিযোগ করুন"</string>
     <string name="dialog_dismiss" msgid="1382550604990470119">"খারিজ করুন"</string>
-    <string name="spaceIsLow_content" product="default" msgid="4522771065344332702">"আপনার SD কার্ডে আর পর্যাপ্ত নেই। গুণমান সেটিংস পরিবর্তন করুন অথবা কিছু ছবি বা অন্য ফাইলগুলি মুছে দিন।"</string>
+    <string name="spaceIsLow_content" msgid="4522771065344332702" product="default">"আপনার SD কার্ডে আর পর্যাপ্ত নেই। গুণমান সেটিংস পরিবর্তন করুন অথবা কিছু ছবি বা অন্য ফাইলগুলি মুছে দিন।"</string>
     <string name="video_reach_size_limit" msgid="9196836111505731836">"আকার সীমায় পৌঁছে গেছে।"</string>
     <string name="pano_too_fast_prompt" msgid="2503148095578052177">"খুব দ্রুত"</string>
     <string name="pano_dialog_prepare_preview" msgid="4445235163599534263">"প্যানোরামা প্রস্তুত করা হচ্ছে"</string>

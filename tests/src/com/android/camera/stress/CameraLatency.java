@@ -16,14 +16,13 @@
 
 package com.android.camera.stress;
 
-import com.android.camera.CameraActivity;
-
 import android.app.Instrumentation;
 import android.os.Environment;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Log;
 import android.view.KeyEvent;
+
+import com.android.camera.CameraActivity;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -32,14 +31,12 @@ import java.io.FileWriter;
  * Junit / Instrumentation test case for camera test
  */
 
-public class CameraLatency extends ActivityInstrumentationTestCase2<CameraActivity>
-{
-    private String TAG = "CameraLatency";
+public class CameraLatency extends ActivityInstrumentationTestCase2<CameraActivity> {
     private static final int TOTAL_NUMBER_OF_IMAGECAPTURE = 20;
     private static final long WAIT_FOR_IMAGE_CAPTURE_TO_BE_TAKEN = 4000;
     private static final String CAMERA_TEST_OUTPUT_FILE =
             Environment.getExternalStorageDirectory().toString() + "/mediaStressOut.txt";
-
+    private String TAG = "CameraLatency";
     private long mTotalAutoFocusTime;
     private long mTotalShutterLag;
     private long mTotalShutterToPictureDisplayedTime;
@@ -53,46 +50,38 @@ public class CameraLatency extends ActivityInstrumentationTestCase2<CameraActivi
     private long mAvgJpegCallbackFinishTime;
     private long mAvgFirstPreviewTime;
 
-    public CameraLatency()
-    {
+    public CameraLatency() {
         super(CameraActivity.class);
     }
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         getActivity();
         super.setUp();
     }
 
     @Override
-    protected void tearDown() throws Exception
-    {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
-    public void testImageCapture()
-    {
+    public void testImageCapture() {
         Log.v(TAG, "start testImageCapture test");
         Instrumentation inst = getInstrumentation();
         inst.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
-        try
-        {
-            for (int i = 0; i < TOTAL_NUMBER_OF_IMAGECAPTURE; i++)
-            {
+        try {
+            for (int i = 0; i < TOTAL_NUMBER_OF_IMAGECAPTURE; i++) {
                 Thread.sleep(WAIT_FOR_IMAGE_CAPTURE_TO_BE_TAKEN);
                 inst.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_CENTER);
                 Thread.sleep(WAIT_FOR_IMAGE_CAPTURE_TO_BE_TAKEN);
                 //skip the first measurement
-                if (i != 0)
-                {
+                if (i != 0) {
                     CameraActivity c = getActivity();
 
                     // if any of the latency var accessor methods return -1 then the
                     // camera is set to a different module other than PhotoModule so
                     // skip the shot and try again
-                    if (c.getAutoFocusTime() != -1)
-                    {
+                    if (c.getAutoFocusTime() != -1) {
                         mTotalAutoFocusTime += c.getAutoFocusTime();
                         mTotalShutterLag += c.getShutterLag();
                         mTotalShutterToPictureDisplayedTime +=
@@ -101,15 +90,13 @@ public class CameraLatency extends ActivityInstrumentationTestCase2<CameraActivi
                                 c.getPictureDisplayedToJpegCallbackTime();
                         mTotalJpegCallbackFinishTime += c.getJpegCallbackFinishTime();
                         mTotalFirstPreviewTime += c.getFirstPreviewTime();
-                    } else
-                    {
+                    } else {
                         i--;
                         continue;
                     }
                 }
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.v(TAG, "Got exception", e);
         }
         //ToDO: yslau
@@ -129,8 +116,7 @@ public class CameraLatency extends ActivityInstrumentationTestCase2<CameraActivi
         mAvgFirstPreviewTime =
                 mTotalFirstPreviewTime / numberofRun;
 
-        try
-        {
+        try {
             FileWriter fstream = null;
             fstream = new FileWriter(CAMERA_TEST_OUTPUT_FILE, true);
             BufferedWriter out = new BufferedWriter(fstream);
@@ -148,8 +134,7 @@ public class CameraLatency extends ActivityInstrumentationTestCase2<CameraActivi
                     mAvgFirstPreviewTime + "\n");
             out.close();
             fstream.close();
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             fail("Camera Latency write output to file");
         }
         Log.v(TAG, "The Image capture wait time = " +

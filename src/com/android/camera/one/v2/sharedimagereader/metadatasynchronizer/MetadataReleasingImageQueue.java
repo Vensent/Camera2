@@ -31,18 +31,37 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 @ParametersAreNonnullByDefault
-public class MetadataReleasingImageQueue implements BufferQueueController<ImageProxy>
-{
-    private class MetadataReleasingImageProxy extends ForwardingImageProxy
-    {
-        public MetadataReleasingImageProxy(ImageProxy proxy)
-        {
+public class MetadataReleasingImageQueue implements BufferQueueController<ImageProxy> {
+    private final BufferQueueController<ImageProxy> mOutputQueue;
+    private final MetadataPool mMetadataPool;
+    public MetadataReleasingImageQueue(BufferQueueController<ImageProxy> outputQueue,
+                                       MetadataPool metadataPool) {
+        mOutputQueue = outputQueue;
+        mMetadataPool = metadataPool;
+    }
+
+    @Override
+    public void update(@Nonnull ImageProxy element) {
+        mOutputQueue.update(new MetadataReleasingImageProxy(element));
+    }
+
+    @Override
+    public void close() {
+        mOutputQueue.close();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return mOutputQueue.isClosed();
+    }
+
+    private class MetadataReleasingImageProxy extends ForwardingImageProxy {
+        public MetadataReleasingImageProxy(ImageProxy proxy) {
             super(proxy);
         }
 
         @Override
-        public void close()
-        {
+        public void close() {
             // Retrieve the timestamp before the image is closed.
             long timestamp = getTimestamp();
             super.close();
@@ -50,33 +69,5 @@ public class MetadataReleasingImageQueue implements BufferQueueController<ImageP
             // memory.
             mMetadataPool.removeMetadataFuture(timestamp);
         }
-    }
-
-    private final BufferQueueController<ImageProxy> mOutputQueue;
-    private final MetadataPool mMetadataPool;
-
-    public MetadataReleasingImageQueue(BufferQueueController<ImageProxy> outputQueue,
-                                       MetadataPool metadataPool)
-    {
-        mOutputQueue = outputQueue;
-        mMetadataPool = metadataPool;
-    }
-
-    @Override
-    public void update(@Nonnull ImageProxy element)
-    {
-        mOutputQueue.update(new MetadataReleasingImageProxy(element));
-    }
-
-    @Override
-    public void close()
-    {
-        mOutputQueue.close();
-    }
-
-    @Override
-    public boolean isClosed()
-    {
-        return mOutputQueue.isClosed();
     }
 }

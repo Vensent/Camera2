@@ -31,8 +31,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class BurstTakerImpl implements BurstTaker
-{
+public class BurstTakerImpl implements BurstTaker {
 
     private final CameraCommandExecutor mCameraCommandExecutor;
     private final FrameServer mFrameServer;
@@ -69,8 +68,7 @@ public class BurstTakerImpl implements BurstTaker
                           FrameServer frameServer, RequestBuilder.Factory builder,
                           ManagedImageReader imageFactory, Surface burstInputSurface,
                           Runnable restorePreviewCommand,
-                          int maxImageCount)
-    {
+                          int maxImageCount) {
         mCameraCommandExecutor = cameraCommandExecutor;
         mFrameServer = frameServer;
         mRequestBuilder = builder;
@@ -82,8 +80,7 @@ public class BurstTakerImpl implements BurstTaker
 
     @Override
     public void startBurst(EvictionHandler evictionHandler,
-                           BurstController burstController)
-    {
+                           BurstController burstController) {
         MainThread.checkMainThread();
         Preconditions.checkState(mBurstLifetime == null,
                 "Burst cannot be started, while another is running.");
@@ -98,11 +95,9 @@ public class BurstTakerImpl implements BurstTaker
     }
 
     @Override
-    public synchronized void stopBurst()
-    {
+    public synchronized void stopBurst() {
         MainThread.checkMainThread();
-        if (mBurstLifetime != null)
-        {
+        if (mBurstLifetime != null) {
             mBurstLifetime.close();
             mBurstLifetime = null;
         }

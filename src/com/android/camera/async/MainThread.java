@@ -16,8 +16,6 @@
 
 package com.android.camera.async;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import android.os.Handler;
 import android.os.Looper;
 
@@ -25,43 +23,38 @@ import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.Nonnull;
 
-public class MainThread extends HandlerExecutor
-{
-    private MainThread(Handler handler)
-    {
-        super(handler);
-    }
+import static com.google.common.base.Preconditions.checkState;
 
-    public static MainThread create()
-    {
-        return new MainThread(new Handler(Looper.getMainLooper()));
-    }
-
+public class MainThread extends HandlerExecutor {
     /**
      * Caches whether or not the current thread is the main thread.
      */
-    private static final ThreadLocal<Boolean> sIsMainThread = new ThreadLocal<Boolean>()
-    {
+    private static final ThreadLocal<Boolean> sIsMainThread = new ThreadLocal<Boolean>() {
         @Override
-        protected Boolean initialValue()
-        {
+        protected Boolean initialValue() {
             return Looper.getMainLooper().getThread() == Thread.currentThread();
         }
     };
 
+    private MainThread(Handler handler) {
+        super(handler);
+    }
+
+    public static MainThread create() {
+        return new MainThread(new Handler(Looper.getMainLooper()));
+    }
+
     /**
      * Asserts that the current thread is the main thread.
      */
-    public static void checkMainThread()
-    {
+    public static void checkMainThread() {
         checkState(sIsMainThread.get(), "Not main thread.");
     }
 
     /**
      * Returns true if the method is run on the main android thread.
      */
-    public static boolean isMainThread()
-    {
+    public static boolean isMainThread() {
         return sIsMainThread.get();
     }
 
@@ -69,20 +62,15 @@ public class MainThread extends HandlerExecutor
      * Returns a fake MainThreadExecutor which executes immediately.
      */
     @VisibleForTesting
-    public static MainThread createFakeForTesting()
-    {
-        return new MainThread(null)
-        {
+    public static MainThread createFakeForTesting() {
+        return new MainThread(null) {
             @Override
-            public void execute(@Nonnull Runnable runnable)
-            {
+            public void execute(@Nonnull Runnable runnable) {
                 //
                 sIsMainThread.set(true);
-                try
-                {
+                try {
                     runnable.run();
-                } finally
-                {
+                } finally {
                     sIsMainThread.set(false);
                 }
             }

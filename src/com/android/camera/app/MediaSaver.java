@@ -26,38 +26,7 @@ import com.android.camera.exif.ExifInterface;
  * An interface defining the media saver which saves media files in the
  * background.
  */
-public interface MediaSaver
-{
-
-    /**
-     * An interface defining the callback for task queue status changes.
-     */
-    public interface QueueListener
-    {
-        /**
-         * The callback when the queue status changes. Every time a new
-         * {@link com.android.camera.app.MediaSaver.QueueListener} is set by
-         * {@link #setQueueListener(com.android.camera.app.MediaSaver.QueueListener)}
-         * this callback will be invoked to notify the current status of the
-         * queue.
-         *
-         * @param full Whether the queue is full.
-         */
-        public void onQueueStatus(boolean full);
-    }
-
-    /**
-     * An interface defining the callback when a media is saved.
-     */
-    public interface OnMediaSavedListener
-    {
-        /**
-         * The callback when the saving is done in the background.
-         *
-         * @param uri The final content Uri of the saved media.
-         */
-        public void onMediaSaved(Uri uri);
-    }
+public interface MediaSaver {
 
     /**
      * Checks whether the queue is full.
@@ -165,4 +134,32 @@ public interface MediaSaver
      * Sets the queue listener.
      */
     void setQueueListener(QueueListener l);
+
+    /**
+     * An interface defining the callback for task queue status changes.
+     */
+    public interface QueueListener {
+        /**
+         * The callback when the queue status changes. Every time a new
+         * {@link com.android.camera.app.MediaSaver.QueueListener} is set by
+         * {@link #setQueueListener(com.android.camera.app.MediaSaver.QueueListener)}
+         * this callback will be invoked to notify the current status of the
+         * queue.
+         *
+         * @param full Whether the queue is full.
+         */
+        public void onQueueStatus(boolean full);
+    }
+
+    /**
+     * An interface defining the callback when a media is saved.
+     */
+    public interface OnMediaSavedListener {
+        /**
+         * The callback when the saving is done in the background.
+         *
+         * @param uri The final content Uri of the saved media.
+         */
+        public void onMediaSaved(Uri uri);
+    }
 }

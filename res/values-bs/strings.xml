@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--  Copyright (C) 2007 The Android Open Source Project
+<?xml version="1.0" encoding="UTF-8"?><!--  Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,8 +13,7 @@
      limitations under the License.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name" msgid="1175086483881127797">"Kamera"</string>
     <string name="video_camera_label" msgid="1723708322021743770">"Videokamera"</string>
     <string name="details_ms" msgid="6618163484662724641">"%1$02d:%2$02d"</string>
@@ -71,9 +69,9 @@
     <string name="error_permissions" msgid="3454167403425651254">"Aplikaciji nisu data ključna odobrenja potrebna za pokretanje aplikacije. Provjerite svoje postavke za odobrenja."</string>
     <string name="reason_storage_failure" msgid="6818898304774654969">"Problem sa pohranom slike."</string>
     <string name="wait" msgid="765601745709933047">"Pričekajte…"</string>
-    <string name="no_storage" product="default" msgid="5922012950780548098">"Prije nego počnete koristiti kameru, umetnite SD karticu."</string>
-    <string name="preparing_sd" product="default" msgid="7435693655017362767">"Pripremanje SD kartice…"</string>
-    <string name="access_sd_fail" product="default" msgid="2634861611082499811">"Problem prilikom pristupanja SD kartici."</string>
+    <string name="no_storage" msgid="5922012950780548098" product="default">"Prije nego počnete koristiti kameru, umetnite SD karticu."</string>
+    <string name="preparing_sd" msgid="7435693655017362767" product="default">"Pripremanje SD kartice…"</string>
+    <string name="access_sd_fail" msgid="2634861611082499811" product="default">"Problem prilikom pristupanja SD kartici."</string>
     <string name="time_lapse_title" msgid="3267978566401228497">"Snimanje protoka vremena"</string>
     <string name="feedback_description_camera_access" msgid="419090951070170132">"Aplikacija se nije uspjela povezati s kamerom"</string>
     <string name="feedback_description_save_photo" msgid="8658767358989083228">"Slika ili videozapis nije sačuvan na uređaj."</string>
@@ -160,7 +158,7 @@
     <string name="dialog_cancel" msgid="692365061128351656">"Otkaži"</string>
     <string name="dialog_report" msgid="7616428760369876209">"Prijavi"</string>
     <string name="dialog_dismiss" msgid="1382550604990470119">"Odbaci"</string>
-    <string name="spaceIsLow_content" product="default" msgid="4522771065344332702">"Vaša SD kartica je skoro puna. Promijenite postavku kvaliteta ili izbrišite nekoliko slika ili drugih fajlova."</string>
+    <string name="spaceIsLow_content" msgid="4522771065344332702" product="default">"Vaša SD kartica je skoro puna. Promijenite postavku kvaliteta ili izbrišite nekoliko slika ili drugih fajlova."</string>
     <string name="video_reach_size_limit" msgid="9196836111505731836">"Dostignut limit za veličinu videozapisa."</string>
     <string name="pano_too_fast_prompt" msgid="2503148095578052177">"Prebrzo kretanje"</string>
     <string name="pano_dialog_prepare_preview" msgid="4445235163599534263">"Pripremanje panorame"</string>

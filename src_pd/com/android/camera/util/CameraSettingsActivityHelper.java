@@ -24,18 +24,14 @@ import com.android.camera.settings.SettingsManager;
 
 import java.util.List;
 
-public class CameraSettingsActivityHelper
-{
-    public static void addAdditionalPreferences(PreferenceFragment fragment, Context context)
-    {
+public class CameraSettingsActivityHelper {
+    public static void addAdditionalPreferences(PreferenceFragment fragment, Context context) {
     }
 
     public static void onSizesLoaded(PreferenceFragment fragment,
-                                     List<Size> backCameraSizes, ListPreferenceFiller cameraSizesFiller)
-    {
+                                     List<Size> backCameraSizes, ListPreferenceFiller cameraSizesFiller) {
     }
 
-    public static void verifyDefaults(SettingsManager settingsManager, Context context)
-    {
+    public static void verifyDefaults(SettingsManager settingsManager, Context context) {
     }
 }

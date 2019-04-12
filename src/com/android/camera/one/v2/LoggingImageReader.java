@@ -28,34 +28,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
-final class LoggingImageReader extends ForwardingImageReader
-{
-    private class LoggingImageProxy extends ForwardingImageProxy
-    {
-        private final AtomicBoolean mClosed;
-
-        public LoggingImageProxy(ImageProxy proxy)
-        {
-            super(proxy);
-            mClosed = new AtomicBoolean(false);
-        }
-
-        @Override
-        public void close()
-        {
-            if (!mClosed.getAndSet(true))
-            {
-                super.close();
-                decrementOpenImageCount();
-            }
-        }
-    }
-
+final class LoggingImageReader extends ForwardingImageReader {
     private final Logger mLog;
     private final AtomicInteger mNumOpenImages;
-
-    public LoggingImageReader(ImageReaderProxy delegate, Logger.Factory logFactory)
-    {
+    public LoggingImageReader(ImageReaderProxy delegate, Logger.Factory logFactory) {
         super(delegate);
         mLog = logFactory.create(new Tag("LoggingImageReader"));
         mNumOpenImages = new AtomicInteger(0);
@@ -63,23 +39,19 @@ final class LoggingImageReader extends ForwardingImageReader
 
     @Override
     @Nullable
-    public ImageProxy acquireNextImage()
-    {
+    public ImageProxy acquireNextImage() {
         return decorateNewImage(super.acquireNextImage());
     }
 
     @Override
     @Nullable
-    public ImageProxy acquireLatestImage()
-    {
+    public ImageProxy acquireLatestImage() {
         return decorateNewImage(super.acquireLatestImage());
     }
 
     @Nullable
-    private ImageProxy decorateNewImage(@Nullable ImageProxy image)
-    {
-        if (image == null)
-        {
+    private ImageProxy decorateNewImage(@Nullable ImageProxy image) {
+        if (image == null) {
             return null;
         }
         incrementOpenImageCount();
@@ -87,24 +59,37 @@ final class LoggingImageReader extends ForwardingImageReader
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         mLog.d("Closing: " + toString());
         super.close();
     }
 
-    private void incrementOpenImageCount()
-    {
+    private void incrementOpenImageCount() {
         int numOpenImages = mNumOpenImages.incrementAndGet();
-        if (numOpenImages >= getMaxImages())
-        {
+        if (numOpenImages >= getMaxImages()) {
             mLog.e(String.format("Open Image Count (%d) exceeds maximum (%d)!",
                     numOpenImages, getMaxImages()));
         }
     }
 
-    private void decrementOpenImageCount()
-    {
+    private void decrementOpenImageCount() {
         int numOpenImages = mNumOpenImages.decrementAndGet();
+    }
+
+    private class LoggingImageProxy extends ForwardingImageProxy {
+        private final AtomicBoolean mClosed;
+
+        public LoggingImageProxy(ImageProxy proxy) {
+            super(proxy);
+            mClosed = new AtomicBoolean(false);
+        }
+
+        @Override
+        public void close() {
+            if (!mClosed.getAndSet(true)) {
+                super.close();
+                decrementOpenImageCount();
+            }
+        }
     }
 }

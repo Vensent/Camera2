@@ -16,66 +16,56 @@
 
 package com.android.camera.captureintent.state;
 
-import com.google.common.base.Optional;
+import android.content.Intent;
 
 import com.android.camera.app.AppController;
 import com.android.camera.async.RefCountBase;
 import com.android.camera.captureintent.resource.ResourceConstructed;
 import com.android.camera.captureintent.stateful.State;
 import com.android.camera.captureintent.stateful.StateImpl;
-
-import android.content.Intent;
+import com.google.common.base.Optional;
 
 /**
  *
  */
-public final class StateIntentCompleted extends StateImpl
-{
+public final class StateIntentCompleted extends StateImpl {
     private final RefCountBase<ResourceConstructed> mResourceConstructed;
     private final Optional<Intent> mResultIntent;
-
-    public static StateIntentCompleted from(
-            StateSavingPicture savingPicture,
-            RefCountBase<ResourceConstructed> resourceConstructed,
-            Intent resultIntent)
-    {
-        return new StateIntentCompleted(
-                savingPicture, resourceConstructed, Optional.of(resultIntent));
-    }
-
-    public static StateIntentCompleted from(
-            State previousState,
-            RefCountBase<ResourceConstructed> resourceConstructed)
-    {
-        return new StateIntentCompleted(
-                previousState, resourceConstructed, Optional.<Intent>absent());
-    }
 
     private StateIntentCompleted(
             State previousState,
             RefCountBase<ResourceConstructed> resourceConstructed,
-            Optional<Intent> resultIntent)
-    {
+            Optional<Intent> resultIntent) {
         super(previousState);
         mResourceConstructed = resourceConstructed;
         mResourceConstructed.addRef();
         mResultIntent = resultIntent;
     }
 
+    public static StateIntentCompleted from(
+            StateSavingPicture savingPicture,
+            RefCountBase<ResourceConstructed> resourceConstructed,
+            Intent resultIntent) {
+        return new StateIntentCompleted(
+                savingPicture, resourceConstructed, Optional.of(resultIntent));
+    }
+
+    public static StateIntentCompleted from(
+            State previousState,
+            RefCountBase<ResourceConstructed> resourceConstructed) {
+        return new StateIntentCompleted(
+                previousState, resourceConstructed, Optional.<Intent>absent());
+    }
+
     @Override
-    public Optional<State> onEnter()
-    {
+    public Optional<State> onEnter() {
         final AppController appController = mResourceConstructed.get().getAppController();
-        mResourceConstructed.get().getMainThread().execute(new Runnable()
-        {
+        mResourceConstructed.get().getMainThread().execute(new Runnable() {
             @Override
-            public void run()
-            {
-                if (mResultIntent.isPresent())
-                {
+            public void run() {
+                if (mResultIntent.isPresent()) {
                     appController.finishActivityWithIntentCompleted(mResultIntent.get());
-                } else
-                {
+                } else {
                     appController.finishActivityWithIntentCanceled();
                 }
             }
@@ -84,7 +74,6 @@ public final class StateIntentCompleted extends StateImpl
     }
 
     @Override
-    public void onLeave()
-    {
+    public void onLeave() {
     }
 }

@@ -30,12 +30,10 @@ import com.google.common.base.Supplier;
 
 import java.util.Arrays;
 
-public final class PictureTakerFactory
-{
+public final class PictureTakerFactory {
     private final PictureTakerImpl mPictureTaker;
 
-    private PictureTakerFactory(PictureTakerImpl pictureTaker)
-    {
+    private PictureTakerFactory(PictureTakerImpl pictureTaker) {
         mPictureTaker = pictureTaker;
     }
 
@@ -45,8 +43,7 @@ public final class PictureTakerFactory
                                              FrameServer frameServer,
                                              RequestBuilder.Factory rootRequestBuilder,
                                              ManagedImageReader sharedImageReader,
-                                             Supplier<OneCamera.PhotoCaptureParameters.Flash> flashMode)
-    {
+                                             Supplier<OneCamera.PhotoCaptureParameters.Flash> flashMode) {
         // When flash is ON, always use the ConvergedImageCaptureCommand which
         // performs the AF & AE precapture sequence.
         ImageCaptureCommand flashOnCommand = new ConvergedImageCaptureCommand(
@@ -75,8 +72,7 @@ public final class PictureTakerFactory
                 imageSaverBuilder, flashBasedCommand));
     }
 
-    public PictureTaker providePictureTaker()
-    {
+    public PictureTaker providePictureTaker() {
         return mPictureTaker;
     }
 }

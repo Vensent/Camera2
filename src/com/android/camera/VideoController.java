@@ -20,8 +20,7 @@ import android.view.View;
 
 import com.android.camera.ShutterButton.OnShutterButtonListener;
 
-public interface VideoController extends OnShutterButtonListener
-{
+public interface VideoController extends OnShutterButtonListener {
 
     public void onReviewDoneClicked(View view);
 

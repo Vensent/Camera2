@@ -16,9 +16,6 @@
 
 package com.android.camera.one.v2.photo;
 
-import static com.android.camera.one.v2.core.ResponseListeners.forFrameExposure;
-import static com.android.camera.one.v2.core.ResponseListeners.forPartialMetadata;
-
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
@@ -47,13 +44,15 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import static com.android.camera.one.v2.core.ResponseListeners.forFrameExposure;
+import static com.android.camera.one.v2.core.ResponseListeners.forPartialMetadata;
+
 /**
  * Captures a burst after waiting for AF and AE convergence.
  */
 @ParametersAreNonnullByDefault
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-class ConvergedImageCaptureCommand implements ImageCaptureCommand
-{
+class ConvergedImageCaptureCommand implements ImageCaptureCommand {
     private final ManagedImageReader mImageReader;
     private final FrameServer mFrameServer;
     private final RequestBuilder.Factory mScanRequestTemplate;
@@ -64,22 +63,6 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand
 
     private final boolean mWaitForAEConvergence;
     private final boolean mWaitForAFConvergence;
-
-    /**
-     * Transforms a request template by resetting focus and exposure modes.
-     */
-    private static RequestBuilder.Factory resetFocusExposureModes(RequestBuilder.Factory template)
-    {
-        RequestTemplate result = new RequestTemplate(template);
-        result.setParam(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
-        result.setParam(CaptureRequest.CONTROL_AF_MODE,
-                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-        result.setParam(CaptureRequest.CONTROL_AF_TRIGGER,
-                CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
-        result.setParam(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
-                CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_IDLE);
-        return result;
-    }
 
     /**
      * @param imageReader              Creates the {@link ImageStream} used for capturing
@@ -98,8 +81,7 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand
                                         RequestBuilder.Factory repeatingRequestBuilder,
                                         int repeatingRequestTemplate, int stillCaptureRequestTemplate,
                                         List<RequestBuilder.Factory> burst, boolean waitForAEConvergence,
-                                        boolean waitForAFConvergence)
-    {
+                                        boolean waitForAFConvergence) {
         mImageReader = imageReader;
         mFrameServer = frameServer;
         mRepeatingRequestBuilder = repeatingRequestBuilder;
@@ -113,44 +95,51 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand
     }
 
     /**
+     * Transforms a request template by resetting focus and exposure modes.
+     */
+    private static RequestBuilder.Factory resetFocusExposureModes(RequestBuilder.Factory template) {
+        RequestTemplate result = new RequestTemplate(template);
+        result.setParam(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+        result.setParam(CaptureRequest.CONTROL_AF_MODE,
+                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+        result.setParam(CaptureRequest.CONTROL_AF_TRIGGER,
+                CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
+        result.setParam(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
+                CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_IDLE);
+        return result;
+    }
+
+    /**
      * Sends a request to take a picture and blocks until it completes.
      */
     @Override
     public void run(Updatable<Void> imageExposureUpdatable, ImageSaver imageSaver) throws
             InterruptedException, CameraAccessException, CameraCaptureSessionClosedException,
-            ResourceAcquisitionFailedException
-    {
-        try (FrameServer.Session session = mFrameServer.createExclusiveSession())
-        {
-            try (ImageStream imageStream = mImageReader.createPreallocatedStream(mBurst.size()))
-            {
-                if (mWaitForAFConvergence)
-                {
+            ResourceAcquisitionFailedException {
+        try (FrameServer.Session session = mFrameServer.createExclusiveSession()) {
+            try (ImageStream imageStream = mImageReader.createPreallocatedStream(mBurst.size())) {
+                if (mWaitForAFConvergence) {
                     waitForAFConvergence(session);
                 }
-                if (mWaitForAEConvergence)
-                {
+                if (mWaitForAEConvergence) {
                     waitForAEConvergence(session);
                 }
                 captureBurst(session, imageStream, imageExposureUpdatable, imageSaver);
-            } finally
-            {
+            } finally {
                 // Always reset the repeating stream to ensure AF/AE are not
                 // locked when this exits.
                 // Note that this may still throw if the camera or session is
                 // closed.
                 resetRepeating(session);
             }
-        } finally
-        {
+        } finally {
             imageSaver.close();
         }
     }
 
     private void waitForAFConvergence(FrameServer.Session session) throws CameraAccessException,
             InterruptedException, ResourceAcquisitionFailedException,
-            CameraCaptureSessionClosedException
-    {
+            CameraCaptureSessionClosedException {
         AFTriggerResult afStateMachine = new AFTriggerResult();
 
         RequestBuilder triggerBuilder = mScanRequestTemplate.create(mRepeatingRequestTemplate);
@@ -173,8 +162,7 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand
 
     private void waitForAEConvergence(FrameServer.Session session) throws CameraAccessException,
             InterruptedException, ResourceAcquisitionFailedException,
-            CameraCaptureSessionClosedException
-    {
+            CameraCaptureSessionClosedException {
         AETriggerResult aeStateMachine = new AETriggerResult();
 
         RequestBuilder triggerBuilder = mScanRequestTemplate.create(mRepeatingRequestTemplate);
@@ -198,13 +186,11 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand
     private void captureBurst(FrameServer.Session session, ImageStream imageStream, Updatable<Void>
             imageExposureUpdatable, ImageSaver imageSaver) throws CameraAccessException,
             InterruptedException, ResourceAcquisitionFailedException,
-            CameraCaptureSessionClosedException
-    {
+            CameraCaptureSessionClosedException {
         List<Request> burstRequest = new ArrayList<>(mBurst.size());
         List<ListenableFuture<TotalCaptureResultProxy>> metadata = new ArrayList<>(mBurst.size());
         boolean first = true;
-        for (RequestBuilder.Factory builderTemplate : mBurst)
-        {
+        for (RequestBuilder.Factory builderTemplate : mBurst) {
             RequestBuilder builder = builderTemplate.create(mStillCaptureRequestTemplate);
 
             builder.setParam(CaptureRequest.CONTROL_AF_MODE, CaptureRequest
@@ -212,8 +198,7 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand
             builder.setParam(CaptureRequest.CONTROL_CAPTURE_INTENT,
                     CaptureRequest.CONTROL_CAPTURE_INTENT_STILL_CAPTURE);
 
-            if (first)
-            {
+            if (first) {
                 first = false;
                 builder.addResponseListener(forFrameExposure(imageExposureUpdatable));
             }
@@ -229,14 +214,11 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand
 
         session.submitRequest(burstRequest, FrameServer.RequestType.NON_REPEATING);
 
-        for (int i = 0; i < mBurst.size(); i++)
-        {
-            try
-            {
+        for (int i = 0; i < mBurst.size(); i++) {
+            try {
                 ImageProxy image = imageStream.getNext();
                 imageSaver.addFullSizeImage(image, metadata.get(i));
-            } catch (BufferQueue.BufferQueueClosedException e)
-            {
+            } catch (BufferQueue.BufferQueueClosedException e) {
                 // No more images will be available, so just quit.
                 return;
             }
@@ -245,8 +227,7 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand
 
     private void resetRepeating(FrameServer.Session session) throws InterruptedException,
             CameraCaptureSessionClosedException, CameraAccessException,
-            ResourceAcquisitionFailedException
-    {
+            ResourceAcquisitionFailedException {
         RequestBuilder repeatingBuilder = mRepeatingRequestBuilder.create
                 (mRepeatingRequestTemplate);
         session.submitRequest(Arrays.asList(repeatingBuilder.build()),

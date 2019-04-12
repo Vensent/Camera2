@@ -16,7 +16,6 @@ package com.android.camera.burst;
 
 import android.graphics.SurfaceTexture;
 
-import com.android.camera.one.v2.camera2proxy.ImageProxy;
 import com.android.camera.one.v2.imagesaver.MetadataImage;
 import com.android.camera.session.CaptureSession;
 
@@ -46,49 +45,7 @@ import java.util.List;
  * Once post processing is complete, the burst module returns the final results
  * by calling {@link BurstResultsListener#onBurstCompleted(BurstResult)} method.
  */
-interface BurstController
-{
-
-    /**
-     * Properties of the image stream.
-     */
-    public static class ImageStreamProperties
-    {
-        private final int width;
-        private final int height;
-        private final int imageRotation;
-        private final boolean isMirrored;
-
-        public ImageStreamProperties(int width, int height,
-                                     int imageRotation,
-                                     boolean isMirrored)
-        {
-            this.width = width;
-            this.height = height;
-            this.imageRotation = imageRotation;
-            this.isMirrored = isMirrored;
-        }
-
-        public int getWidth()
-        {
-            return width;
-        }
-
-        public int getHeight()
-        {
-            return height;
-        }
-
-        public int getImageRotation()
-        {
-            return imageRotation;
-        }
-
-        public boolean isMirrored()
-        {
-            return isMirrored;
-        }
-    }
+interface BurstController {
 
     /**
      * Starts the burst.
@@ -120,4 +77,39 @@ interface BurstController
      *                       close the images as soon as possible.
      */
     public void processBurstResults(List<MetadataImage> capturedImages);
+
+    /**
+     * Properties of the image stream.
+     */
+    public static class ImageStreamProperties {
+        private final int width;
+        private final int height;
+        private final int imageRotation;
+        private final boolean isMirrored;
+
+        public ImageStreamProperties(int width, int height,
+                                     int imageRotation,
+                                     boolean isMirrored) {
+            this.width = width;
+            this.height = height;
+            this.imageRotation = imageRotation;
+            this.isMirrored = isMirrored;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public int getImageRotation() {
+            return imageRotation;
+        }
+
+        public boolean isMirrored() {
+            return isMirrored;
+        }
+    }
 }

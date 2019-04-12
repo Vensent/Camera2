@@ -16,36 +16,30 @@
 
 package com.android.camera.captureintent.stateful;
 
-import com.google.common.base.Optional;
-
 import com.android.camera.debug.Log;
+import com.google.common.base.Optional;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Nonnull;
 
-public class StateMachineImpl implements StateMachine
-{
+public class StateMachineImpl implements StateMachine {
     private static final Log.Tag TAG = new Log.Tag("StateMachine");
-
+    /**
+     * The lock to protect mState.
+     */
+    private final ReentrantLock mStateLock;
+    /**
+     * The condition to synchronize state changed event.
+     */
+    private final Condition mStateChangedCondition;
     /**
      * The current state.
      */
     private State mState;
 
-    /**
-     * The lock to protect mState.
-     */
-    private final ReentrantLock mStateLock;
-
-    /**
-     * The condition to synchronize state changed event.
-     */
-    private final Condition mStateChangedCondition;
-
-    public StateMachineImpl()
-    {
+    public StateMachineImpl() {
         mStateLock = new ReentrantLock();
         mStateChangedCondition = mStateLock.newCondition();
         mState = new StateUninitialized(this);
@@ -56,24 +50,19 @@ public class StateMachineImpl implements StateMachine
      *
      * @param newState The new state.
      */
-    public void jumpToState(@Nonnull State newState)
-    {
+    public void jumpToState(@Nonnull State newState) {
         mStateLock.lock();
-        try
-        {
-            if (newState.equals(mState))
-            {
+        try {
+            if (newState.equals(mState)) {
                 Log.d(TAG, "No op since jump to the same state.");
-            } else
-            {
+            } else {
                 // While changing to a particular state, execute its onEnter() hook
                 // and keep forwarding to new states if necessary.
                 Log.d(TAG, "Change state : " + mState + " => " + newState);
                 mState.onLeave();
                 mState = newState;
                 Optional<State> nextState = mState.onEnter();
-                while (nextState.isPresent())
-                {
+                while (nextState.isPresent()) {
                     Log.d(TAG, "Forward state : " + mState + " => " + nextState.get());
                     mState.onLeave();
                     mState = nextState.get();
@@ -82,65 +71,51 @@ public class StateMachineImpl implements StateMachine
 
                 mStateChangedCondition.signalAll();
             }
-        } finally
-        {
+        } finally {
             mStateLock.unlock();
         }
     }
 
     @Override
-    public State getCurrentState()
-    {
+    public State getCurrentState() {
         mStateLock.lock();
-        try
-        {
+        try {
             return mState;
-        } finally
-        {
+        } finally {
             mStateLock.unlock();
         }
     }
 
     @Override
-    public boolean setInitialState(State initialState)
-    {
+    public boolean setInitialState(State initialState) {
         mStateLock.lock();
-        try
-        {
-            if (!(mState instanceof StateUninitialized))
-            {
+        try {
+            if (!(mState instanceof StateUninitialized)) {
                 return false;
             }
             jumpToState(initialState);
             return true;
-        } finally
-        {
+        } finally {
             mStateLock.unlock();
         }
     }
 
     @Override
-    public void processEvent(Event event)
-    {
+    public void processEvent(Event event) {
         mStateLock.lock();
-        try
-        {
+        try {
             EventHandler eventHandler = mState.getEventHandler(event.getClass());
-            if (eventHandler != null)
-            {
+            if (eventHandler != null) {
                 Log.d(TAG, "Process event : " + event);
                 Optional<State> newState = eventHandler.processEvent(event);
-                if (newState.isPresent())
-                {
+                if (newState.isPresent()) {
                     jumpToState(newState.get());
                 }
             }
-        } catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Log.e(TAG, "Failed to process event: " + event);
             throw ex;
-        } finally
-        {
+        } finally {
             mStateLock.unlock();
         }
     }
@@ -148,10 +123,8 @@ public class StateMachineImpl implements StateMachine
     /**
      * The initial state of the state machine.
      */
-    public static class StateUninitialized extends StateImpl
-    {
-        public StateUninitialized(StateMachine stateMachine)
-        {
+    public static class StateUninitialized extends StateImpl {
+        public StateUninitialized(StateMachine stateMachine) {
             super(stateMachine);
         }
     }

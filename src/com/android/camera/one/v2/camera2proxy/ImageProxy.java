@@ -34,36 +34,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * </ul>
  */
 @ThreadSafe
-public interface ImageProxy extends SafeCloseable
-{
-
-    /**
-     * An interface for {@link android.media.Image.Plane} with two convenient
-     * differences:
-     * <ul>
-     * <li>Implementations must be thread-safe.</li>
-     * <li>Getters must never throw, even if the underlying Image has been
-     * closed.</li>
-     * </ul>
-     */
-    public interface Plane
-    {
-
-        /**
-         * @see {@link android.media.Image.Plane#getRowStride()}
-         */
-        public int getRowStride();
-
-        /**
-         * @see {@link android.media.Image.Plane#getPixelStride()}
-         */
-        public int getPixelStride();
-
-        /**
-         * @see {@link android.media.Image.Plane#getBuffer()}
-         */
-        public ByteBuffer getBuffer();
-    }
+public interface ImageProxy extends SafeCloseable {
 
     /**
      * @see {@link android.media.Image#getCropRect}
@@ -105,4 +76,31 @@ public interface ImageProxy extends SafeCloseable
      */
     @Override
     public void close();
+
+    /**
+     * An interface for {@link android.media.Image.Plane} with two convenient
+     * differences:
+     * <ul>
+     * <li>Implementations must be thread-safe.</li>
+     * <li>Getters must never throw, even if the underlying Image has been
+     * closed.</li>
+     * </ul>
+     */
+    public interface Plane {
+
+        /**
+         * @see {@link android.media.Image.Plane#getRowStride()}
+         */
+        public int getRowStride();
+
+        /**
+         * @see {@link android.media.Image.Plane#getPixelStride()}
+         */
+        public int getPixelStride();
+
+        /**
+         * @see {@link android.media.Image.Plane#getBuffer()}
+         */
+        public ByteBuffer getBuffer();
+    }
 }

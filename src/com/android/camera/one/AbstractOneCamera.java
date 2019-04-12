@@ -27,35 +27,15 @@ import java.util.TimeZone;
  * duplicate. Hence all {@link OneCamera} implementations should sub-class this
  * class instead.
  */
-public abstract class AbstractOneCamera implements OneCamera
-{
-    protected FocusStateListener mFocusStateListener;
-    protected ReadyStateChangedListener mReadyStateChangedListener;
-    protected FocusDistanceListener mFocusDistanceListener;
-
+public abstract class AbstractOneCamera implements OneCamera {
     /**
      * Number of characters from the end of the device serial number used to
      * construct folder names for debugging output.
      */
     static final int DEBUG_FOLDER_SERIAL_LENGTH = 4;
-
-    @Override
-    public final void setFocusStateListener(FocusStateListener listener)
-    {
-        mFocusStateListener = listener;
-    }
-
-    @Override
-    public void setFocusDistanceListener(FocusDistanceListener listener)
-    {
-        mFocusDistanceListener = listener;
-    }
-
-    @Override
-    public void setReadyStateChangedListener(ReadyStateChangedListener listener)
-    {
-        mReadyStateChangedListener = listener;
-    }
+    protected FocusStateListener mFocusStateListener;
+    protected ReadyStateChangedListener mReadyStateChangedListener;
+    protected FocusDistanceListener mFocusDistanceListener;
 
     /**
      * Create a directory we can use to store debugging information during Gcam
@@ -71,29 +51,23 @@ public abstract class AbstractOneCamera implements OneCamera
      * @return The session-specific directory (absolute path) into which to
      * store debug information.
      */
-    protected static String makeDebugDir(File root, String folderName)
-    {
-        if (root == null)
-        {
+    protected static String makeDebugDir(File root, String folderName) {
+        if (root == null) {
             return null;
         }
-        if (!root.exists() || !root.isDirectory())
-        {
+        if (!root.exists() || !root.isDirectory()) {
             throw new RuntimeException("Gcam debug directory not valid or doesn't exist: "
                     + root.getAbsolutePath());
         }
 
         String serialSubstring = "";
         String serial = android.os.Build.SERIAL;
-        if (serial != null)
-        {
+        if (serial != null) {
             int length = serial.length();
 
-            if (length > DEBUG_FOLDER_SERIAL_LENGTH)
-            {
+            if (length > DEBUG_FOLDER_SERIAL_LENGTH) {
                 serialSubstring = serial.substring(length - DEBUG_FOLDER_SERIAL_LENGTH, length);
-            } else
-            {
+            } else {
                 serialSubstring = serial;
             }
         }
@@ -104,35 +78,45 @@ public abstract class AbstractOneCamera implements OneCamera
 
         String burstFolderName = String.format("%s_%s", serialSubstring, currentDateAndTime);
         File destFolder = new File(new File(root, folderName), burstFolderName);
-        if (!destFolder.mkdirs())
-        {
+        if (!destFolder.mkdirs()) {
             throw new RuntimeException("Could not create Gcam debug data folder.");
         }
         String destFolderPath = destFolder.getAbsolutePath();
         return destFolderPath;
     }
 
+    @Override
+    public final void setFocusStateListener(FocusStateListener listener) {
+        mFocusStateListener = listener;
+    }
+
+    @Override
+    public void setFocusDistanceListener(FocusDistanceListener listener) {
+        mFocusDistanceListener = listener;
+    }
+
+    @Override
+    public void setReadyStateChangedListener(ReadyStateChangedListener listener) {
+        mReadyStateChangedListener = listener;
+    }
+
     /**
      * If set, tells the ready state changed listener the new state.
      */
-    protected void broadcastReadyState(boolean readyForCapture)
-    {
-        if (mReadyStateChangedListener != null)
-        {
+    protected void broadcastReadyState(boolean readyForCapture) {
+        if (mReadyStateChangedListener != null) {
             mReadyStateChangedListener.onReadyStateChanged(readyForCapture);
         }
     }
 
     @Override
-    public float getMaxZoom()
-    {
+    public float getMaxZoom() {
         // If not implemented, return 1.0.
         return 1f;
     }
 
     @Override
-    public void setZoom(float zoom)
-    {
+    public void setZoom(float zoom) {
         // If not implemented, no-op.
     }
 }

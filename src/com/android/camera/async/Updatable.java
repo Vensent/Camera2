@@ -33,8 +33,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * </p>
  */
 @ThreadSafe
-public interface Updatable<T>
-{
+public interface Updatable<T> {
     /**
      * Implementations MUST ALWAYS satisfy the following constraints:
      * <ul>

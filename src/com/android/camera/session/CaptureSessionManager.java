@@ -26,78 +26,7 @@ import java.io.IOException;
 /**
  * Modules use this manager to store capture results.
  */
-public interface CaptureSessionManager
-{
-    /**
-     * Callback interface for session events.
-     */
-    public interface SessionListener
-    {
-        /**
-         * Called when the session with the given Uri was queued and will be
-         * processed.
-         */
-        public void onSessionQueued(Uri mediaUri);
-
-        /**
-         * Called when the media underlying the session with the given Uri has
-         * been updated.
-         */
-        public void onSessionUpdated(Uri mediaUri);
-
-        /**
-         * Called when the capture indicator for the given session has changed
-         * and should be updated.
-         *
-         * @param bitmap          the capture indicator bitmap
-         * @param rotationDegrees the rotation of the updated preview
-         */
-        public void onSessionCaptureIndicatorUpdate(Bitmap bitmap, int rotationDegrees);
-
-        /**
-         * Called when the session with the given Uri finished.
-         */
-        public void onSessionDone(Uri mediaUri);
-
-        /**
-         * Called when the session with the given Uri failed processing.
-         */
-        public void onSessionFailed(Uri mediaUri, int failureMessageId, boolean removeFromFilmstrip);
-
-        /**
-         * Called when the session with the given Uri was canceled.
-         */
-        public void onSessionCanceled(Uri mediaUri);
-
-        /**
-         * Called when the session with the given Uri has progressed.
-         */
-        public void onSessionProgress(Uri mediaUri, int progress);
-
-        /**
-         * Called when the session with the given Uri has changed its progress text.
-         */
-        public void onSessionProgressText(Uri mediaUri, int messageId);
-
-        /**
-         * Called when the thumbnail for the given session has changed and
-         * should be updated. This is only used by @{link CaptureIntentModule}.
-         * Filmstrip uses onSessionUpdated to refresh the thumbnail.
-         *
-         * @param bitmap the thumbnail bitmap
-         */
-        public void onSessionThumbnailUpdate(Bitmap bitmap);
-
-        /**
-         * Called when the compressed picture data for the given session has
-         * changed and should be updated.
-         *
-         * @param pictureData the picture JPEG byte array.
-         * @param orientation the picture orientation.
-         */
-        public void onSessionPictureDataUpdate(byte[] pictureData, int orientation);
-    }
-
+public interface CaptureSessionManager {
     /**
      * Creates a new capture session.
      *
@@ -174,4 +103,73 @@ public interface CaptureSessionManager
      * Sets the error message for the session with the given URI.
      */
     public void putErrorMessage(Uri uri, int failureMessageId);
+
+    /**
+     * Callback interface for session events.
+     */
+    public interface SessionListener {
+        /**
+         * Called when the session with the given Uri was queued and will be
+         * processed.
+         */
+        public void onSessionQueued(Uri mediaUri);
+
+        /**
+         * Called when the media underlying the session with the given Uri has
+         * been updated.
+         */
+        public void onSessionUpdated(Uri mediaUri);
+
+        /**
+         * Called when the capture indicator for the given session has changed
+         * and should be updated.
+         *
+         * @param bitmap          the capture indicator bitmap
+         * @param rotationDegrees the rotation of the updated preview
+         */
+        public void onSessionCaptureIndicatorUpdate(Bitmap bitmap, int rotationDegrees);
+
+        /**
+         * Called when the session with the given Uri finished.
+         */
+        public void onSessionDone(Uri mediaUri);
+
+        /**
+         * Called when the session with the given Uri failed processing.
+         */
+        public void onSessionFailed(Uri mediaUri, int failureMessageId, boolean removeFromFilmstrip);
+
+        /**
+         * Called when the session with the given Uri was canceled.
+         */
+        public void onSessionCanceled(Uri mediaUri);
+
+        /**
+         * Called when the session with the given Uri has progressed.
+         */
+        public void onSessionProgress(Uri mediaUri, int progress);
+
+        /**
+         * Called when the session with the given Uri has changed its progress text.
+         */
+        public void onSessionProgressText(Uri mediaUri, int messageId);
+
+        /**
+         * Called when the thumbnail for the given session has changed and
+         * should be updated. This is only used by @{link CaptureIntentModule}.
+         * Filmstrip uses onSessionUpdated to refresh the thumbnail.
+         *
+         * @param bitmap the thumbnail bitmap
+         */
+        public void onSessionThumbnailUpdate(Bitmap bitmap);
+
+        /**
+         * Called when the compressed picture data for the given session has
+         * changed and should be updated.
+         *
+         * @param pictureData the picture JPEG byte array.
+         * @param orientation the picture orientation.
+         */
+        public void onSessionPictureDataUpdate(byte[] pictureData, int orientation);
+    }
 }

@@ -25,9 +25,9 @@ import com.android.ex.camera2.exceptions.TimeoutRuntimeException;
 import com.android.ex.camera2.utils.StateChangeListener;
 import com.android.ex.camera2.utils.StateWaiter;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -76,21 +76,18 @@ public class BlockingSessionCallback extends CameraCaptureSession.StateCallback 
      */
     private static final String TAG = "BlockingSessionCallback";
     private static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
-
+    private static final String[] sStateNames = {
+            "SESSION_CONFIGURED",
+            "SESSION_CONFIGURE_FAILED",
+            "SESSION_READY",
+            "SESSION_ACTIVE",
+            "SESSION_CLOSED"
+    };
     private final CameraCaptureSession.StateCallback mProxy;
     private final SessionFuture mSessionFuture = new SessionFuture();
-
     private final StateWaiter mStateWaiter = new StateWaiter(sStateNames);
     private final StateChangeListener mStateChangeListener = mStateWaiter.getListener();
-    private final HashMap<CameraCaptureSession, List<Surface> > mPreparedSurfaces = new HashMap<>();
-
-    private static final String[] sStateNames = {
-        "SESSION_CONFIGURED",
-        "SESSION_CONFIGURE_FAILED",
-        "SESSION_READY",
-        "SESSION_ACTIVE",
-        "SESSION_CLOSED"
-    };
+    private final HashMap<CameraCaptureSession, List<Surface>> mPreparedSurfaces = new HashMap<>();
 
     /**
      * Create a blocking session listener without forwarding the session listener invocations
@@ -105,7 +102,6 @@ public class BlockingSessionCallback extends CameraCaptureSession.StateCallback 
      * into {@code listener}.
      *
      * @param listener a non-{@code null} listener to forward invocations into
-     *
      * @throws NullPointerException if {@code listener} was {@code null}
      */
     public BlockingSessionCallback(CameraCaptureSession.StateCallback listener) {
@@ -133,7 +129,6 @@ public class BlockingSessionCallback extends CameraCaptureSession.StateCallback 
      *
      * @param timeoutMs how many milliseconds to wait for
      * @return a non-{@code null} {@link CameraCaptureSession} instance
-     *
      * @throws TimeoutRuntimeException if waiting for more than {@long timeoutMs}
      */
     public CameraCaptureSession waitAndGetSession(long timeoutMs) {
@@ -152,14 +147,18 @@ public class BlockingSessionCallback extends CameraCaptureSession.StateCallback 
     @Override
     public void onActive(CameraCaptureSession session) {
         mSessionFuture.setSession(session);
-        if (mProxy != null) mProxy.onActive(session);
+        if (mProxy != null) {
+            mProxy.onActive(session);
+        }
         mStateChangeListener.onStateChanged(SESSION_ACTIVE);
     }
 
     @Override
     public void onClosed(CameraCaptureSession session) {
         mSessionFuture.setSession(session);
-        if (mProxy != null) mProxy.onClosed(session);
+        if (mProxy != null) {
+            mProxy.onClosed(session);
+        }
         mStateChangeListener.onStateChanged(SESSION_CLOSED);
         synchronized (mPreparedSurfaces) {
             mPreparedSurfaces.remove(session);
@@ -223,10 +222,9 @@ public class BlockingSessionCallback extends CameraCaptureSession.StateCallback 
     /**
      * Wait until the designated surface is prepared by the camera capture session.
      *
-     * @param session the input {@link CameraCaptureSession} to wait for
-     * @param surface the input {@link Surface} to wait for
+     * @param session   the input {@link CameraCaptureSession} to wait for
+     * @param surface   the input {@link Surface} to wait for
      * @param timeoutMs how many milliseconds to wait for
-     *
      * @throws TimeoutRuntimeException if waiting for more than {@long timeoutMs}
      */
     public void waitForSurfacePrepared(
@@ -258,8 +256,8 @@ public class BlockingSessionCallback extends CameraCaptureSession.StateCallback 
     }
 
     private static class SessionFuture implements Future<CameraCaptureSession> {
-        private volatile CameraCaptureSession mSession;
         ConditionVariable mCondVar = new ConditionVariable(/*opened*/false);
+        private volatile CameraCaptureSession mSession;
 
         public void setSession(CameraCaptureSession session) {
             mSession = session;

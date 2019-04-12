@@ -39,7 +39,6 @@ import com.android.camera.util.Size;
 import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.List;
-import java.util.concurrent.Executor;
 
 /**
  * Simplifies the construction of OneCamera instances which use the camera2 API
@@ -58,8 +57,7 @@ import java.util.concurrent.Executor;
  * </ol>
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class InitializedOneCameraFactory
-{
+public class InitializedOneCameraFactory {
     private final GenericOneCameraImpl mOneCamera;
 
     /**
@@ -73,8 +71,7 @@ public class InitializedOneCameraFactory
             final Lifetime lifetime, final CameraStarter cameraStarter, CameraDeviceProxy device,
             List<Surface> outputSurfaces, MainThread mainThreadExecutor,
             HandlerFactory handlerFactory, float maxZoom, List<Size> supportedPreviewSizes,
-            LinearScale lensRange, OneCamera.Facing direction)
-    {
+            LinearScale lensRange, OneCamera.Facing direction) {
         // Assembles and returns a OneCamera based on the CameraStarter.
 
         // Create/wrap required threads.
@@ -135,12 +132,10 @@ public class InitializedOneCameraFactory
 
         PreviewStarter mPreviewStarter = new PreviewStarter(outputSurfaces,
                 captureSessionCreator,
-                new PreviewStarter.CameraCaptureSessionCreatedListener()
-                {
+                new PreviewStarter.CameraCaptureSessionCreatedListener() {
                     @Override
                     public void onCameraCaptureSessionCreated(CameraCaptureSessionProxy session,
-                                                              Surface previewSurface)
-                    {
+                                                              Surface previewSurface) {
                         CameraStarter.CameraControls controls = cameraStarter.startCamera(
                                 new Lifetime(lifetime),
                                 session, previewSurface,
@@ -158,8 +153,7 @@ public class InitializedOneCameraFactory
                 maxZoom, zoomState, direction, previewSizeSelector, mPreviewStarter);
     }
 
-    public OneCamera provideOneCamera()
-    {
+    public OneCamera provideOneCamera() {
         return mOneCamera;
     }
 }

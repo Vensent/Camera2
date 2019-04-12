@@ -42,67 +42,25 @@ public class BlockingCameraManager {
     private static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
 
     private static final int OPEN_TIME_OUT_MS = 2000; // ms time out for openCamera
-
-    /**
-     * Exception thrown by {@link #openCamera} if the open fails asynchronously.
-     */
-    public static class BlockingOpenException extends Exception {
-        /**
-         * Suppress Eclipse warning
-         */
-        private static final long serialVersionUID = 12397123891238912L;
-
-        public static final int ERROR_DISCONNECTED = 0; // Does not clash with ERROR_...
-
-        private final int mError;
-
-        public boolean wasDisconnected() {
-            return mError == ERROR_DISCONNECTED;
-        }
-
-        public boolean wasError() {
-            return mError != ERROR_DISCONNECTED;
-        }
-
-        /**
-         * Returns the error code {@link ERROR_DISCONNECTED} if disconnected, or one of
-         * {@code CameraDevice.StateCallback#ERROR_*} if there was another error.
-         *
-         * @return int Disconnect/error code
-         */
-        public int getCode() {
-            return mError;
-        }
-
-        /**
-         * Thrown when camera device enters error state during open, or if
-         * it disconnects.
-         *
-         * @param errorCode
-         * @param message
-         *
-         * @see {@link CameraDevice.StateCallback#ERROR_CAMERA_DEVICE}
-         */
-        public BlockingOpenException(int errorCode, String message) {
-            super(message);
-            mError = errorCode;
-        }
-    }
-
     private final CameraManager mManager;
 
     /**
      * Create a new blocking camera manager.
      *
-     * @param manager
-     *            CameraManager returned by
-     *            {@code Context.getSystemService(Context.CAMERA_SERVICE)}
+     * @param manager CameraManager returned by
+     *                {@code Context.getSystemService(Context.CAMERA_SERVICE)}
      */
     public BlockingCameraManager(CameraManager manager) {
         if (manager == null) {
             throw new IllegalArgumentException("manager must not be null");
         }
         mManager = manager;
+    }
+
+    private static void assertEquals(Object a, Object b) {
+        if (!Objects.equals(a, b)) {
+            throw new AssertionError("Expected " + a + ", but got " + b);
+        }
     }
 
     /**
@@ -124,26 +82,17 @@ public class BlockingCameraManager {
      * highly unrecoverable, and all future calls to opening that camera will fail since the
      * service will think it's busy. This class will do its best to clean up eventually.</p>
      *
-     * @param cameraId
-     *            Id of the camera
-     * @param listener
-     *            Listener to the camera. onOpened, onDisconnected, onError need not be implemented.
-     * @param handler
-     *            Handler which to run the listener on. Must not be null.
-     *
+     * @param cameraId Id of the camera
+     * @param listener Listener to the camera. onOpened, onDisconnected, onError need not be implemented.
+     * @param handler  Handler which to run the listener on. Must not be null.
      * @return CameraDevice
-     *
-     * @throws IllegalArgumentException
-     *            If the handler is null, or if the handler's looper is current.
-     * @throws CameraAccessException
-     *            If open fails immediately.
-     * @throws BlockingOpenException
-     *            If open fails after blocking for some amount of time.
-     * @throws TimeoutRuntimeException
-     *            If opening times out. Typically unrecoverable.
+     * @throws IllegalArgumentException If the handler is null, or if the handler's looper is current.
+     * @throws CameraAccessException    If open fails immediately.
+     * @throws BlockingOpenException    If open fails after blocking for some amount of time.
+     * @throws TimeoutRuntimeException  If opening times out. Typically unrecoverable.
      */
     public CameraDevice openCamera(String cameraId, CameraDevice.StateCallback listener,
-            Handler handler) throws CameraAccessException, BlockingOpenException {
+                                   Handler handler) throws CameraAccessException, BlockingOpenException {
 
         if (handler == null) {
             throw new IllegalArgumentException("handler must not be null");
@@ -154,9 +103,46 @@ public class BlockingCameraManager {
         return (new OpenListener(mManager, cameraId, listener, handler)).blockUntilOpen();
     }
 
-    private static void assertEquals(Object a, Object b) {
-        if (!Objects.equals(a, b)) {
-            throw new AssertionError("Expected " + a + ", but got " + b);
+    /**
+     * Exception thrown by {@link #openCamera} if the open fails asynchronously.
+     */
+    public static class BlockingOpenException extends Exception {
+        public static final int ERROR_DISCONNECTED = 0; // Does not clash with ERROR_...
+        /**
+         * Suppress Eclipse warning
+         */
+        private static final long serialVersionUID = 12397123891238912L;
+        private final int mError;
+
+        /**
+         * Thrown when camera device enters error state during open, or if
+         * it disconnects.
+         *
+         * @param errorCode
+         * @param message
+         * @see {@link CameraDevice.StateCallback#ERROR_CAMERA_DEVICE}
+         */
+        public BlockingOpenException(int errorCode, String message) {
+            super(message);
+            mError = errorCode;
+        }
+
+        public boolean wasDisconnected() {
+            return mError == ERROR_DISCONNECTED;
+        }
+
+        public boolean wasError() {
+            return mError != ERROR_DISCONNECTED;
+        }
+
+        /**
+         * Returns the error code {@link ERROR_DISCONNECTED} if disconnected, or one of
+         * {@code CameraDevice.StateCallback#ERROR_*} if there was another error.
+         *
+         * @return int Disconnect/error code
+         */
+        public int getCode() {
+            return mError;
         }
     }
 
@@ -187,7 +173,7 @@ public class BlockingCameraManager {
         private boolean mTimedOut = false;
 
         OpenListener(CameraManager manager, String cameraId,
-                CameraDevice.StateCallback listener, Handler handler)
+                     CameraDevice.StateCallback listener, Handler handler)
                 throws CameraAccessException {
             mCameraId = cameraId;
             mProxy = listener;
@@ -222,7 +208,9 @@ public class BlockingCameraManager {
                 }
             }
 
-            if (mProxy != null) mProxy.onOpened(camera);
+            if (mProxy != null) {
+                mProxy.onOpened(camera);
+            }
         }
 
         @Override
@@ -247,7 +235,9 @@ public class BlockingCameraManager {
                 }
             }
 
-            if (mProxy != null) mProxy.onDisconnected(camera);
+            if (mProxy != null) {
+                mProxy.onDisconnected(camera);
+            }
         }
 
         @Override
@@ -273,12 +263,16 @@ public class BlockingCameraManager {
                 }
             }
 
-            if (mProxy != null) mProxy.onError(camera, error);
+            if (mProxy != null) {
+                mProxy.onError(camera, error);
+            }
         }
 
         @Override
         public void onClosed(CameraDevice camera) {
-            if (mProxy != null) mProxy.onClosed(camera);
+            if (mProxy != null) {
+                mProxy.onClosed(camera);
+            }
         }
 
         CameraDevice blockUntilOpen() throws BlockingOpenException {

@@ -16,9 +16,9 @@
 
 package com.android.camera.async;
 
-import java.util.concurrent.Executor;
-
 import android.os.Handler;
+
+import java.util.concurrent.Executor;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -26,18 +26,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * An {@link Executor} which posts to a {@link Handler}.
  */
 @ParametersAreNonnullByDefault
-public class HandlerExecutor implements Executor
-{
+public class HandlerExecutor implements Executor {
     private final Handler mHandler;
 
-    public HandlerExecutor(Handler handler)
-    {
+    public HandlerExecutor(Handler handler) {
         mHandler = handler;
     }
 
     @Override
-    public void execute(Runnable runnable)
-    {
+    public void execute(Runnable runnable) {
         mHandler.post(runnable);
     }
 }

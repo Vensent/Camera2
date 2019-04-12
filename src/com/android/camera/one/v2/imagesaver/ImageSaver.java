@@ -44,28 +44,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ParametersAreNonnullByDefault
 @NotThreadSafe
-public interface ImageSaver extends SafeCloseable
-{
-    /**
-     * Creates ImageSaver instances.
-     * <p>
-     * The same builder may be used simultaneously on multiple threads, so it
-     * must be thread-safe. However, ImageSaver instances are confined to the
-     * thread they are created on, so they do not need to be thread-safe.
-     */
-    @ThreadSafe
-    public interface Builder
-    {
-        /**
-         * Creates a new ImageSaver which will be used to process and save a
-         * single set of images.
-         */
-        public ImageSaver build(
-                OneCamera.PictureSaverCallback pictureSaverCallback,
-                OrientationManager.DeviceOrientation orientation,
-                CaptureSession session);
-    }
-
+public interface ImageSaver extends SafeCloseable {
     /**
      * Adds a thumbnail image to be processed.
      * <p>
@@ -90,4 +69,23 @@ public interface ImageSaver extends SafeCloseable
      * Indicates that no more images will be added.
      */
     public void close();
+
+    /**
+     * Creates ImageSaver instances.
+     * <p>
+     * The same builder may be used simultaneously on multiple threads, so it
+     * must be thread-safe. However, ImageSaver instances are confined to the
+     * thread they are created on, so they do not need to be thread-safe.
+     */
+    @ThreadSafe
+    public interface Builder {
+        /**
+         * Creates a new ImageSaver which will be used to process and save a
+         * single set of images.
+         */
+        public ImageSaver build(
+                OneCamera.PictureSaverCallback pictureSaverCallback,
+                OrientationManager.DeviceOrientation orientation,
+                CaptureSession session);
+    }
 }

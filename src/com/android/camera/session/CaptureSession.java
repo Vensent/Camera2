@@ -34,92 +34,7 @@ import javax.annotation.Nullable;
  * A session is an item that is in progress of being created and saved, such as
  * a photo sphere or HDR+ photo.
  */
-public interface CaptureSession
-{
-
-    /**
-     * Classes implementing this interface can produce a capture session.
-     */
-    public static interface CaptureSessionCreator
-    {
-        /**
-         * Creates and starts a new capture session.
-         */
-        public CaptureSession createAndStartEmpty();
-    }
-
-    /**
-     * Classes implementing this interface can listen to progress updates of
-     * this session.
-     */
-    public static interface ProgressListener
-    {
-        /**
-         * Called when the progress is changed.
-         *
-         * @param progressPercent The current progress in percent.
-         */
-        public void onProgressChanged(int progressPercent);
-
-        /**
-         * Called when the progress message is changed.
-         *
-         * @param messageId The current progress message ID.
-         */
-        public void onStatusMessageChanged(int messageId);
-    }
-
-    /**
-     * Classes implementing this interface can listen to progress updates of
-     * this session.
-     */
-    public static interface ImageLifecycleListener
-    {
-        /**
-         * Occurs when, for a particular image type, an image capture has
-         * started. This method is always executed, and will always be called
-         * first.
-         */
-        public void onCaptureStarted();
-
-        /**
-         * Occurs when the tiny thumbnail bytes are received.
-         */
-        public void onTinyThumb();
-
-        /**
-         * Occurs when the medium thumbnail bytes are received.
-         */
-        public void onMediumThumb();
-
-        /**
-         * Occurs when rendering/processing/encoding starts for the full size image.
-         */
-        public void onProcessingStarted();
-
-        /**
-         * Occurs when the rendering/processing/encoding for the full size image
-         * is completed.
-         */
-        public void onProcessingComplete();
-
-        /**
-         * This occurs after all the bytes are physically on disk.
-         */
-        public void onCapturePersisted();
-
-        /**
-         * This occurs if a capture session is created but is later canceled for
-         * some reason.
-         */
-        public void onCaptureCanceled();
-
-        /**
-         * This occurs if a capture session is created but failed to persist the
-         * final image.
-         */
-        public void onCaptureFailed();
-    }
+public interface CaptureSession {
 
     /**
      * Returns the title/name of this session.
@@ -137,15 +52,15 @@ public interface CaptureSession
     public void setLocation(Location location);
 
     /**
+     * Returns the progress of this session in percent.
+     */
+    public int getProgress();
+
+    /**
      * Set the progress in percent for the current session. If set to or left at
      * 0, no progress bar is shown.
      */
     public void setProgress(int percent);
-
-    /**
-     * Returns the progress of this session in percent.
-     */
-    public int getProgress();
 
     /**
      * Returns the current progress message.
@@ -308,4 +223,85 @@ public interface CaptureSession
      * @return
      */
     public CaptureSessionStatsCollector getCollector();
+
+    /**
+     * Classes implementing this interface can produce a capture session.
+     */
+    public static interface CaptureSessionCreator {
+        /**
+         * Creates and starts a new capture session.
+         */
+        public CaptureSession createAndStartEmpty();
+    }
+
+    /**
+     * Classes implementing this interface can listen to progress updates of
+     * this session.
+     */
+    public static interface ProgressListener {
+        /**
+         * Called when the progress is changed.
+         *
+         * @param progressPercent The current progress in percent.
+         */
+        public void onProgressChanged(int progressPercent);
+
+        /**
+         * Called when the progress message is changed.
+         *
+         * @param messageId The current progress message ID.
+         */
+        public void onStatusMessageChanged(int messageId);
+    }
+
+    /**
+     * Classes implementing this interface can listen to progress updates of
+     * this session.
+     */
+    public static interface ImageLifecycleListener {
+        /**
+         * Occurs when, for a particular image type, an image capture has
+         * started. This method is always executed, and will always be called
+         * first.
+         */
+        public void onCaptureStarted();
+
+        /**
+         * Occurs when the tiny thumbnail bytes are received.
+         */
+        public void onTinyThumb();
+
+        /**
+         * Occurs when the medium thumbnail bytes are received.
+         */
+        public void onMediumThumb();
+
+        /**
+         * Occurs when rendering/processing/encoding starts for the full size image.
+         */
+        public void onProcessingStarted();
+
+        /**
+         * Occurs when the rendering/processing/encoding for the full size image
+         * is completed.
+         */
+        public void onProcessingComplete();
+
+        /**
+         * This occurs after all the bytes are physically on disk.
+         */
+        public void onCapturePersisted();
+
+        /**
+         * This occurs if a capture session is created but is later canceled for
+         * some reason.
+         */
+        public void onCaptureCanceled();
+
+        /**
+         * This occurs if a capture session is created but failed to persist the
+         * final image.
+         */
+        public void onCaptureFailed();
+    }
 }

@@ -16,8 +16,6 @@
 
 package com.android.ex.camera2.portability;
 
-import static android.hardware.camera2.CaptureRequest.*;
-
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -28,14 +26,71 @@ import android.location.Location;
 import android.util.Range;
 
 import com.android.ex.camera2.portability.CameraCapabilities.FlashMode;
-import com.android.ex.camera2.portability.CameraCapabilities.FocusMode;
-import com.android.ex.camera2.portability.CameraCapabilities.SceneMode;
-import com.android.ex.camera2.portability.CameraCapabilities.WhiteBalance;
 import com.android.ex.camera2.portability.debug.Log;
 import com.android.ex.camera2.utils.Camera2RequestSettingsSet;
 
 import java.util.List;
 import java.util.Objects;
+
+import static android.hardware.camera2.CaptureRequest.Builder;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_LOCK;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_MODE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_MODE_ON;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_REGIONS;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AF_MODE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AF_MODE_AUTO;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AF_MODE_EDOF;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AF_MODE_MACRO;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AF_MODE_OFF;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AF_REGIONS;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_LOCK;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE_AUTO;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE_DAYLIGHT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE_FLUORESCENT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE_INCANDESCENT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE_SHADE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE_TWILIGHT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE_WARM_FLUORESCENT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_ACTION;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_BARCODE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_BEACH;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_CANDLELIGHT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_DISABLED;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_FIREWORKS;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_HDR;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_LANDSCAPE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_NIGHT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_PARTY;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_PORTRAIT;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_SNOW;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_SPORTS;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_STEADYPHOTO;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_SUNSET;
+import static android.hardware.camera2.CaptureRequest.CONTROL_SCENE_MODE_THEATRE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE;
+import static android.hardware.camera2.CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_OFF;
+import static android.hardware.camera2.CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE_ON;
+import static android.hardware.camera2.CaptureRequest.FLASH_MODE;
+import static android.hardware.camera2.CaptureRequest.FLASH_MODE_OFF;
+import static android.hardware.camera2.CaptureRequest.FLASH_MODE_SINGLE;
+import static android.hardware.camera2.CaptureRequest.FLASH_MODE_TORCH;
+import static android.hardware.camera2.CaptureRequest.JPEG_GPS_LOCATION;
+import static android.hardware.camera2.CaptureRequest.JPEG_QUALITY;
+import static android.hardware.camera2.CaptureRequest.JPEG_THUMBNAIL_SIZE;
+import static android.hardware.camera2.CaptureRequest.Key;
+import static android.hardware.camera2.CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE;
+import static android.hardware.camera2.CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF;
+import static android.hardware.camera2.CaptureRequest.SCALER_CROP_REGION;
 
 /**
  * The subclass of {@link CameraSettings} for Android Camera 2 API.
@@ -45,11 +100,17 @@ public class AndroidCamera2Settings extends CameraSettings {
 
     private final Builder mTemplateSettings;
     private final Camera2RequestSettingsSet mRequestSettings;
-    /** Sensor's active array bounds. */
+    /**
+     * Sensor's active array bounds.
+     */
     private final Rect mActiveArray;
-    /** Crop rectangle for digital zoom (measured WRT the active array). */
+    /**
+     * Crop rectangle for digital zoom (measured WRT the active array).
+     */
     private final Rect mCropRectangle;
-    /** Bounds of visible preview portion (measured WRT the active array). */
+    /**
+     * Bounds of visible preview portion (measured WRT the active array).
+     */
     private Rect mVisiblePreviewRectangle;
 
     /**
@@ -64,17 +125,16 @@ public class AndroidCamera2Settings extends CameraSettings {
      * their effective values when submitting a capture request will be those of
      * the template that is provided to the camera framework at that time.</p>
      *
-     * @param camera Device from which to draw default settings
-     *               (non-{@code null}).
-     * @param template Specific template to use for the defaults.
+     * @param camera      Device from which to draw default settings
+     *                    (non-{@code null}).
+     * @param template    Specific template to use for the defaults.
      * @param activeArray Boundary coordinates of the sensor's active array
      *                    (non-{@code null}).
-     * @param preview Dimensions of preview streams.
-     * @param photo Dimensions of captured images.
-     *
+     * @param preview     Dimensions of preview streams.
+     * @param photo       Dimensions of captured images.
      * @throws IllegalArgumentException If {@code camera} or {@code activeArray}
      *                                  is {@code null}.
-     * @throws CameraAccessException Upon internal framework/driver failure.
+     * @throws CameraAccessException    Upon internal framework/driver failure.
      */
     public AndroidCamera2Settings(CameraDevice camera, int template, Rect activeArray,
                                   Size preview, Size photo) throws CameraAccessException {
@@ -122,7 +182,7 @@ public class AndroidCamera2Settings extends CameraSettings {
         }
 
         mVideoStabilizationEnabled = queryTemplateDefaultOrMakeOneUp(
-                        CONTROL_VIDEO_STABILIZATION_MODE, CONTROL_VIDEO_STABILIZATION_MODE_OFF) ==
+                CONTROL_VIDEO_STABILIZATION_MODE, CONTROL_VIDEO_STABILIZATION_MODE_OFF) ==
                 CONTROL_VIDEO_STABILIZATION_MODE_ON;
         mAutoExposureLocked = queryTemplateDefaultOrMakeOneUp(CONTROL_AE_LOCK, false);
         mAutoWhiteBalanceLocked = queryTemplateDefaultOrMakeOneUp(CONTROL_AWB_LOCK, false);
@@ -141,6 +201,49 @@ public class AndroidCamera2Settings extends CameraSettings {
         mRequestSettings = new Camera2RequestSettingsSet(other.mRequestSettings);
         mActiveArray = other.mActiveArray;
         mCropRectangle = new Rect(other.mCropRectangle);
+    }
+
+    /**
+     * Calculate the effective crop rectangle for this preview viewport;
+     * assumes the preview is centered to the sensor and scaled to fit across one of the dimensions
+     * without skewing.
+     *
+     * <p>Assumes the zoom level of the provided desired crop rectangle.</p>
+     *
+     * @param requestedCrop Desired crop rectangle, in active array space.
+     * @param previewSize   Size of the preview buffer render target, in pixels (not in sensor space).
+     * @return A rectangle that serves as the preview stream's effective crop region (unzoomed), in
+     * sensor space.
+     * @throws NullPointerException If any of the args were {@code null}.
+     */
+    private static Rect effectiveCropRectFromRequested(Rect requestedCrop, Size previewSize) {
+        float aspectRatioArray = requestedCrop.width() * 1.0f / requestedCrop.height();
+        float aspectRatioPreview = previewSize.width() * 1.0f / previewSize.height();
+
+        float cropHeight, cropWidth;
+        if (aspectRatioPreview < aspectRatioArray) {
+            // The new width must be smaller than the height, so scale the width by AR
+            cropHeight = requestedCrop.height();
+            cropWidth = cropHeight * aspectRatioPreview;
+        } else {
+            // The new height must be smaller (or equal) than the width, so scale the height by AR
+            cropWidth = requestedCrop.width();
+            cropHeight = cropWidth / aspectRatioPreview;
+        }
+
+        Matrix translateMatrix = new Matrix();
+        RectF cropRect = new RectF(/*left*/0, /*top*/0, cropWidth, cropHeight);
+
+        // Now center the crop rectangle so its center is in the center of the active array
+        translateMatrix.setTranslate(requestedCrop.exactCenterX(), requestedCrop.exactCenterY());
+        translateMatrix.postTranslate(-cropRect.centerX(), -cropRect.centerY());
+
+        translateMatrix.mapRect(/*inout*/cropRect);
+
+        // Round the rect corners towards the nearest integer values
+        Rect result = new Rect();
+        cropRect.roundOut(result);
+        return result;
     }
 
     @Override
@@ -537,50 +640,5 @@ public class AndroidCamera2Settings extends CameraSettings {
             location.setLongitude(mGpsData.longitude);
             mRequestSettings.set(JPEG_GPS_LOCATION, location);
         }
-    }
-
-    /**
-     * Calculate the effective crop rectangle for this preview viewport;
-     * assumes the preview is centered to the sensor and scaled to fit across one of the dimensions
-     * without skewing.
-     *
-     * <p>Assumes the zoom level of the provided desired crop rectangle.</p>
-     *
-     * @param requestedCrop Desired crop rectangle, in active array space.
-     * @param previewSize Size of the preview buffer render target, in pixels (not in sensor space).
-     * @return A rectangle that serves as the preview stream's effective crop region (unzoomed), in
-     *          sensor space.
-     *
-     * @throws NullPointerException
-     *          If any of the args were {@code null}.
-     */
-    private static Rect effectiveCropRectFromRequested(Rect requestedCrop, Size previewSize) {
-        float aspectRatioArray = requestedCrop.width() * 1.0f / requestedCrop.height();
-        float aspectRatioPreview = previewSize.width() * 1.0f / previewSize.height();
-
-        float cropHeight, cropWidth;
-        if (aspectRatioPreview < aspectRatioArray) {
-            // The new width must be smaller than the height, so scale the width by AR
-            cropHeight = requestedCrop.height();
-            cropWidth = cropHeight * aspectRatioPreview;
-        } else {
-            // The new height must be smaller (or equal) than the width, so scale the height by AR
-            cropWidth = requestedCrop.width();
-            cropHeight = cropWidth / aspectRatioPreview;
-        }
-
-        Matrix translateMatrix = new Matrix();
-        RectF cropRect = new RectF(/*left*/0, /*top*/0, cropWidth, cropHeight);
-
-        // Now center the crop rectangle so its center is in the center of the active array
-        translateMatrix.setTranslate(requestedCrop.exactCenterX(), requestedCrop.exactCenterY());
-        translateMatrix.postTranslate(-cropRect.centerX(), -cropRect.centerY());
-
-        translateMatrix.mapRect(/*inout*/cropRect);
-
-        // Round the rect corners towards the nearest integer values
-        Rect result = new Rect();
-        cropRect.roundOut(result);
-        return result;
     }
 }

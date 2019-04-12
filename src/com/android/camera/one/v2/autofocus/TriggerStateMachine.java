@@ -17,9 +17,7 @@
 package com.android.camera.one.v2.autofocus;
 
 import android.hardware.camera2.CaptureResult;
-
-import androidx.annotation.Nullable;
-import com.android.camera.async.Updatable;
+import android.support.annotation.Nullable;
 
 import java.util.Set;
 
@@ -46,14 +44,7 @@ import javax.annotation.concurrent.NotThreadSafe;
  */
 @ParametersAreNonnullByDefault
 @NotThreadSafe
-final class TriggerStateMachine
-{
-    private static enum State
-    {
-        WAITING_FOR_TRIGGER,
-        TRIGGERED
-    }
-
+final class TriggerStateMachine {
     private final int mTriggerStart;
     private final Set<Integer> mDoneStates;
     private State mCurrentState;
@@ -61,9 +52,7 @@ final class TriggerStateMachine
     private Long mLastTriggerFrameNumber;
     @Nullable
     private Long mLastFinishFrameNumber;
-
-    public TriggerStateMachine(int triggerStart, Set<Integer> doneStates)
-    {
+    public TriggerStateMachine(int triggerStart, Set<Integer> doneStates) {
         mTriggerStart = triggerStart;
         mDoneStates = doneStates;
         mCurrentState = State.WAITING_FOR_TRIGGER;
@@ -75,29 +64,22 @@ final class TriggerStateMachine
      * @return True upon completion of a cycle of the state machine.
      */
     public boolean update(long frameNumber, @Nullable Integer triggerState, @Nullable Integer
-            state)
-    {
+            state) {
         boolean triggeredNow = triggerState != null && triggerState == mTriggerStart;
         boolean doneNow = mDoneStates.contains(state);
 
-        if (mCurrentState == State.WAITING_FOR_TRIGGER)
-        {
-            if (mLastTriggerFrameNumber == null || frameNumber > mLastTriggerFrameNumber)
-            {
-                if (triggeredNow)
-                {
+        if (mCurrentState == State.WAITING_FOR_TRIGGER) {
+            if (mLastTriggerFrameNumber == null || frameNumber > mLastTriggerFrameNumber) {
+                if (triggeredNow) {
                     mCurrentState = State.TRIGGERED;
                     mLastTriggerFrameNumber = frameNumber;
                 }
             }
         }
 
-        if (mCurrentState == State.TRIGGERED)
-        {
-            if (mLastFinishFrameNumber == null || frameNumber > mLastFinishFrameNumber)
-            {
-                if (doneNow)
-                {
+        if (mCurrentState == State.TRIGGERED) {
+            if (mLastFinishFrameNumber == null || frameNumber > mLastFinishFrameNumber) {
+                if (doneNow) {
                     mCurrentState = State.WAITING_FOR_TRIGGER;
                     mLastFinishFrameNumber = frameNumber;
                     return true;
@@ -106,5 +88,10 @@ final class TriggerStateMachine
         }
 
         return false;
+    }
+
+    private enum State {
+        WAITING_FOR_TRIGGER,
+        TRIGGERED
     }
 }

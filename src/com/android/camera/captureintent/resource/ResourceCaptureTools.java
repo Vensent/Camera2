@@ -16,6 +16,8 @@
 
 package com.android.camera.captureintent.resource;
 
+import android.media.MediaActionSound;
+
 import com.android.camera.async.MainThread;
 import com.android.camera.async.RefCountBase;
 import com.android.camera.async.SafeCloseable;
@@ -25,24 +27,13 @@ import com.android.camera.session.CaptureSessionManager;
 import com.android.camera.ui.TouchCoordinate;
 import com.android.camera.ui.focus.FocusController;
 
-import android.media.MediaActionSound;
-
 import javax.annotation.Nullable;
 
 /**
  * Defines an interface that any implementation of this should retain necessary
  * resources to capture a photo.
  */
-public interface ResourceCaptureTools extends SafeCloseable
-{
-    public static interface CaptureLoggingInfo
-    {
-        public @Nullable
-        TouchCoordinate getTouchPointInsideShutterButton();
-
-        public int getCountDownDuration();
-    }
-
+public interface ResourceCaptureTools extends SafeCloseable {
     /**
      * Sends a photo capture request to the underlying camera system
      * immediately.
@@ -124,4 +115,11 @@ public interface ResourceCaptureTools extends SafeCloseable
      * @return A {@link com.android.camera.one.OneCamera} object.
      */
     OneCamera getCamera();
+
+    public static interface CaptureLoggingInfo {
+        public @Nullable
+        TouchCoordinate getTouchPointInsideShutterButton();
+
+        public int getCountDownDuration();
+    }
 }

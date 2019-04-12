@@ -35,27 +35,34 @@ import com.android.camera2.R;
 /**
  * Contains the UI for the CaptureModule.
  */
-public class CaptureModuleUI implements PreviewStatusListener.PreviewAreaChangedListener
-{
-
-    public interface CaptureModuleUIListener
-    {
-        public void onZoomRatioChanged(float zoomRatio);
-    }
+public class CaptureModuleUI implements PreviewStatusListener.PreviewAreaChangedListener {
 
     private static final Log.Tag TAG = new Log.Tag("CaptureModuleUI");
-
     private final CameraActivity mActivity;
     private final CaptureModuleUIListener mListener;
     private final View mRootView;
-
     private final PreviewOverlay mPreviewOverlay;
     private final ProgressOverlay mProgressOverlay;
     private final TextureView mPreviewView;
-
     private final FocusRing mFocusRing;
     private final CountDownView mCountdownView;
+    /**
+     * Set up listener to receive zoom changes from View and send to module.
+     */
+    private final OnZoomChangedListener mZoomChangedListener = new OnZoomChangedListener() {
+        @Override
+        public void onZoomValueChanged(float ratio) {
+            mListener.onZoomRatioChanged(ratio);
+        }
 
+        @Override
+        public void onZoomStart() {
+        }
+
+        @Override
+        public void onZoomEnd() {
+        }
+    };
     private int mPreviewAreaWidth;
     private int mPreviewAreaHeight;
 
@@ -64,30 +71,7 @@ public class CaptureModuleUI implements PreviewStatusListener.PreviewAreaChanged
      */
     private float mMaxZoom = 1f;
 
-    /**
-     * Set up listener to receive zoom changes from View and send to module.
-     */
-    private final OnZoomChangedListener mZoomChangedListener = new OnZoomChangedListener()
-    {
-        @Override
-        public void onZoomValueChanged(float ratio)
-        {
-            mListener.onZoomRatioChanged(ratio);
-        }
-
-        @Override
-        public void onZoomStart()
-        {
-        }
-
-        @Override
-        public void onZoomEnd()
-        {
-        }
-    };
-
-    public CaptureModuleUI(CameraActivity activity, View parent, CaptureModuleUIListener listener)
-    {
+    public CaptureModuleUI(CameraActivity activity, View parent, CaptureModuleUIListener listener) {
         mActivity = activity;
         mListener = listener;
         mRootView = parent;
@@ -107,31 +91,26 @@ public class CaptureModuleUI implements PreviewStatusListener.PreviewAreaChanged
     /**
      * Getter for the width of the visible area of the preview.
      */
-    public int getPreviewAreaWidth()
-    {
+    public int getPreviewAreaWidth() {
         return mPreviewAreaWidth;
     }
 
     /**
      * Getter for the height of the visible area of the preview.
      */
-    public int getPreviewAreaHeight()
-    {
+    public int getPreviewAreaHeight() {
         return mPreviewAreaHeight;
     }
 
-    public Matrix getPreviewTransform(Matrix m)
-    {
+    public Matrix getPreviewTransform(Matrix m) {
         return mPreviewView.getTransform(m);
     }
 
-    public FocusRing getFocusRing()
-    {
+    public FocusRing getFocusRing() {
         return mFocusRing;
     }
 
-    public void showDebugMessage(String message)
-    {
+    public void showDebugMessage(String message) {
         /* NoOp */
     }
 
@@ -140,32 +119,28 @@ public class CaptureModuleUI implements PreviewStatusListener.PreviewAreaChanged
      *
      * @param sec seconds to countdown
      */
-    public void startCountdown(int sec)
-    {
+    public void startCountdown(int sec) {
         mCountdownView.startCountDown(sec);
     }
 
     /**
      * Sets a listener that gets notified when the countdown is finished.
      */
-    public void setCountdownFinishedListener(CountDownView.OnCountDownStatusListener listener)
-    {
+    public void setCountdownFinishedListener(CountDownView.OnCountDownStatusListener listener) {
         mCountdownView.setCountDownStatusListener(listener);
     }
 
     /**
      * Returns whether the countdown is on-going.
      */
-    public boolean isCountingDown()
-    {
+    public boolean isCountingDown() {
         return mCountdownView.isCountingDown();
     }
 
     /**
      * Cancels the on-going countdown, if any.
      */
-    public void cancelCountDown()
-    {
+    public void cancelCountDown() {
         mCountdownView.cancelCountDown();
     }
 
@@ -174,13 +149,11 @@ public class CaptureModuleUI implements PreviewStatusListener.PreviewAreaChanged
      *
      * @param percent amount of process done in percent 0-100.
      */
-    public void setPictureTakingProgress(int percent)
-    {
+    public void setPictureTakingProgress(int percent) {
         mProgressOverlay.setProgress(percent);
     }
 
-    public Bitmap getBitMapFromPreview()
-    {
+    public Bitmap getBitMapFromPreview() {
         Matrix m = new Matrix();
         m = getPreviewTransform(m);
         Bitmap src = mPreviewView.getBitmap();
@@ -193,17 +166,19 @@ public class CaptureModuleUI implements PreviewStatusListener.PreviewAreaChanged
      *
      * @param maxZoom maximum zoom value.
      */
-    public void initializeZoom(float maxZoom)
-    {
+    public void initializeZoom(float maxZoom) {
         mMaxZoom = maxZoom;
         mPreviewOverlay.setupZoom(mMaxZoom, 0, mZoomChangedListener);
     }
 
     @Override
-    public void onPreviewAreaChanged(RectF previewArea)
-    {
+    public void onPreviewAreaChanged(RectF previewArea) {
         // TODO: mFaceView.onPreviewAreaChanged(previewArea);
         mCountdownView.onPreviewAreaChanged(previewArea);
         mProgressOverlay.setBounds(previewArea);
+    }
+
+    public interface CaptureModuleUIListener {
+        public void onZoomRatioChanged(float zoomRatio);
     }
 }

@@ -16,17 +16,12 @@
 
 package com.android.ex.camera2.portability;
 
-import static android.hardware.camera2.CaptureRequest.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import android.content.Context;
 import android.graphics.Rect;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CaptureRequest;
 
 import com.android.ex.camera2.portability.CameraCapabilities.FlashMode;
 import com.android.ex.camera2.portability.CameraCapabilities.FocusMode;
@@ -34,10 +29,11 @@ import com.android.ex.camera2.portability.CameraCapabilities.SceneMode;
 import com.android.ex.camera2.portability.CameraCapabilities.Stringifier;
 import com.android.ex.camera2.portability.CameraCapabilities.WhiteBalance;
 import com.android.ex.camera2.utils.Camera2DeviceTester;
+
 import org.junit.Test;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
+import static android.hardware.camera2.CaptureRequest.*;
+import static org.junit.Assert.assertEquals;
 
 public class Camera2PortabilityTest extends Camera2DeviceTester {
     /**
@@ -48,16 +44,16 @@ public class Camera2PortabilityTest extends Camera2DeviceTester {
     @Test
     public void cameraCapabilitiesStringifier() {
         Stringifier strfy = new Stringifier();
-        for(FocusMode val : FocusMode.values()) {
+        for (FocusMode val : FocusMode.values()) {
             assertEquals(val, strfy.focusModeFromString(strfy.stringify(val)));
         }
-        for(FlashMode val : FlashMode.values()) {
+        for (FlashMode val : FlashMode.values()) {
             assertEquals(val, strfy.flashModeFromString(strfy.stringify(val)));
         }
-        for(SceneMode val : SceneMode.values()) {
+        for (SceneMode val : SceneMode.values()) {
             assertEquals(val, strfy.sceneModeFromString(strfy.stringify(val)));
         }
-        for(WhiteBalance val : WhiteBalance.values()) {
+        for (WhiteBalance val : WhiteBalance.values()) {
             assertEquals(val, strfy.whiteBalanceFromString(strfy.stringify(val)));
         }
     }
@@ -97,7 +93,7 @@ public class Camera2PortabilityTest extends Camera2DeviceTester {
     }
 
     private void camera2SettingsCheckSingleOption(AndroidCamera2Settings setts,
-                                                      Key<?> apiKey, int apiVal) {
+                                                  Key<?> apiKey, int apiVal) {
         assertEquals(apiVal, setts.getRequestSettings().get(apiKey));
     }
 

@@ -19,8 +19,7 @@ package com.android.camera.device;
 /**
  * Listener for camera opening lifecycle events.
  */
-public interface SingleDeviceOpenListener<TDevice>
-{
+public interface SingleDeviceOpenListener<TDevice> {
     /**
      * Executed when a device is successfully opened.
      *

@@ -43,7 +43,6 @@ public abstract class CameraSettings {
     protected int mPreviewFpsRangeMax;
     protected int mPreviewFrameRate;
     protected Size mCurrentPreviewSize;
-    private int mCurrentPreviewFormat;
     protected Size mCurrentPhotoSize;
     protected byte mJpegCompressQuality;
     protected int mCurrentPhotoFormat;
@@ -59,50 +58,7 @@ public abstract class CameraSettings {
     protected boolean mRecordingHintEnabled;
     protected GpsData mGpsData;
     protected Size mExifThumbnailSize;
-
-    /**
-     * An immutable class storing GPS related information.
-     * <p>It's a hack since we always use GPS time stamp but does not use other
-     * fields sometimes. Setting processing method to null means the other
-     * fields should not be used.</p>
-     */
-    public static class GpsData {
-        public final double latitude;
-        public final double longitude;
-        public final double altitude;
-        public final long timeStamp;
-        public final String processingMethod;
-
-        /**
-         * Construct what may or may not actually represent a location,
-         * depending on the value of {@code processingMethod}.
-         *
-         * <p>Setting {@code processingMethod} to {@code null} means that
-         * {@code latitude}, {@code longitude}, and {@code altitude} will be
-         * completely ignored.</p>
-         */
-        public GpsData(double latitude, double longitude, double altitude, long timeStamp,
-                String processingMethod) {
-            if (processingMethod == null &&
-                    (latitude != 0.0 || longitude != 0.0 || altitude != 0.0)) {
-                Log.w(TAG, "GpsData's nonzero data will be ignored due to null processingMethod");
-            }
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.altitude = altitude;
-            this.timeStamp = timeStamp;
-            this.processingMethod = processingMethod;
-        }
-
-        /** Copy constructor. */
-        public GpsData(GpsData src) {
-            this.latitude = src.latitude;
-            this.longitude = src.longitude;
-            this.altitude = src.altitude;
-            this.timeStamp = src.timeStamp;
-            this.processingMethod = src.processingMethod;
-        }
-    }
+    private int mCurrentPreviewFormat;
 
     protected CameraSettings() {
     }
@@ -147,7 +103,9 @@ public abstract class CameraSettings {
      */
     public abstract CameraSettings copy();
 
-    /** General setting **/
+    /**
+     * General setting
+     **/
     @Deprecated
     public void setSetting(String key, String value) {
         mGeneralSetting.put(key, value);
@@ -158,15 +116,12 @@ public abstract class CameraSettings {
      * and photo capture sizes.
      *
      * @param locked Whether to prevent changes to these fields.
-     *
      * @see #setPhotoSize
      * @see #setPreviewSize
      */
     /*package*/ void setSizesLocked(boolean locked) {
         mSizesLocked = locked;
     }
-
-    /**  Preview **/
 
     /**
      * Sets the preview FPS range. This call will invalidate prior calls to
@@ -186,6 +141,8 @@ public abstract class CameraSettings {
         mPreviewFrameRate = -1;
     }
 
+    /**  Preview **/
+
     /**
      * @return The min of the preview FPS range.
      */
@@ -200,6 +157,10 @@ public abstract class CameraSettings {
         return mPreviewFpsRangeMax;
     }
 
+    public int getPreviewFrameRate() {
+        return mPreviewFrameRate;
+    }
+
     /**
      * Sets the preview FPS. This call will invalidate prior calls to
      * {@link #setPreviewFpsRange(int, int)}.
@@ -212,10 +173,6 @@ public abstract class CameraSettings {
             mPreviewFpsRangeMax = frameRate;
             mPreviewFpsRangeMin = frameRate;
         }
-    }
-
-    public int getPreviewFrameRate() {
-        return mPreviewFrameRate;
     }
 
     /**
@@ -257,14 +214,14 @@ public abstract class CameraSettings {
         return mCurrentPreviewFormat;
     }
 
-    /** Picture **/
-
     /**
      * @return The current photo size.
      */
     public Size getCurrentPhotoSize() {
         return new Size(mCurrentPhotoSize);
     }
+
+    /** Picture **/
 
     /**
      * @param photoSize The size to use for preview.
@@ -298,6 +255,10 @@ public abstract class CameraSettings {
         return mCurrentPhotoFormat;
     }
 
+    public int getPhotoJpegCompressionQuality() {
+        return mJpegCompressQuality;
+    }
+
     /**
      * Sets the JPEG compression quality.
      *
@@ -312,12 +273,6 @@ public abstract class CameraSettings {
         mJpegCompressQuality = (byte) quality;
     }
 
-    public int getPhotoJpegCompressionQuality() {
-        return mJpegCompressQuality;
-    }
-
-    /** Zoom **/
-
     /**
      * @return The current zoom ratio. The min is 1.0f.
      */
@@ -325,22 +280,19 @@ public abstract class CameraSettings {
         return mCurrentZoomRatio;
     }
 
+    /** Zoom **/
+
     /**
      * Sets the zoom ratio.
+     *
      * @param ratio The new zoom ratio. Should be in the range between 1.0 to
      *              the value returned from {@link
      *              com.android.camera.cameradevice.CameraCapabilities#getMaxZoomRatio()}.
      * @throws java.lang.UnsupportedOperationException if the ratio is not
-     *         supported.
+     *                                                 supported.
      */
     public void setZoomRatio(float ratio) {
         mCurrentZoomRatio = ratio;
-    }
-
-    /** Exposure **/
-
-    public void setExposureCompensationIndex(int index) {
-        mExposureCompensationIndex = index;
     }
 
     /**
@@ -350,12 +302,24 @@ public abstract class CameraSettings {
         return mExposureCompensationIndex;
     }
 
+    /**
+     * Exposure
+     **/
+
+    public void setExposureCompensationIndex(int index) {
+        mExposureCompensationIndex = index;
+    }
+
     public void setAutoExposureLock(boolean locked) {
         mAutoExposureLocked = locked;
     }
 
     public boolean isAutoExposureLocked() {
         return mAutoExposureLocked;
+    }
+
+    public List<Camera.Area> getMeteringAreas() {
+        return new ArrayList<Camera.Area>(mMeteringAreas);
     }
 
     /**
@@ -373,11 +337,9 @@ public abstract class CameraSettings {
         }
     }
 
-    public List<Camera.Area> getMeteringAreas() {
-        return new ArrayList<Camera.Area>(mMeteringAreas);
-    }
-
-    /** Flash **/
+    /**
+     * Flash
+     **/
 
     public CameraCapabilities.FlashMode getCurrentFlashMode() {
         return mCurrentFlashMode;
@@ -387,21 +349,26 @@ public abstract class CameraSettings {
         mCurrentFlashMode = flashMode;
     }
 
-    /** Focus **/
-
     /**
      * Sets the focus mode.
+     *
      * @param focusMode The focus mode to use.
      */
     public void setFocusMode(CameraCapabilities.FocusMode focusMode) {
         mCurrentFocusMode = focusMode;
     }
 
+    /** Focus **/
+
     /**
      * @return The current focus mode.
      */
     public CameraCapabilities.FocusMode getCurrentFocusMode() {
         return mCurrentFocusMode;
+    }
+
+    public List<Camera.Area> getFocusAreas() {
+        return new ArrayList<Camera.Area>(mFocusAreas);
     }
 
     /**
@@ -419,18 +386,16 @@ public abstract class CameraSettings {
         }
     }
 
-    public List<Camera.Area> getFocusAreas() {
-        return new ArrayList<Camera.Area>(mFocusAreas);
+    public CameraCapabilities.WhiteBalance getWhiteBalance() {
+        return mWhiteBalance;
     }
 
-    /** White balance **/
+    /**
+     * White balance
+     **/
 
     public void setWhiteBalance(CameraCapabilities.WhiteBalance whiteBalance) {
         mWhiteBalance = whiteBalance;
-    }
-
-    public CameraCapabilities.WhiteBalance getWhiteBalance() {
-        return mWhiteBalance;
     }
 
     public void setAutoWhiteBalanceLock(boolean locked) {
@@ -441,14 +406,14 @@ public abstract class CameraSettings {
         return mAutoWhiteBalanceLocked;
     }
 
-    /** Scene mode **/
-
     /**
      * @return The current scene mode.
      */
     public CameraCapabilities.SceneMode getCurrentSceneMode() {
         return mCurrentSceneMode;
     }
+
+    /** Scene mode **/
 
     /**
      * Sets the scene mode for capturing.
@@ -460,7 +425,9 @@ public abstract class CameraSettings {
         mCurrentSceneMode = sceneMode;
     }
 
-    /** Other Features **/
+    /**
+     * Other Features
+     **/
 
     public void setVideoStabilization(boolean enabled) {
         mVideoStabilizationEnabled = enabled;
@@ -470,24 +437,33 @@ public abstract class CameraSettings {
         return mVideoStabilizationEnabled;
     }
 
-    public void setRecordingHintEnabled(boolean hintEnabled) {
-        mRecordingHintEnabled = hintEnabled;
-    }
-
     public boolean isRecordingHintEnabled() {
         return mRecordingHintEnabled;
     }
 
-    public void setGpsData(GpsData data) {
-        mGpsData = new GpsData(data);
+    public void setRecordingHintEnabled(boolean hintEnabled) {
+        mRecordingHintEnabled = hintEnabled;
     }
 
     public GpsData getGpsData() {
         return (mGpsData == null ? null : new GpsData(mGpsData));
     }
 
+    public void setGpsData(GpsData data) {
+        mGpsData = new GpsData(data);
+    }
+
     public void clearGpsData() {
         mGpsData = null;
+    }
+
+    /**
+     * Gets the size of the thumbnail in EXIF header.
+     *
+     * @return desired thumbnail size, or null if no size was set
+     */
+    public Size getExifThumbnailSize() {
+        return (mExifThumbnailSize == null) ? null : new Size(mExifThumbnailSize);
     }
 
     /**
@@ -502,11 +478,48 @@ public abstract class CameraSettings {
     }
 
     /**
-     * Gets the size of the thumbnail in EXIF header.
-     *
-     * @return desired thumbnail size, or null if no size was set
+     * An immutable class storing GPS related information.
+     * <p>It's a hack since we always use GPS time stamp but does not use other
+     * fields sometimes. Setting processing method to null means the other
+     * fields should not be used.</p>
      */
-    public Size getExifThumbnailSize() {
-        return (mExifThumbnailSize == null) ? null : new Size(mExifThumbnailSize);
+    public static class GpsData {
+        public final double latitude;
+        public final double longitude;
+        public final double altitude;
+        public final long timeStamp;
+        public final String processingMethod;
+
+        /**
+         * Construct what may or may not actually represent a location,
+         * depending on the value of {@code processingMethod}.
+         *
+         * <p>Setting {@code processingMethod} to {@code null} means that
+         * {@code latitude}, {@code longitude}, and {@code altitude} will be
+         * completely ignored.</p>
+         */
+        public GpsData(double latitude, double longitude, double altitude, long timeStamp,
+                       String processingMethod) {
+            if (processingMethod == null &&
+                    (latitude != 0.0 || longitude != 0.0 || altitude != 0.0)) {
+                Log.w(TAG, "GpsData's nonzero data will be ignored due to null processingMethod");
+            }
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.altitude = altitude;
+            this.timeStamp = timeStamp;
+            this.processingMethod = processingMethod;
+        }
+
+        /**
+         * Copy constructor.
+         */
+        public GpsData(GpsData src) {
+            this.latitude = src.latitude;
+            this.longitude = src.longitude;
+            this.altitude = src.altitude;
+            this.timeStamp = src.timeStamp;
+            this.processingMethod = src.processingMethod;
+        }
     }
 }

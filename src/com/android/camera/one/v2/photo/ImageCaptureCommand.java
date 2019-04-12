@@ -27,8 +27,7 @@ import com.android.camera.one.v2.imagesaver.ImageSaver;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public interface ImageCaptureCommand
-{
+public interface ImageCaptureCommand {
     /**
      * Like {@link CameraCommand}, but takes parameters and callbacks.
      *

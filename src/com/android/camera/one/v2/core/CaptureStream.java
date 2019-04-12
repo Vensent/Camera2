@@ -40,8 +40,7 @@ import com.android.camera.async.BufferQueue;
  * producing, as output, a stream of useful handles to the image data.
  * </p>
  */
-public interface CaptureStream
-{
+public interface CaptureStream {
 
     /**
      * Implementations should use this method to allocate all resources

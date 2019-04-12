@@ -69,8 +69,7 @@ import com.android.camera.one.v2.sharedimagereader.util.ImageCloser;
  * image3.close();
  * </pre>
  */
-public class ManagedImageReader
-{
+public class ManagedImageReader {
     private final Lifetime mLifetime;
     private final TicketPool mTicketPool;
     /**
@@ -87,16 +86,14 @@ public class ManagedImageReader
      * @param imageDistributor
      */
     public ManagedImageReader(Lifetime lifetime, TicketPool ticketPool, Surface surface,
-                              ImageDistributor imageDistributor)
-    {
+                              ImageDistributor imageDistributor) {
         mLifetime = lifetime;
         mTicketPool = ticketPool;
         mSurface = surface;
         mImageDistributor = imageDistributor;
     }
 
-    private AllocatingImageStream createUnallocatedStream(int capacity)
-    {
+    private AllocatingImageStream createUnallocatedStream(int capacity) {
         ReservableTicketPool ticketPool = new ReservableTicketPool(mTicketPool);
         mLifetime.add(ticketPool);
 
@@ -127,8 +124,7 @@ public class ManagedImageReader
      * @param capacity The maximum number of images which can be simultaneously
      *                 held from the resulting image queue before images are dropped.
      */
-    public ImageStream createStream(int capacity)
-    {
+    public ImageStream createStream(int capacity) {
         return createUnallocatedStream(capacity);
     }
 
@@ -150,15 +146,12 @@ public class ManagedImageReader
      *                 held from the resulting image queue before images are dropped.
      */
     public ImageStream createPreallocatedStream(int capacity) throws InterruptedException,
-            ResourceAcquisitionFailedException
-    {
+            ResourceAcquisitionFailedException {
         AllocatingImageStream stream = createUnallocatedStream(capacity);
-        try
-        {
+        try {
             stream.allocate();
             return stream;
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             // If allocation failed, close the stream before returning.
             stream.close();
             throw e;

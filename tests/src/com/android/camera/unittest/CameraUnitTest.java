@@ -16,18 +16,16 @@
 
 package com.android.camera.unittest;
 
-import com.android.camera.util.CameraUtil;
-
 import android.graphics.Matrix;
 import android.test.suitebuilder.annotation.SmallTest;
+
+import com.android.camera.util.CameraUtil;
 
 import junit.framework.TestCase;
 
 @SmallTest
-public class CameraUnitTest extends TestCase
-{
-    public void testPrepareMatrix()
-    {
+public class CameraUnitTest extends TestCase {
+    public void testPrepareMatrix() {
         Matrix matrix = new Matrix();
         float[] points;
         int[] expected;
@@ -57,10 +55,8 @@ public class CameraUnitTest extends TestCase
         assertEquals(expected, points);
     }
 
-    private void assertEquals(int expected[], float[] actual)
-    {
-        for (int i = 0; i < expected.length; i++)
-        {
+    private void assertEquals(int expected[], float[] actual) {
+        for (int i = 0; i < expected.length; i++) {
             assertEquals("Array index " + i + " mismatch", expected[i], Math.round(actual[i]));
         }
     }

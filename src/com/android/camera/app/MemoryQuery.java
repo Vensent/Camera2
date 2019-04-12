@@ -28,12 +28,7 @@ import java.util.HashMap;
 /**
  * Queries the current memory consumption of the app.
  */
-public class MemoryQuery
-{
-    private static final Log.Tag TAG = new Log.Tag("MemoryQuery");
-    private final long BYTES_IN_KILOBYTE = 1024;
-    private final long BYTES_IN_MEGABYTE = BYTES_IN_KILOBYTE * BYTES_IN_KILOBYTE;
-
+public class MemoryQuery {
     public static final String KEY_TIMESTAMP = "timestamp";
     public static final String KEY_MEMORY_AVAILABLE = "availMem";
     public static final String KEY_TOTAL_MEMORY = "totalMem";
@@ -48,13 +43,13 @@ public class MemoryQuery
     public static final String KEY_TOTAL_SHARED_DIRTY = "totalSharedDirty";
     public static final String KEY_MEMORY_CLASS = "memoryClass";
     public static final String KEY_LARGE_MEMORY_CLASS = "largeMemoryClass";
-
     public static final String REPORT_LABEL_LAUNCH = "launch";
-
+    private static final Log.Tag TAG = new Log.Tag("MemoryQuery");
+    private final long BYTES_IN_KILOBYTE = 1024;
+    private final long BYTES_IN_MEGABYTE = BYTES_IN_KILOBYTE * BYTES_IN_KILOBYTE;
     private ActivityManager mActivityManager;
 
-    public MemoryQuery(ActivityManager activityManager)
-    {
+    public MemoryQuery(ActivityManager activityManager) {
         mActivityManager = activityManager;
     }
 
@@ -64,8 +59,7 @@ public class MemoryQuery
      *
      * @return HashMap of memory metrics keyed by string labels.
      */
-    public HashMap queryMemory()
-    {
+    public HashMap queryMemory() {
         // Get ActivityManager.MemoryInfo.
         int memoryClass = mActivityManager.getMemoryClass();
         int largeMemoryClass = mActivityManager.getLargeMemoryClass();
@@ -92,8 +86,7 @@ public class MemoryQuery
         long dalvikPSS = 0L;
         long otherPSS = 0L;
 
-        if (appPID != 0)
-        {
+        if (appPID != 0) {
             int pids[] = new int[1];
             pids[0] = appPID;
             Debug.MemoryInfo[] memoryInfoArray = mActivityManager.getProcessMemoryInfo(pids);

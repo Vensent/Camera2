@@ -39,8 +39,7 @@ import com.android.camera.one.v2.sharedimagereader.ticketpool.TicketPool;
  * Use the {@link ManagedImageReader} to create image streams to add to
  * {@link RequestBuilder}s to interact with the camera and ImageReader.
  */
-public class SharedImageReaderFactory
-{
+public class SharedImageReaderFactory {
     private final Updatable<Long> mGlobalTimestampQueue;
     private final ManagedImageReader mSharedImageReader;
     private final Observable<Integer> mAvailableImageCount;
@@ -54,8 +53,7 @@ public class SharedImageReaderFactory
      *                       callbacks from the platform.
      */
     public SharedImageReaderFactory(Lifetime lifetime, ImageReaderProxy imageReader,
-                                    HandlerFactory handlerFactory)
-    {
+                                    HandlerFactory handlerFactory) {
         ImageDistributorFactory imageDistributorFactory = new ImageDistributorFactory(new
                 Lifetime(lifetime), imageReader, handlerFactory);
         ImageDistributor imageDistributor = imageDistributorFactory.provideImageDistributor();
@@ -67,18 +65,15 @@ public class SharedImageReaderFactory
                 new Lifetime(lifetime), ticketPool, imageReader.getSurface(), imageDistributor);
     }
 
-    public Updatable<Long> provideGlobalTimestampQueue()
-    {
+    public Updatable<Long> provideGlobalTimestampQueue() {
         return mGlobalTimestampQueue;
     }
 
-    public ManagedImageReader provideSharedImageReader()
-    {
+    public ManagedImageReader provideSharedImageReader() {
         return mSharedImageReader;
     }
 
-    public Observable<Integer> provideAvailableImageCount()
-    {
+    public Observable<Integer> provideAvailableImageCount() {
         return mAvailableImageCount;
     }
 }

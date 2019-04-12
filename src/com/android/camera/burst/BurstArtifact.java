@@ -24,8 +24,7 @@ import java.util.List;
  * <p/>
  * The type of artifact is returned by {@link #getType()}.
  */
-public interface BurstArtifact
-{
+public interface BurstArtifact {
     /**
      * Gets all media items in the artifact.
      *

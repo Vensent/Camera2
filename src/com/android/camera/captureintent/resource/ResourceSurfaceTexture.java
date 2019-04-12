@@ -16,10 +16,10 @@
 
 package com.android.camera.captureintent.resource;
 
+import android.view.Surface;
+
 import com.android.camera.async.SafeCloseable;
 import com.android.camera.util.Size;
-
-import android.view.Surface;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -28,8 +28,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * retaining and releasing a {@link android.graphics.SurfaceTexture}.
  */
 @ParametersAreNonnullByDefault
-public interface ResourceSurfaceTexture extends SafeCloseable
-{
+public interface ResourceSurfaceTexture extends SafeCloseable {
     /**
      * Creates a surface from this surface texture for preview.
      *

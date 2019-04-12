@@ -18,6 +18,5 @@ package com.android.camera.captureintent.event;
 
 import com.android.camera.captureintent.stateful.Event;
 
-public class EventTapOnSwitchCameraButton implements Event
-{
+public class EventTapOnSwitchCameraButton implements Event {
 }

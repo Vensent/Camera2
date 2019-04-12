@@ -16,21 +16,18 @@
 
 package com.android.camera.captureintent.event;
 
-import com.android.camera.captureintent.stateful.Event;
-
 import android.graphics.Bitmap;
 
-public class EventFastPictureBitmapAvailable implements Event
-{
+import com.android.camera.captureintent.stateful.Event;
+
+public class EventFastPictureBitmapAvailable implements Event {
     private final Bitmap mThumbnailBitmap;
 
-    public EventFastPictureBitmapAvailable(Bitmap thumbnailBitmap)
-    {
+    public EventFastPictureBitmapAvailable(Bitmap thumbnailBitmap) {
         mThumbnailBitmap = thumbnailBitmap;
     }
 
-    public Bitmap getThumbnailBitmap()
-    {
+    public Bitmap getThumbnailBitmap() {
         return mThumbnailBitmap;
     }
 }

@@ -16,24 +16,21 @@
 
 package com.android.camera.one.v2.photo;
 
-import com.google.common.base.Supplier;
-
 import android.annotation.TargetApi;
 import android.os.Build;
 
 import com.android.camera.app.OrientationManager;
-import com.android.camera.debug.Log;
 import com.android.camera.one.OneCamera;
 import com.android.camera.one.OneCameraCharacteristics;
 import com.android.camera.util.CameraUtil;
+import com.google.common.base.Supplier;
 
 /**
  * Default implementation of ImageRotationCalculator which takes the camera's
  * sensor rotation and front/back-facing property to calculate image rotations.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class ImageRotationCalculatorImpl implements ImageRotationCalculator
-{
+public class ImageRotationCalculatorImpl implements ImageRotationCalculator {
 
     private final int mSensorOrientationDegrees;
     private final boolean mFrontFacing;
@@ -47,8 +44,7 @@ public class ImageRotationCalculatorImpl implements ImageRotationCalculator
      * @param frontFacing              whether the camera is front-facing.
      */
     public ImageRotationCalculatorImpl(OrientationManager orientationManager,
-                                       int sensorOrientationDegrees, boolean frontFacing)
-    {
+                                       int sensorOrientationDegrees, boolean frontFacing) {
         mSensorOrientationDegrees = sensorOrientationDegrees;
         mFrontFacing = frontFacing;
         mOrientationManager = orientationManager;
@@ -58,8 +54,7 @@ public class ImageRotationCalculatorImpl implements ImageRotationCalculator
      * Create a calculator based on Camera characteristics.
      */
     public static ImageRotationCalculator from(OrientationManager orientationManager,
-                                               OneCameraCharacteristics characteristics)
-    {
+                                               OneCameraCharacteristics characteristics) {
         int sensorOrientation = characteristics.getSensorOrientation();
         OneCamera.Facing lensDirection = characteristics.getCameraDirection();
         return new ImageRotationCalculatorImpl(orientationManager, sensorOrientation,
@@ -67,21 +62,17 @@ public class ImageRotationCalculatorImpl implements ImageRotationCalculator
     }
 
     @Override
-    public OrientationManager.DeviceOrientation toImageRotation()
-    {
+    public OrientationManager.DeviceOrientation toImageRotation() {
         int imageRotation = CameraUtil.getImageRotation(mSensorOrientationDegrees,
                 mOrientationManager.getDeviceOrientation().getDegrees(), mFrontFacing);
         return OrientationManager.DeviceOrientation.from(imageRotation);
     }
 
     @Override
-    public Supplier<Integer> getSupplier()
-    {
-        return new Supplier<Integer>()
-        {
+    public Supplier<Integer> getSupplier() {
+        return new Supplier<Integer>() {
             @Override
-            public Integer get()
-            {
+            public Integer get() {
                 return Integer.valueOf(toImageRotation().getDegrees());
             }
         };

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2013 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2013 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,28 +13,29 @@
      limitations under the License.
 -->
 
-<com.android.camera.ui.ModeSelectorItem
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.android.camera.ui.ModeSelectorItem xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/mode_selector_item_height"
     android:paddingLeft="16dp"
     android:paddingTop="6dp"
-    android:paddingBottom="6dp"
-    android:paddingRight="12dp">
+    android:paddingRight="12dp"
+    android:paddingBottom="6dp">
+
     <TextView
         android:id="@+id/selector_text"
-        android:layout_gravity="left|center_vertical"
-        android:paddingLeft="16dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_gravity="left|center_vertical"
+        android:layout_marginLeft="@dimen/mode_selector_icon_block_width"
         android:gravity="center_vertical"
-        android:textSize="@dimen/mode_selector_text_size"
+        android:paddingLeft="16dp"
         android:textColor="@color/mode_selector_text_color"
-        android:layout_marginLeft="@dimen/mode_selector_icon_block_width" />
+        android:textSize="@dimen/mode_selector_text_size" />
+
     <com.android.camera.ui.ModeIconView
         android:id="@+id/selector_icon"
-        android:scaleType="centerInside"
-        android:layout_gravity="left"
         android:layout_width="@dimen/mode_selector_icon_block_width"
-        android:layout_height="@dimen/mode_selector_icon_block_width" />
+        android:layout_height="@dimen/mode_selector_icon_block_width"
+        android:layout_gravity="left"
+        android:scaleType="centerInside" />
 </com.android.camera.ui.ModeSelectorItem>

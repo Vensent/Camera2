@@ -44,70 +44,35 @@ import com.bumptech.glide.load.resource.transcode.BitmapToGlideDrawableTranscode
 /**
  * Manage common glide image requests for the camera filmstrip.
  */
-public final class GlideFilmstripManager
-{
-    private static final Tag TAG = new Tag("GlideFlmMgr");
-
+public final class GlideFilmstripManager {
     /**
      * Default placeholder to display while images load
      */
     public static final int DEFAULT_PLACEHOLDER_RESOURCE = R.color.photo_placeholder;
-
+    public static final Size MEDIASTORE_THUMB_SIZE = new Size(512, 384);
+    public static final Size TINY_THUMB_SIZE = new Size(256, 256);
+    public static final int JPEG_COMPRESS_QUALITY = 90;
+    private static final Tag TAG = new Tag("GlideFlmMgr");
     // This is the default GL texture size for K and below, it may be bigger,
     // it should not be smaller than this.
     private static final int DEFAULT_MAX_IMAGE_DISPLAY_SIZE = 2048;
-
     // Some phones have massive GL_Texture sizes. Prevent images from doing
     // overly large allocations by capping the texture size.
     private static final int MAX_GL_TEXTURE_SIZE = 4096;
-    private static Size MAX_IMAGE_DISPLAY_SIZE;
-
-    public static Size getMaxImageDisplaySize()
-    {
-        if (MAX_IMAGE_DISPLAY_SIZE == null)
-        {
-            Integer size = computeEglMaxTextureSize();
-            if (size == null)
-            {
-                // Fallback to the default 2048 if a size is not found.
-                MAX_IMAGE_DISPLAY_SIZE = new Size(DEFAULT_MAX_IMAGE_DISPLAY_SIZE,
-                        DEFAULT_MAX_IMAGE_DISPLAY_SIZE);
-            } else if (size > MAX_GL_TEXTURE_SIZE)
-            {
-                // Cap the display size to prevent Out of memory problems during
-                // pre-allocation of huge bitmaps.
-                MAX_IMAGE_DISPLAY_SIZE = new Size(MAX_GL_TEXTURE_SIZE, MAX_GL_TEXTURE_SIZE);
-            } else
-            {
-                MAX_IMAGE_DISPLAY_SIZE = new Size(size, size);
-            }
-        }
-
-        return MAX_IMAGE_DISPLAY_SIZE;
-    }
-
-    public static final Size MEDIASTORE_THUMB_SIZE = new Size(512, 384);
-    public static final Size TINY_THUMB_SIZE = new Size(256, 256);
-
     // Estimated memory bandwidth for N5 and N6 is about 500MB/s
     // 500MBs * 1000000(Bytes per MB) / 4 (RGBA pixel) / 1000 (milli per S)
     // Give a 20% margin for error and real conditions.
     private static final int EST_PIXELS_PER_MILLI = 100000;
-
     // Estimated number of bytes that can be used to usually display a thumbnail
     // in under a frame at 60fps (16ms).
     public static final int MAXIMUM_SMOOTH_PIXELS = EST_PIXELS_PER_MILLI * 10 /* millis */;
-
     // Estimated number of bytes that can be used to generate a large thumbnail in under
     // (about) 3 frames at 60fps (16ms).
     public static final int MAXIMUM_FULL_RES_PIXELS = EST_PIXELS_PER_MILLI * 45 /* millis */;
-    public static final int JPEG_COMPRESS_QUALITY = 90;
-
+    private static Size MAX_IMAGE_DISPLAY_SIZE;
     private final GenericRequestBuilder<Uri, ?, ?, GlideDrawable> mTinyImageBuilder;
     private final DrawableRequestBuilder<Uri> mLargeImageBuilder;
-
-    public GlideFilmstripManager(Context context)
-    {
+    public GlideFilmstripManager(Context context) {
         Glide glide = Glide.get(context);
         BitmapEncoder bitmapEncoder = new BitmapEncoder(Bitmap.CompressFormat.JPEG,
                 JPEG_COMPRESS_QUALITY);
@@ -132,68 +97,23 @@ public final class GlideFilmstripManager
                 .dontAnimate();
     }
 
-    /**
-     * Create a full size drawable request for a given width and height that is
-     * as large as we can reasonably load into a view without causing massive
-     * jank problems or blank frames due to overly large textures.
-     */
-    public final DrawableRequestBuilder<Uri> loadFull(Uri uri, Key key, Size original)
-    {
-        Size size = clampSize(original, MAXIMUM_FULL_RES_PIXELS, getMaxImageDisplaySize());
+    public static Size getMaxImageDisplaySize() {
+        if (MAX_IMAGE_DISPLAY_SIZE == null) {
+            Integer size = computeEglMaxTextureSize();
+            if (size == null) {
+                // Fallback to the default 2048 if a size is not found.
+                MAX_IMAGE_DISPLAY_SIZE = new Size(DEFAULT_MAX_IMAGE_DISPLAY_SIZE,
+                        DEFAULT_MAX_IMAGE_DISPLAY_SIZE);
+            } else if (size > MAX_GL_TEXTURE_SIZE) {
+                // Cap the display size to prevent Out of memory problems during
+                // pre-allocation of huge bitmaps.
+                MAX_IMAGE_DISPLAY_SIZE = new Size(MAX_GL_TEXTURE_SIZE, MAX_GL_TEXTURE_SIZE);
+            } else {
+                MAX_IMAGE_DISPLAY_SIZE = new Size(size, size);
+            }
+        }
 
-        return mLargeImageBuilder
-                .clone()
-                .load(uri)
-                .signature(key)
-                .override(size.width(), size.height());
-    }
-
-    /**
-     * Create a full size drawable request for a given width and height that is
-     * smaller than loadFull, but is intended be large enough to fill the screen
-     * pixels.
-     */
-    public DrawableRequestBuilder<Uri> loadScreen(Uri uri, Key key, Size original)
-    {
-        Size size = clampSize(original, MAXIMUM_SMOOTH_PIXELS, getMaxImageDisplaySize());
-        return mLargeImageBuilder
-                .clone()
-                .load(uri)
-                .signature(key)
-                .override(size.width(), size.height());
-    }
-
-    /**
-     * Create a small thumbnail sized image that has the same bounds as the
-     * media store thumbnail images.
-     * <p>
-     * If the Uri points at an animated gif, the gif will not play.
-     */
-    public GenericRequestBuilder<Uri, ?, ?, GlideDrawable> loadMediaStoreThumb(Uri uri, Key key)
-    {
-        Size size = clampSize(MEDIASTORE_THUMB_SIZE, MAXIMUM_SMOOTH_PIXELS, getMaxImageDisplaySize());
-        return mTinyImageBuilder
-                .clone()
-                .load(uri)
-                .signature(key)
-                // This attempts to ensure we load the cached media store version.
-                .override(size.width(), size.height());
-    }
-
-    /**
-     * Create very tiny thumbnail request that should complete as fast
-     * as possible.
-     * <p>
-     * If the Uri points at an animated gif, the gif will not play.
-     */
-    public GenericRequestBuilder<Uri, ?, ?, GlideDrawable> loadTinyThumb(Uri uri, Key key)
-    {
-        Size size = clampSize(TINY_THUMB_SIZE, MAXIMUM_SMOOTH_PIXELS, getMaxImageDisplaySize());
-        return mTinyImageBuilder
-                .clone()
-                .load(uri)
-                .signature(key)
-                .override(size.width(), size.height());
+        return MAX_IMAGE_DISPLAY_SIZE;
     }
 
     /**
@@ -202,12 +122,10 @@ public final class GlideFilmstripManager
      * <p>
      * This will never upscale sizes.
      */
-    private static Size clampSize(Size original, double maxArea, Size maxSize)
-    {
+    private static Size clampSize(Size original, double maxArea, Size maxSize) {
         if (original.getWidth() * original.getHeight() < maxArea &&
                 original.getWidth() < maxSize.getWidth() &&
-                original.getHeight() < maxSize.getHeight())
-        {
+                original.getHeight() < maxSize.getHeight()) {
             // In several cases, the size is smaller than the max, and the area is
             // smaller than the max area.
             return original;
@@ -221,16 +139,14 @@ public final class GlideFilmstripManager
 
         // If that ratio results in an image where the edge length is still too large,
         // constrain based on max edge length instead.
-        if (width > maxSize.width() || height > maxSize.height())
-        {
+        if (width > maxSize.width() || height > maxSize.height()) {
             return computeFitWithinSize(original, maxSize);
         }
 
         return new Size(width, height);
     }
 
-    private static Size computeFitWithinSize(Size original, Size maxSize)
-    {
+    private static Size computeFitWithinSize(Size original, Size maxSize) {
         double widthRatio = (double) maxSize.width() / original.width();
         double heightRatio = (double) maxSize.height() / original.height();
 
@@ -247,8 +163,7 @@ public final class GlideFilmstripManager
      * Ridiculous way to read the devices maximum texture size because no other
      * way is provided.
      */
-    private static Integer computeEglMaxTextureSize()
-    {
+    private static Integer computeEglMaxTextureSize() {
         EGLDisplay eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
         int[] majorMinor = new int[2];
         EGL14.eglInitialize(eglDisplay, majorMinor, 0, majorMinor, 1);
@@ -265,8 +180,7 @@ public final class GlideFilmstripManager
         EGL14.eglChooseConfig(eglDisplay, configAttr, 0,
                 eglConfigs, 0, 1, configCount, 0);
 
-        if (configCount[0] == 0)
-        {
+        if (configCount[0] == 0) {
             Log.w(TAG, "No EGL configurations found!");
             return null;
         }
@@ -306,5 +220,65 @@ public final class GlideFilmstripManager
 
         // Return the computed max size.
         return result;
+    }
+
+    /**
+     * Create a full size drawable request for a given width and height that is
+     * as large as we can reasonably load into a view without causing massive
+     * jank problems or blank frames due to overly large textures.
+     */
+    public final DrawableRequestBuilder<Uri> loadFull(Uri uri, Key key, Size original) {
+        Size size = clampSize(original, MAXIMUM_FULL_RES_PIXELS, getMaxImageDisplaySize());
+
+        return mLargeImageBuilder
+                .clone()
+                .load(uri)
+                .signature(key)
+                .override(size.width(), size.height());
+    }
+
+    /**
+     * Create a full size drawable request for a given width and height that is
+     * smaller than loadFull, but is intended be large enough to fill the screen
+     * pixels.
+     */
+    public DrawableRequestBuilder<Uri> loadScreen(Uri uri, Key key, Size original) {
+        Size size = clampSize(original, MAXIMUM_SMOOTH_PIXELS, getMaxImageDisplaySize());
+        return mLargeImageBuilder
+                .clone()
+                .load(uri)
+                .signature(key)
+                .override(size.width(), size.height());
+    }
+
+    /**
+     * Create a small thumbnail sized image that has the same bounds as the
+     * media store thumbnail images.
+     * <p>
+     * If the Uri points at an animated gif, the gif will not play.
+     */
+    public GenericRequestBuilder<Uri, ?, ?, GlideDrawable> loadMediaStoreThumb(Uri uri, Key key) {
+        Size size = clampSize(MEDIASTORE_THUMB_SIZE, MAXIMUM_SMOOTH_PIXELS, getMaxImageDisplaySize());
+        return mTinyImageBuilder
+                .clone()
+                .load(uri)
+                .signature(key)
+                // This attempts to ensure we load the cached media store version.
+                .override(size.width(), size.height());
+    }
+
+    /**
+     * Create very tiny thumbnail request that should complete as fast
+     * as possible.
+     * <p>
+     * If the Uri points at an animated gif, the gif will not play.
+     */
+    public GenericRequestBuilder<Uri, ?, ?, GlideDrawable> loadTinyThumb(Uri uri, Key key) {
+        Size size = clampSize(TINY_THUMB_SIZE, MAXIMUM_SMOOTH_PIXELS, getMaxImageDisplaySize());
+        return mTinyImageBuilder
+                .clone()
+                .load(uri)
+                .signature(key)
+                .override(size.width(), size.height());
     }
 }

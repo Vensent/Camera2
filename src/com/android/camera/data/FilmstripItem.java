@@ -29,21 +29,8 @@ import javax.annotation.Nonnull;
 /**
  * An abstract interface that represents the Local filmstrip items.
  */
-public interface FilmstripItem
-{
+public interface FilmstripItem {
     static final Log.Tag TAG = new Log.Tag("FilmstripItem");
-
-    /**
-     * An action callback to be used for actions on the filmstrip items.
-     */
-    public static interface VideoClickedCallback
-    {
-
-        /**
-         * Plays the video with the given URI and title.
-         */
-        public void playVideo(Uri uri, String title);
-    }
 
     /**
      * Returns the backing data for this filmstrip item.
@@ -145,4 +132,15 @@ public interface FilmstripItem
      * are 0, 90, 180, and 270.
      */
     public int getOrientation();
+
+    /**
+     * An action callback to be used for actions on the filmstrip items.
+     */
+    public static interface VideoClickedCallback {
+
+        /**
+         * Plays the video with the given URI and title.
+         */
+        public void playVideo(Uri uri, String title);
+    }
 }

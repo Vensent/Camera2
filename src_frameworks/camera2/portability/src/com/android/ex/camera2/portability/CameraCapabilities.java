@@ -35,13 +35,13 @@ import java.util.TreeSet;
  */
 public class CameraCapabilities {
 
+    /**
+     * Zoom ratio used for seeing sensor's full field of view.
+     */
+    protected static final float ZOOM_RATIO_UNZOOMED = 1.0f;
     private static Log.Tag TAG = new Log.Tag("CamCapabs");
 
-    /** Zoom ratio used for seeing sensor's full field of view. */
-    protected static final float ZOOM_RATIO_UNZOOMED = 1.0f;
-
     /* All internal states are declared final and should be thread-safe. */
-
     protected final ArrayList<int[]> mSupportedPreviewFpsRange = new ArrayList<int[]>();
     protected final ArrayList<Size> mSupportedPreviewSizes = new ArrayList<Size>();
     protected final TreeSet<Integer> mSupportedPreviewFormats = new TreeSet<Integer>();
@@ -54,6 +54,7 @@ public class CameraCapabilities {
     protected final EnumSet<WhiteBalance> mSupportedWhiteBalances =
             EnumSet.noneOf(WhiteBalance.class);
     protected final EnumSet<Feature> mSupportedFeatures = EnumSet.noneOf(Feature.class);
+    private final Stringifier mStringifier;
     protected Size mPreferredPreviewSizeForVideo;
     protected int mMinExposureCompensation;
     protected int mMaxExposureCompensation;
@@ -64,403 +65,10 @@ public class CameraCapabilities {
     protected float mMaxZoomRatio;
     protected float mHorizontalViewAngle;
     protected float mVerticalViewAngle;
-    private final Stringifier mStringifier;
-
-    /**
-     * Focus modes.
-     */
-    public enum FocusMode {
-        /**
-         * Continuous auto focus mode intended for taking pictures.
-         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_AUTO}.
-         */
-        AUTO,
-        /**
-         * Continuous auto focus mode intended for taking pictures.
-         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_CONTINUOUS_PICTURE}.
-         */
-        CONTINUOUS_PICTURE,
-        /**
-         * Continuous auto focus mode intended for video recording.
-         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_CONTINUOUS_VIDEO}.
-         */
-        CONTINUOUS_VIDEO,
-        /**
-         * Extended depth of field (EDOF).
-         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_EDOF}.
-         */
-        EXTENDED_DOF,
-        /**
-         * Focus is fixed.
-         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_FIXED}.
-         */
-        FIXED,
-        /**
-         * Focus is set at infinity.
-         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_INFINITY}.
-         */
-        // TODO: Unsupported on API 2
-        INFINITY,
-        /**
-         * Macro (close-up) focus mode.
-         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_MACRO}.
-         */
-        MACRO,
-    }
-
-    /**
-     * Flash modes.
-     */
-    public enum FlashMode {
-        /**
-         * No flash.
-         */
-        NO_FLASH,
-        /**
-         * Flash will be fired automatically when required.
-         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_OFF}.
-         */
-        AUTO,
-        /**
-         * Flash will not be fired.
-         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_OFF}.
-         */
-        OFF,
-        /**
-         * Flash will always be fired during snapshot.
-         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_ON}.
-         */
-        ON,
-        /**
-         * Constant emission of light during preview, auto-focus and snapshot.
-         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_TORCH}.
-         */
-        TORCH,
-        /**
-         * Flash will be fired in red-eye reduction mode.
-         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_RED_EYE}.
-         */
-        RED_EYE,
-    }
-
-    /**
-     * Scene modes.
-     */
-    public enum SceneMode {
-        /**
-         * No supported scene mode.
-         */
-        NO_SCENE_MODE,
-        /**
-         * Scene mode is off.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_AUTO}.
-         */
-        AUTO,
-        /**
-         * Take photos of fast moving objects.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_ACTION}.
-         */
-        ACTION,
-        /**
-         * Applications are looking for a barcode.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_BARCODE}.
-         */
-        BARCODE,
-        /**
-         * Take pictures on the beach.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_BEACH}.
-         */
-        BEACH,
-        /**
-         * Capture the naturally warm color of scenes lit by candles.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_CANDLELIGHT}.
-         */
-        CANDLELIGHT,
-        /**
-         * For shooting firework displays.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_FIREWORKS}.
-         */
-        FIREWORKS,
-        /**
-         * Capture a scene using high dynamic range imaging techniques.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_HDR}.
-         */
-        // Note: Supported as a vendor tag on the Camera2 API for some LEGACY devices.
-        HDR,
-        /**
-         * Take pictures on distant objects.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_LANDSCAPE}.
-         */
-        LANDSCAPE,
-        /**
-         * Take photos at night.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_NIGHT}.
-         */
-        NIGHT,
-        /**
-         * Take people pictures at night.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_NIGHT_PORTRAIT}.
-         */
-        // TODO: Unsupported on API 2
-        NIGHT_PORTRAIT,
-        /**
-         * Take indoor low-light shot.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_PARTY}.
-         */
-        PARTY,
-        /**
-         * Take people pictures.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_PORTRAIT}.
-         */
-        PORTRAIT,
-        /**
-         * Take pictures on the snow.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_SNOW}.
-         */
-        SNOW,
-        /**
-         * Take photos of fast moving objects.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_SPORTS}.
-         */
-        SPORTS,
-        /**
-         * Avoid blurry pictures (for example, due to hand shake).
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_STEADYPHOTO}.
-         */
-        STEADYPHOTO,
-        /**
-         * Take sunset photos.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_SUNSET}.
-         */
-        SUNSET,
-        /**
-         * Take photos in a theater.
-         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_THEATRE}.
-         */
-        THEATRE,
-    }
-
-    /**
-     * White blances.
-     */
-    public enum WhiteBalance {
-        /**
-         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_AUTO}.
-         */
-        AUTO,
-        /**
-         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_CLOUDY_DAYLIGHT}.
-         */
-        CLOUDY_DAYLIGHT,
-        /**
-         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_DAYLIGHT}.
-         */
-        DAYLIGHT,
-        /**
-         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_FLUORESCENT}.
-         */
-        FLUORESCENT,
-        /**
-         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_INCANDESCENT}.
-         */
-        INCANDESCENT,
-        /**
-         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_SHADE}.
-         */
-        SHADE,
-        /**
-         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_TWILIGHT}.
-         */
-        TWILIGHT,
-        /**
-         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_WARM_FLUORESCENT}.
-         */
-        WARM_FLUORESCENT,
-    }
-
-    /**
-     * Features.
-     */
-    public enum Feature {
-        /**
-         * Support zoom-related methods.
-         */
-        ZOOM,
-        /**
-         * Support for photo capturing during video recording.
-         */
-        VIDEO_SNAPSHOT,
-        /**
-         * Support for focus area settings.
-         */
-        FOCUS_AREA,
-        /**
-         * Support for metering area settings.
-         */
-        METERING_AREA,
-        /**
-         * Support for automatic exposure lock.
-         */
-        AUTO_EXPOSURE_LOCK,
-        /**
-         * Support for automatic white balance lock.
-         */
-        AUTO_WHITE_BALANCE_LOCK,
-        /**
-         * Support for video stabilization.
-         */
-        VIDEO_STABILIZATION,
-    }
-
-    /**
-     * A interface stringifier to convert abstract representations to API
-     * related string representation.
-     */
-    public static class Stringifier {
-        /**
-         * Converts the string to hyphen-delimited lowercase for compatibility with multiple APIs.
-         *
-         * @param enumCase The name of an enum constant.
-         * @return The converted string.
-         */
-        private static String toApiCase(String enumCase) {
-            return enumCase.toLowerCase(Locale.US).replaceAll("_", "-");
-        }
-
-        /**
-         * Converts the string to underscore-delimited uppercase to match the enum constant names.
-         *
-         * @param apiCase An API-related string representation.
-         * @return The converted string.
-         */
-        private static String toEnumCase(String apiCase) {
-            return apiCase.toUpperCase(Locale.US).replaceAll("-", "_");
-        }
-
-        /**
-         * Converts the focus mode to API-related string representation.
-         *
-         * @param focus The focus mode to convert.
-         * @return The string used by the camera framework API to represent the
-         *         focus mode.
-         */
-        public String stringify(FocusMode focus) {
-            return toApiCase(focus.name());
-        }
-
-        /**
-         * Converts the API-related string representation of the focus mode to the
-         * abstract representation.
-         *
-         * @param val The string representation.
-         * @return The focus mode represented by the input string, or the focus
-         *         mode with the lowest ordinal if it cannot be converted.
-         */
-        public FocusMode focusModeFromString(String val) {
-            if (val == null) {
-                return FocusMode.values()[0];
-            }
-            try {
-                return FocusMode.valueOf(toEnumCase(val));
-            } catch (IllegalArgumentException ex) {
-                return FocusMode.values()[0];
-            }
-        }
-
-        /**
-         * Converts the flash mode to API-related string representation.
-         *
-         * @param flash The focus mode to convert.
-         * @return The string used by the camera framework API to represent the
-         *         flash mode.
-         */
-        public String stringify(FlashMode flash) {
-            return toApiCase(flash.name());
-        }
-
-        /**
-         * Converts the API-related string representation of the flash mode to the
-         * abstract representation.
-         *
-         * @param val The string representation.
-         * @return The flash mode represented by the input string, or the flash
-         *         mode with the lowest ordinal if it cannot be converted.
-         */
-        public FlashMode flashModeFromString(String val) {
-            if (val == null) {
-                return FlashMode.values()[0];
-            }
-            try {
-                return FlashMode.valueOf(toEnumCase(val));
-            } catch (IllegalArgumentException ex) {
-                return FlashMode.values()[0];
-            }
-        }
-
-        /**
-         * Converts the scene mode to API-related string representation.
-         *
-         * @param scene The focus mode to convert.
-         * @return The string used by the camera framework API to represent the
-         *         scene mode.
-         */
-        public String stringify(SceneMode scene) {
-            return toApiCase(scene.name());
-        }
-
-        /**
-         * Converts the API-related string representation of the scene mode to the
-         * abstract representation.
-         *
-         * @param val The string representation.
-         * @return The scene mode represented by the input string, or the scene
-         *         mode with the lowest ordinal if it cannot be converted.
-         */
-        public SceneMode sceneModeFromString(String val) {
-            if (val == null) {
-                return SceneMode.values()[0];
-            }
-            try {
-                return SceneMode.valueOf(toEnumCase(val));
-            } catch (IllegalArgumentException ex) {
-                return SceneMode.values()[0];
-            }
-        }
-
-        /**
-         * Converts the white balance to API-related string representation.
-         *
-         * @param wb The focus mode to convert.
-         * @return The string used by the camera framework API to represent the
-         * white balance.
-         */
-        public String stringify(WhiteBalance wb) {
-            return toApiCase(wb.name());
-        }
-
-        /**
-         * Converts the API-related string representation of the white balance to
-         * the abstract representation.
-         *
-         * @param val The string representation.
-         * @return The white balance represented by the input string, or the
-         *         white balance with the lowest ordinal if it cannot be
-         *         converted.
-         */
-        public WhiteBalance whiteBalanceFromString(String val) {
-            if (val == null) {
-                return WhiteBalance.values()[0];
-            }
-            try {
-                return WhiteBalance.valueOf(toEnumCase(val));
-            } catch (IllegalArgumentException ex) {
-                return WhiteBalance.values()[0];
-            }
-        }
-    }
 
     /**
      * Constructor.
+     *
      * @param stringifier The API-specific stringifier for this instance.
      */
     CameraCapabilities(Stringifier stringifier) {
@@ -469,6 +77,7 @@ public class CameraCapabilities {
 
     /**
      * Copy constructor.
+     *
      * @param src The source instance.
      */
     public CameraCapabilities(CameraCapabilities src) {
@@ -513,6 +122,7 @@ public class CameraCapabilities {
 
     /**
      * Gets the supported preview formats.
+     *
      * @return The supported preview {@link android.graphics.ImageFormat}s.
      */
     public Set<Integer> getSupportedPreviewFormats() {
@@ -549,7 +159,7 @@ public class CameraCapabilities {
 
     /**
      * @return The supported video frame sizes that can be used by MediaRecorder.
-     *         The list is sorted by width then height in a descending order.
+     * The list is sorted by width then height in a descending order.
      */
     public final List<Size> getSupportedVideoSizes() {
         return new ArrayList<Size>(mSupportedVideoSizes);
@@ -755,5 +365,427 @@ public class CameraCapabilities {
         }
         Log.v(TAG, "Video stabilization is not supported");
         return false;
+    }
+
+    /**
+     * Focus modes.
+     */
+    public enum FocusMode {
+        /**
+         * Continuous auto focus mode intended for taking pictures.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_AUTO}.
+         */
+        AUTO,
+        /**
+         * Continuous auto focus mode intended for taking pictures.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_CONTINUOUS_PICTURE}.
+         */
+        CONTINUOUS_PICTURE,
+        /**
+         * Continuous auto focus mode intended for video recording.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_CONTINUOUS_VIDEO}.
+         */
+        CONTINUOUS_VIDEO,
+        /**
+         * Extended depth of field (EDOF).
+         *
+         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_EDOF}.
+         */
+        EXTENDED_DOF,
+        /**
+         * Focus is fixed.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_FIXED}.
+         */
+        FIXED,
+        /**
+         * Focus is set at infinity.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_INFINITY}.
+         */
+        // TODO: Unsupported on API 2
+        INFINITY,
+        /**
+         * Macro (close-up) focus mode.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FOCUS_MODE_MACRO}.
+         */
+        MACRO,
+    }
+
+    /**
+     * Flash modes.
+     */
+    public enum FlashMode {
+        /**
+         * No flash.
+         */
+        NO_FLASH,
+        /**
+         * Flash will be fired automatically when required.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_OFF}.
+         */
+        AUTO,
+        /**
+         * Flash will not be fired.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_OFF}.
+         */
+        OFF,
+        /**
+         * Flash will always be fired during snapshot.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_ON}.
+         */
+        ON,
+        /**
+         * Constant emission of light during preview, auto-focus and snapshot.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_TORCH}.
+         */
+        TORCH,
+        /**
+         * Flash will be fired in red-eye reduction mode.
+         *
+         * @see {@link android.hardware.Camera.Parameters#FLASH_MODE_RED_EYE}.
+         */
+        RED_EYE,
+    }
+
+    /**
+     * Scene modes.
+     */
+    public enum SceneMode {
+        /**
+         * No supported scene mode.
+         */
+        NO_SCENE_MODE,
+        /**
+         * Scene mode is off.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_AUTO}.
+         */
+        AUTO,
+        /**
+         * Take photos of fast moving objects.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_ACTION}.
+         */
+        ACTION,
+        /**
+         * Applications are looking for a barcode.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_BARCODE}.
+         */
+        BARCODE,
+        /**
+         * Take pictures on the beach.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_BEACH}.
+         */
+        BEACH,
+        /**
+         * Capture the naturally warm color of scenes lit by candles.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_CANDLELIGHT}.
+         */
+        CANDLELIGHT,
+        /**
+         * For shooting firework displays.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_FIREWORKS}.
+         */
+        FIREWORKS,
+        /**
+         * Capture a scene using high dynamic range imaging techniques.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_HDR}.
+         */
+        // Note: Supported as a vendor tag on the Camera2 API for some LEGACY devices.
+        HDR,
+        /**
+         * Take pictures on distant objects.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_LANDSCAPE}.
+         */
+        LANDSCAPE,
+        /**
+         * Take photos at night.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_NIGHT}.
+         */
+        NIGHT,
+        /**
+         * Take people pictures at night.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_NIGHT_PORTRAIT}.
+         */
+        // TODO: Unsupported on API 2
+        NIGHT_PORTRAIT,
+        /**
+         * Take indoor low-light shot.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_PARTY}.
+         */
+        PARTY,
+        /**
+         * Take people pictures.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_PORTRAIT}.
+         */
+        PORTRAIT,
+        /**
+         * Take pictures on the snow.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_SNOW}.
+         */
+        SNOW,
+        /**
+         * Take photos of fast moving objects.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_SPORTS}.
+         */
+        SPORTS,
+        /**
+         * Avoid blurry pictures (for example, due to hand shake).
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_STEADYPHOTO}.
+         */
+        STEADYPHOTO,
+        /**
+         * Take sunset photos.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_SUNSET}.
+         */
+        SUNSET,
+        /**
+         * Take photos in a theater.
+         *
+         * @see {@link android.hardware.Camera.Parameters#SCENE_MODE_THEATRE}.
+         */
+        THEATRE,
+    }
+
+    /**
+     * White blances.
+     */
+    public enum WhiteBalance {
+        /**
+         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_AUTO}.
+         */
+        AUTO,
+        /**
+         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_CLOUDY_DAYLIGHT}.
+         */
+        CLOUDY_DAYLIGHT,
+        /**
+         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_DAYLIGHT}.
+         */
+        DAYLIGHT,
+        /**
+         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_FLUORESCENT}.
+         */
+        FLUORESCENT,
+        /**
+         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_INCANDESCENT}.
+         */
+        INCANDESCENT,
+        /**
+         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_SHADE}.
+         */
+        SHADE,
+        /**
+         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_TWILIGHT}.
+         */
+        TWILIGHT,
+        /**
+         * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_WARM_FLUORESCENT}.
+         */
+        WARM_FLUORESCENT,
+    }
+
+    /**
+     * Features.
+     */
+    public enum Feature {
+        /**
+         * Support zoom-related methods.
+         */
+        ZOOM,
+        /**
+         * Support for photo capturing during video recording.
+         */
+        VIDEO_SNAPSHOT,
+        /**
+         * Support for focus area settings.
+         */
+        FOCUS_AREA,
+        /**
+         * Support for metering area settings.
+         */
+        METERING_AREA,
+        /**
+         * Support for automatic exposure lock.
+         */
+        AUTO_EXPOSURE_LOCK,
+        /**
+         * Support for automatic white balance lock.
+         */
+        AUTO_WHITE_BALANCE_LOCK,
+        /**
+         * Support for video stabilization.
+         */
+        VIDEO_STABILIZATION,
+    }
+
+    /**
+     * A interface stringifier to convert abstract representations to API
+     * related string representation.
+     */
+    public static class Stringifier {
+        /**
+         * Converts the string to hyphen-delimited lowercase for compatibility with multiple APIs.
+         *
+         * @param enumCase The name of an enum constant.
+         * @return The converted string.
+         */
+        private static String toApiCase(String enumCase) {
+            return enumCase.toLowerCase(Locale.US).replaceAll("_", "-");
+        }
+
+        /**
+         * Converts the string to underscore-delimited uppercase to match the enum constant names.
+         *
+         * @param apiCase An API-related string representation.
+         * @return The converted string.
+         */
+        private static String toEnumCase(String apiCase) {
+            return apiCase.toUpperCase(Locale.US).replaceAll("-", "_");
+        }
+
+        /**
+         * Converts the focus mode to API-related string representation.
+         *
+         * @param focus The focus mode to convert.
+         * @return The string used by the camera framework API to represent the
+         * focus mode.
+         */
+        public String stringify(FocusMode focus) {
+            return toApiCase(focus.name());
+        }
+
+        /**
+         * Converts the API-related string representation of the focus mode to the
+         * abstract representation.
+         *
+         * @param val The string representation.
+         * @return The focus mode represented by the input string, or the focus
+         * mode with the lowest ordinal if it cannot be converted.
+         */
+        public FocusMode focusModeFromString(String val) {
+            if (val == null) {
+                return FocusMode.values()[0];
+            }
+            try {
+                return FocusMode.valueOf(toEnumCase(val));
+            } catch (IllegalArgumentException ex) {
+                return FocusMode.values()[0];
+            }
+        }
+
+        /**
+         * Converts the flash mode to API-related string representation.
+         *
+         * @param flash The focus mode to convert.
+         * @return The string used by the camera framework API to represent the
+         * flash mode.
+         */
+        public String stringify(FlashMode flash) {
+            return toApiCase(flash.name());
+        }
+
+        /**
+         * Converts the API-related string representation of the flash mode to the
+         * abstract representation.
+         *
+         * @param val The string representation.
+         * @return The flash mode represented by the input string, or the flash
+         * mode with the lowest ordinal if it cannot be converted.
+         */
+        public FlashMode flashModeFromString(String val) {
+            if (val == null) {
+                return FlashMode.values()[0];
+            }
+            try {
+                return FlashMode.valueOf(toEnumCase(val));
+            } catch (IllegalArgumentException ex) {
+                return FlashMode.values()[0];
+            }
+        }
+
+        /**
+         * Converts the scene mode to API-related string representation.
+         *
+         * @param scene The focus mode to convert.
+         * @return The string used by the camera framework API to represent the
+         * scene mode.
+         */
+        public String stringify(SceneMode scene) {
+            return toApiCase(scene.name());
+        }
+
+        /**
+         * Converts the API-related string representation of the scene mode to the
+         * abstract representation.
+         *
+         * @param val The string representation.
+         * @return The scene mode represented by the input string, or the scene
+         * mode with the lowest ordinal if it cannot be converted.
+         */
+        public SceneMode sceneModeFromString(String val) {
+            if (val == null) {
+                return SceneMode.values()[0];
+            }
+            try {
+                return SceneMode.valueOf(toEnumCase(val));
+            } catch (IllegalArgumentException ex) {
+                return SceneMode.values()[0];
+            }
+        }
+
+        /**
+         * Converts the white balance to API-related string representation.
+         *
+         * @param wb The focus mode to convert.
+         * @return The string used by the camera framework API to represent the
+         * white balance.
+         */
+        public String stringify(WhiteBalance wb) {
+            return toApiCase(wb.name());
+        }
+
+        /**
+         * Converts the API-related string representation of the white balance to
+         * the abstract representation.
+         *
+         * @param val The string representation.
+         * @return The white balance represented by the input string, or the
+         * white balance with the lowest ordinal if it cannot be
+         * converted.
+         */
+        public WhiteBalance whiteBalanceFromString(String val) {
+            if (val == null) {
+                return WhiteBalance.values()[0];
+            }
+            try {
+                return WhiteBalance.valueOf(toEnumCase(val));
+            } catch (IllegalArgumentException ex) {
+                return WhiteBalance.values()[0];
+            }
+        }
     }
 }

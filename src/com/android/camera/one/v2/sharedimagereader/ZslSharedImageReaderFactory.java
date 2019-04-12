@@ -16,9 +16,6 @@
 
 package com.android.camera.one.v2.sharedimagereader;
 
-import static com.android.camera.one.v2.core.ResponseListeners.forFinalMetadata;
-import static com.android.camera.one.v2.core.ResponseListeners.forTimestamps;
-
 import com.android.camera.async.HandlerFactory;
 import com.android.camera.async.Lifetime;
 import com.android.camera.async.Observable;
@@ -36,13 +33,15 @@ import com.android.camera.one.v2.sharedimagereader.ringbuffer.DynamicRingBufferF
 import com.android.camera.one.v2.sharedimagereader.ticketpool.FiniteTicketPool;
 import com.android.camera.one.v2.sharedimagereader.ticketpool.TicketPool;
 
+import static com.android.camera.one.v2.core.ResponseListeners.forFinalMetadata;
+import static com.android.camera.one.v2.core.ResponseListeners.forTimestamps;
+
 /**
  * Like {@link SharedImageReaderFactory}, but provides a single
  * {@link ImageStream} with a dynamic capacity which changes depending on demand
  * from the {@link ManagedImageReader}.
  */
-public class ZslSharedImageReaderFactory
-{
+public class ZslSharedImageReaderFactory {
     private final ManagedImageReader mSharedImageReader;
     private final ImageStream mZslCaptureStream;
     private final MetadataPool mMetadataPool;
@@ -64,8 +63,7 @@ public class ZslSharedImageReaderFactory
      *                          imageReader.getMaxImages().
      */
     public ZslSharedImageReaderFactory(Lifetime lifetime, ImageReaderProxy imageReader,
-                                       HandlerFactory handlerFactory, int maxRingBufferSize)
-    {
+                                       HandlerFactory handlerFactory, int maxRingBufferSize) {
         ImageDistributorFactory imageDistributorFactory = new ImageDistributorFactory(lifetime,
                 imageReader, handlerFactory);
         ImageDistributor imageDistributor = imageDistributorFactory.provideImageDistributor();
@@ -103,28 +101,23 @@ public class ZslSharedImageReaderFactory
                 forFinalMetadata(metadataPoolFactory.provideMetadataCallback()));
     }
 
-    public ManagedImageReader provideSharedImageReader()
-    {
+    public ManagedImageReader provideSharedImageReader() {
         return mSharedImageReader;
     }
 
-    public ResponseListener provideGlobalResponseListener()
-    {
+    public ResponseListener provideGlobalResponseListener() {
         return mResponseListener;
     }
 
-    public ImageStream provideZSLStream()
-    {
+    public ImageStream provideZSLStream() {
         return mZslCaptureStream;
     }
 
-    public MetadataPool provideMetadataPool()
-    {
+    public MetadataPool provideMetadataPool() {
         return mMetadataPool;
     }
 
-    public Observable<Integer> provideAvailableImageCount()
-    {
+    public Observable<Integer> provideAvailableImageCount() {
         return mAvailableImageCount;
     }
 }

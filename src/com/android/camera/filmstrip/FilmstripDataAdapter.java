@@ -26,62 +26,7 @@ import com.android.camera.data.FilmstripItem.VideoClickedCallback;
  * {@link FilmstripItem} and the
  * {@link com.android.camera.widget.FilmstripView}.
  */
-public interface FilmstripDataAdapter
-{
-    /**
-     * An interface which defines the update reporter used to return to the
-     * {@link com.android.camera.filmstrip.FilmstripController.FilmstripListener}.
-     */
-    public interface UpdateReporter
-    {
-        /**
-         * Checks if the data of dataID is removed.
-         */
-        public boolean isDataRemoved(int index);
-
-        /**
-         * Checks if the data of dataID is updated.
-         */
-        public boolean isDataUpdated(int index);
-    }
-
-    /**
-     * An interface which defines the listener for data events over
-     * {@link FilmstripItem}. Usually
-     * {@link com.android.camera.widget.FilmstripView} itself.
-     */
-    public interface Listener
-    {
-        /**
-         * Called when the whole data loading is done. There is not any
-         * assumption on the previous data.
-         */
-        public void onFilmstripItemLoaded();
-
-        /**
-         * Called when some of the data is updated.
-         *
-         * @param reporter Use this reporter to know what happened.
-         */
-        public void onFilmstripItemUpdated(UpdateReporter reporter);
-
-        /**
-         * Called when a new data item is inserted.
-         *
-         * @param index The ID of the inserted data.
-         * @param item  The inserted data.
-         */
-        public void onFilmstripItemInserted(int index, FilmstripItem item);
-
-        /**
-         * Called when a data item is removed.
-         *
-         * @param index The ID of the removed data.
-         * @param item  The data.
-         */
-        public void onFilmstripItemRemoved(int index, FilmstripItem item);
-    }
-
+public interface FilmstripDataAdapter {
     /**
      * Returns the total number of image data.
      */
@@ -131,4 +76,56 @@ public interface FilmstripDataAdapter
      * @param listener The listener to use.
      */
     public void setListener(Listener listener);
+
+    /**
+     * An interface which defines the update reporter used to return to the
+     * {@link com.android.camera.filmstrip.FilmstripController.FilmstripListener}.
+     */
+    public interface UpdateReporter {
+        /**
+         * Checks if the data of dataID is removed.
+         */
+        public boolean isDataRemoved(int index);
+
+        /**
+         * Checks if the data of dataID is updated.
+         */
+        public boolean isDataUpdated(int index);
+    }
+
+    /**
+     * An interface which defines the listener for data events over
+     * {@link FilmstripItem}. Usually
+     * {@link com.android.camera.widget.FilmstripView} itself.
+     */
+    public interface Listener {
+        /**
+         * Called when the whole data loading is done. There is not any
+         * assumption on the previous data.
+         */
+        public void onFilmstripItemLoaded();
+
+        /**
+         * Called when some of the data is updated.
+         *
+         * @param reporter Use this reporter to know what happened.
+         */
+        public void onFilmstripItemUpdated(UpdateReporter reporter);
+
+        /**
+         * Called when a new data item is inserted.
+         *
+         * @param index The ID of the inserted data.
+         * @param item  The inserted data.
+         */
+        public void onFilmstripItemInserted(int index, FilmstripItem item);
+
+        /**
+         * Called when a data item is removed.
+         *
+         * @param index The ID of the removed data.
+         * @param item  The data.
+         */
+        public void onFilmstripItemRemoved(int index, FilmstripItem item);
+    }
 }

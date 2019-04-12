@@ -16,17 +16,16 @@
 
 package com.android.camera.one.v2.core;
 
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CaptureRequest;
+
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CaptureRequest;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 /**
  * A {@link RequestBuilder.Factory} which allows modifying each
@@ -39,40 +38,19 @@ import com.google.common.base.Suppliers;
  * builders which already have the latest zoom settings, preview surface,
  * metering regions, auto-focus state listener, etc. applied.
  */
-public class RequestTemplate implements RequestBuilder.Factory, ResponseManager
-{
-    private static class Parameter<T>
-    {
-        private final CaptureRequest.Key<T> key;
-        private final Supplier<T> value;
-
-        private Parameter(CaptureRequest.Key<T> key, Supplier<T> value)
-        {
-            this.key = key;
-            this.value = value;
-        }
-
-        public void addToBuilder(RequestBuilder builder)
-        {
-            builder.setParam(key, value.get());
-        }
-    }
-
+public class RequestTemplate implements RequestBuilder.Factory, ResponseManager {
     private final RequestBuilder.Factory mRequestBuilderFactory;
     private final Set<ResponseListener> mResponseListeners;
     private final List<Parameter<?>> mParameters;
     private final List<CaptureStream> mCaptureStreams;
-
-    public RequestTemplate(RequestBuilder.Factory requestBuilderFactory)
-    {
+    public RequestTemplate(RequestBuilder.Factory requestBuilderFactory) {
         mRequestBuilderFactory = requestBuilderFactory;
         mResponseListeners = new HashSet<>();
         mParameters = new ArrayList<>();
         mCaptureStreams = new ArrayList<>();
     }
 
-    public <T> RequestTemplate setParam(CaptureRequest.Key<T> key, T value)
-    {
+    public <T> RequestTemplate setParam(CaptureRequest.Key<T> key, T value) {
         return setParam(key, Suppliers.ofInstance(value));
     }
 
@@ -81,8 +59,7 @@ public class RequestTemplate implements RequestBuilder.Factory, ResponseManager
      * value is polled when each new RequestBuilder is created.
      */
     public <T> RequestTemplate setParam(CaptureRequest.Key<T> key,
-                                        Supplier<T> value)
-    {
+                                        Supplier<T> value) {
         mParameters.add(new Parameter<T>(key, value));
         return this;
     }
@@ -91,36 +68,44 @@ public class RequestTemplate implements RequestBuilder.Factory, ResponseManager
      * Attaches the given ResponseListener to all derived RequestBuilders.
      */
     @Override
-    public void addResponseListener(ResponseListener listener)
-    {
+    public void addResponseListener(ResponseListener listener) {
         mResponseListeners.add(listener);
     }
 
     /**
      * Attaches the given stream to all derived RequestBuilders.
      */
-    public RequestTemplate addStream(CaptureStream stream)
-    {
+    public RequestTemplate addStream(CaptureStream stream) {
         mCaptureStreams.add(stream);
         return this;
     }
 
     @Override
-    public RequestBuilder create(int templateType) throws CameraAccessException
-    {
+    public RequestBuilder create(int templateType) throws CameraAccessException {
         RequestBuilder builder = mRequestBuilderFactory.create(templateType);
-        for (Parameter param : mParameters)
-        {
+        for (Parameter param : mParameters) {
             param.addToBuilder(builder);
         }
-        for (ResponseListener listener : mResponseListeners)
-        {
+        for (ResponseListener listener : mResponseListeners) {
             builder.addResponseListener(listener);
         }
-        for (CaptureStream stream : mCaptureStreams)
-        {
+        for (CaptureStream stream : mCaptureStreams) {
             builder.addStream(stream);
         }
         return builder;
+    }
+
+    private static class Parameter<T> {
+        private final CaptureRequest.Key<T> key;
+        private final Supplier<T> value;
+
+        private Parameter(CaptureRequest.Key<T> key, Supplier<T> value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public void addToBuilder(RequestBuilder builder) {
+            builder.setParam(key, value.get());
+        }
     }
 }
