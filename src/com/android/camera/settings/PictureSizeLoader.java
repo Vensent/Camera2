@@ -44,6 +44,7 @@ public class PictureSizeLoader {
     private final ContentResolver mContentResolver;
     private final CameraDeviceInfo mCameraDeviceInfo;
     private final boolean mCachedOnly;
+
     /**
      * Initializes a new picture size loader.
      * <p>

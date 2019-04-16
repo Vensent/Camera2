@@ -109,6 +109,7 @@ public class FilmstripView extends ViewGroup {
     private float mOverScaleFactor = 1f;
 
     private boolean mFullScreenUIHidden = false;
+
     /**
      * Constructor.
      */

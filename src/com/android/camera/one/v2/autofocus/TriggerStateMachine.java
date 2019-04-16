@@ -52,6 +52,7 @@ final class TriggerStateMachine {
     private Long mLastTriggerFrameNumber;
     @Nullable
     private Long mLastFinishFrameNumber;
+
     public TriggerStateMachine(int triggerStart, Set<Integer> doneStates) {
         mTriggerStart = triggerStart;
         mDoneStates = doneStates;

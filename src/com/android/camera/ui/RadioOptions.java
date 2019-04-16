@@ -31,6 +31,7 @@ import com.android.camera2.R;
 public class RadioOptions extends TopRightWeightedLayout {
     private Drawable mBackground;
     private OnOptionClickListener mOnOptionClickListener;
+
     /**
      * Constructor that is called when inflating a view from XML.
      *

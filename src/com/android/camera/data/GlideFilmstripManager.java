@@ -72,6 +72,7 @@ public final class GlideFilmstripManager {
     private static Size MAX_IMAGE_DISPLAY_SIZE;
     private final GenericRequestBuilder<Uri, ?, ?, GlideDrawable> mTinyImageBuilder;
     private final DrawableRequestBuilder<Uri> mLargeImageBuilder;
+
     public GlideFilmstripManager(Context context) {
         Glide glide = Glide.get(context);
         BitmapEncoder bitmapEncoder = new BitmapEncoder(Bitmap.CompressFormat.JPEG,

@@ -43,6 +43,7 @@ public class AutoFocusStateMachine {
     private int mCurrentAfCookie = AF_UNINITIALIZED;
     private String mCurrentAfTrace = "";
     private int mLastAfCookie = 0;
+
     public AutoFocusStateMachine(AutoFocusStateListener listener) {
         if (listener == null) {
             throw new IllegalArgumentException("listener should not be null");

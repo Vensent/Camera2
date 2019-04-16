@@ -2187,6 +2187,7 @@ public class ExifInterface {
         public static final short AUTO = 0;
         public static final short MANUAL = 1;
     }
+
     /**
      * Constants for {@link TAG_SCENE_CAPTURE_TYPE}
      */
@@ -2196,6 +2197,7 @@ public class ExifInterface {
         public static final short PROTRAIT = 2;
         public static final short NIGHT_SCENE = 3;
     }
+
     /**
      * Constants for {@link TAG_COMPONENTS_CONFIGURATION}
      */
@@ -2208,6 +2210,7 @@ public class ExifInterface {
         public static final short G = 5;
         public static final short B = 6;
     }
+
     /**
      * Constants for {@link TAG_LIGHT_SOURCE}
      */
@@ -2234,6 +2237,7 @@ public class ExifInterface {
         public static final short ISO_STUDIO_TUNGSTEN = 24;
         public static final short OTHER = 255;
     }
+
     /**
      * Constants for {@link TAG_SENSING_METHOD}
      */

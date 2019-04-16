@@ -63,6 +63,7 @@ public class JpegImageBackendImageSaver implements ImageSaver.Builder {
     private final ImageBackend mImageBackend;
     private final Executor mExecutor;
     private final Rect mCrop;
+
     /**
      * Constructor Instantiate a local instance executor for all JPEG ImageSaver
      * factory requests via constructor.
@@ -78,6 +79,7 @@ public class JpegImageBackendImageSaver implements ImageSaver.Builder {
         mExecutor = Executors.newSingleThreadExecutor();
         mCrop = crop;
     }
+
     /**
      * Constructor for dependency injection/ testing.
      *

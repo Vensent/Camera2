@@ -32,6 +32,7 @@ public class FilmstripGestureRecognizer {
     private final GestureDetector mGestureDetector;
     private final ScaleGestureDetector mScaleDetector;
     private final Listener mListener;
+
     public FilmstripGestureRecognizer(Context context, Listener listener) {
         mListener = listener;
         mGestureDetector = new GestureDetector(context, new MyGestureListener(),

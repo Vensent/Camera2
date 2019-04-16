@@ -49,6 +49,7 @@ public class AndroidImageProxy implements ImageProxy {
     private final ImmutableList<ImageProxy.Plane> mPlanes;
     @GuardedBy("mLock")
     private Rect mCropRect;
+
     public AndroidImageProxy(android.media.Image image) {
         mLock = new Object();
 

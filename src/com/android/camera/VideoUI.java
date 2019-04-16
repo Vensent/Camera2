@@ -70,15 +70,15 @@ public class VideoUI implements PreviewStatusListener {
         mActivity = activity;
         mController = controller;
         mRootView = parent;
-        ViewGroup moduleRoot = (ViewGroup) mRootView.findViewById(R.id.module_layout);
+        ViewGroup moduleRoot = mRootView.findViewById(R.id.module_layout);
         mActivity.getLayoutInflater().inflate(R.layout.video_module,
                 moduleRoot, true);
 
-        mPreviewOverlay = (PreviewOverlay) mRootView.findViewById(R.id.preview_overlay);
+        mPreviewOverlay = mRootView.findViewById(R.id.preview_overlay);
 
         initializeMiscControls();
         mAnimationManager = new AnimationManager();
-        mFocusRing = (FocusRing) mRootView.findViewById(R.id.focus_ring);
+        mFocusRing = mRootView.findViewById(R.id.focus_ring);
     }
 
     @Override
@@ -135,12 +135,12 @@ public class VideoUI implements PreviewStatusListener {
     }
 
     private void initializeMiscControls() {
-        mReviewImage = (ImageView) mRootView.findViewById(R.id.review_image);
-        mRecordingTimeView = (TextView) mRootView.findViewById(R.id.recording_time);
-        mRecordingTimeRect = (RotateLayout) mRootView.findViewById(R.id.recording_time_rect);
+        mReviewImage = mRootView.findViewById(R.id.review_image);
+        mRecordingTimeView = mRootView.findViewById(R.id.recording_time);
+        mRecordingTimeRect = mRootView.findViewById(R.id.recording_time_rect);
         // The R.id.labels can only be found in phone layout.
         // That is, mLabelsLinearLayout should be null in tablet layout.
-        mLabelsLinearLayout = (LinearLayout) mRootView.findViewById(R.id.labels);
+        mLabelsLinearLayout = mRootView.findViewById(R.id.labels);
     }
 
     public void updateOnScreenIndicators(CameraSettings settings) {

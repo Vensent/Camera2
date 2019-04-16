@@ -36,6 +36,7 @@ public class LocationDialogLayout extends FrameLayout {
     private View mConfirmButton;
     private int mLastOrientation;
     private boolean mLocationRecordingEnabled;
+
     /**
      * Constructs a new LocationDialogLayout object.
      *

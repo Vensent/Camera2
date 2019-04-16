@@ -61,6 +61,7 @@ public class MultiToggleImageButton extends ImageButton {
     private int mAnimDirection;
     private Matrix mMatrix = new Matrix();
     private ValueAnimator mAnimator;
+
     public MultiToggleImageButton(Context context) {
         super(context);
         init();

@@ -255,19 +255,19 @@ public class PhotoModule extends CameraModule implements PhotoController, Module
             switchCamera();
         }
     };
-    private final View.OnClickListener mRetakeCallback = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            mActivity.getCameraAppUI().transitionToIntentCaptureLayout();
-            onCaptureRetake();
-        }
-    };
     private SoundPlayer mCountdownSoundPlayer;
     private CameraCapabilities.SceneMode mSceneMode;
     private final Runnable mDoSnapRunnable = new Runnable() {
         @Override
         public void run() {
             onShutterButtonClick();
+        }
+    };
+    private final View.OnClickListener mRetakeCallback = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mActivity.getCameraAppUI().transitionToIntentCaptureLayout();
+            onCaptureRetake();
         }
     };
     private final ButtonManager.ButtonCallback mHdrPlusCallback = new ButtonManager.ButtonCallback() {

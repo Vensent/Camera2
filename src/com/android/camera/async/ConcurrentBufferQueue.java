@@ -56,12 +56,14 @@ public class ConcurrentBufferQueue<T> implements BufferQueue<T>, BufferQueueCont
      * queue.
      */
     private final UnusedElementProcessor<T> mUnusedElementProcessor;
+
     public ConcurrentBufferQueue(UnusedElementProcessor<T> unusedElementProcessor) {
         mUnusedElementProcessor = unusedElementProcessor;
         mLock = new Object();
         mQueue = new LinkedBlockingQueue<>();
         mClosed = new AtomicBoolean();
     }
+
     public ConcurrentBufferQueue() {
         // Instantiate with a DiscardedElementProcessor which does nothing.
         this(new UnusedElementProcessor<T>() {

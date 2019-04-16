@@ -73,7 +73,7 @@
         android:layout_height="match_parent"
         android:background="@color/fullscreen_dialog_background_color"
         android:clickable="true"
-        android:visibility="gone"></FrameLayout>
+        android:visibility="gone" />
 
     <include layout="@layout/mode_list_layout" />
 

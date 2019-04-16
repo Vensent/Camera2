@@ -61,6 +61,7 @@ public class YuvImageBackendImageSaver implements ImageSaver.Builder {
     private final ImageBackend mImageBackend;
     private final Rect mCrop;
     private final Executor mExecutor;
+
     /**
      * Constructor
      *
@@ -76,6 +77,7 @@ public class YuvImageBackendImageSaver implements ImageSaver.Builder {
         mCrop = crop;
         mExecutor = Executors.newSingleThreadExecutor();
     }
+
     /**
      * Constructor for dependency injection/ testing.
      *

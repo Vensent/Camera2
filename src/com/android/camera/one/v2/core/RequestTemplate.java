@@ -43,6 +43,7 @@ public class RequestTemplate implements RequestBuilder.Factory, ResponseManager 
     private final Set<ResponseListener> mResponseListeners;
     private final List<Parameter<?>> mParameters;
     private final List<CaptureStream> mCaptureStreams;
+
     public RequestTemplate(RequestBuilder.Factory requestBuilderFactory) {
         mRequestBuilderFactory = requestBuilderFactory;
         mResponseListeners = new HashSet<>();

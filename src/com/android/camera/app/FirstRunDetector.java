@@ -34,6 +34,7 @@ public class FirstRunDetector {
      * Flag set to true if and only if first run of application is detected.
      */
     private boolean mIsFirstRun = false;
+
     private FirstRunDetector(Profiler profiler) {
         mProfile = profiler.create("FirstRunDetector getTimeOfFirstRun");
     }

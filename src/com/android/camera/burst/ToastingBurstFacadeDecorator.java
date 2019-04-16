@@ -39,6 +39,7 @@ public class ToastingBurstFacadeDecorator implements BurstFacade {
             "Burst stopped. Please wait a few seconds for the results to appear.";
     private final BurstFacade mBurstFacade;
     private final BurstToaster mToaster;
+
     /**
      * Initialize the toasting burst facade decorator.
      *

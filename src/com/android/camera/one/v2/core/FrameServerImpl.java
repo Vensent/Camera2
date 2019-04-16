@@ -35,6 +35,7 @@ import static com.google.common.base.Preconditions.checkState;
 public final class FrameServerImpl implements FrameServer {
     private final FrameServer.Session mCaptureSession;
     private final ReentrantLock mCameraLock;
+
     /**
      * @param captureSession The underlying session to manage access to. Note
      *                       that this will never close the session.

@@ -45,6 +45,7 @@ public class TagDispatchCaptureSession implements FrameServer.Session {
     private final CameraCaptureSessionProxy mCaptureSession;
     private final Handler mCameraHandler;
     private long mTagCounter;
+
     public TagDispatchCaptureSession(CameraCaptureSessionProxy captureSession, Handler
             cameraHandler) {
         mCaptureSession = captureSession;

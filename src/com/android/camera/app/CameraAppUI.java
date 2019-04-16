@@ -225,9 +225,9 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
 
         mAppRootView = appRootView;
 
-        mCameraRootView = (FrameLayout) mAppRootView.findViewById(R.id.camera_app_root);
+        mCameraRootView = mAppRootView.findViewById(R.id.camera_app_root);
 
-        mFilmstripLayout = (FilmstripLayout) mAppRootView.findViewById(R.id.filmstrip_layout);
+        mFilmstripLayout = mAppRootView.findViewById(R.id.filmstrip_layout);
         mFilmstripBottomControls = new FilmstripBottomPanel(controller,
                 (ViewGroup) mAppRootView.findViewById(R.id.filmstrip_bottom_panel));
         mFilmstripPanel = mFilmstripLayout;
@@ -241,7 +241,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
                 res.getDimensionPixelSize(R.dimen.bottom_bar_height_max),
                 res.getDimensionPixelSize(R.dimen.bottom_bar_height_optimal));
 
-        mModeListView = (ModeListView) mAppRootView.findViewById(R.id.mode_list_layout);
+        mModeListView = mAppRootView.findViewById(R.id.mode_list_layout);
         if (mModeListView != null) {
             mModeListView.setModeSwitchListener(this);
             mModeListView.setModeListOpenListener(this);
@@ -254,13 +254,12 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
         } else {
             Log.e(TAG, "Cannot find mode list in the view hierarchy");
         }
-        mModeTransitionView = (ModeTransitionView)
-                mAppRootView.findViewById(R.id.mode_transition_view);
+        mModeTransitionView = mAppRootView.findViewById(R.id.mode_transition_view);
 
         mAnimationManager = new AnimationManager();
 
         // 倒计时拍照后，右下角有个圆形缩略图
-        mRoundedThumbnailView = (RoundedThumbnailView) appRootView.findViewById(R.id.rounded_thumbnail_view);
+        mRoundedThumbnailView = appRootView.findViewById(R.id.rounded_thumbnail_view);
         mRoundedThumbnailView.setCallback(new RoundedThumbnailView.Callback() {
             @Override
             public void onHitStateFinished() {
@@ -374,7 +373,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
      */
     public void setupClingForViewer(int viewerType) {
         if (viewerType == BottomPanel.VIEWER_REFOCUS) {
-            FrameLayout filmstripContent = (FrameLayout) mAppRootView
+            FrameLayout filmstripContent = mAppRootView
                     .findViewById(R.id.camera_filmstrip_content_layout);
             if (filmstripContent != null) {
                 // Creates refocus cling.
@@ -554,7 +553,6 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
     private void showModeCoverUntilPreviewReady() {
         int modeId = mController.getCurrentModuleIndex();
         int colorId = R.color.camera_gray_background;
-        ;
         int iconId = CameraUtil.getCameraModeCoverIconResId(modeId, mController.getAndroidContext());
         mModeTransitionView.setupModeCover(colorId, iconId);
         mHideCoverRunnable = new Runnable() {
@@ -821,15 +819,15 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
     public void prepareModuleUI() {
         mController.getSettingsManager().addListener(this);
 
-        mModuleUI = (FrameLayout) mCameraRootView.findViewById(R.id.module_layout);
+        mModuleUI = mCameraRootView.findViewById(R.id.module_layout);
 
-        mTextureView = (TextureView) mCameraRootView.findViewById(R.id.preview_content);
+        mTextureView = mCameraRootView.findViewById(R.id.preview_content);
         mTextureViewHelper = new TextureViewHelper(mTextureView, mCaptureLayoutHelper,
                 mController.getCameraProvider(), mController);
         mTextureViewHelper.setSurfaceTextureListener(this);
         mTextureViewHelper.setOnLayoutChangeListener(mPreviewLayoutChangeListener);
 
-        mBottomBar = (BottomBar) mCameraRootView.findViewById(R.id.bottom_bar);
+        mBottomBar = mCameraRootView.findViewById(R.id.bottom_bar);
         int unpressedColor = mController.getAndroidContext().getResources()
                 .getColor(R.color.camera_gray_background);
         setBottomBarColor(unpressedColor);
@@ -837,28 +835,27 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
         mBottomBar.setCaptureLayoutHelper(mCaptureLayoutHelper);
 
         mModeOptionsOverlay
-                = (ModeOptionsOverlay) mCameraRootView.findViewById(R.id.mode_options_overlay);
+                = mCameraRootView.findViewById(R.id.mode_options_overlay);
 
         // Sets the visibility of the bottom bar and the mode options.
         resetBottomControls(mController.getCurrentModuleController(),
                 mController.getCurrentModuleIndex());
         mModeOptionsOverlay.setCaptureLayoutHelper(mCaptureLayoutHelper);
 
-        mShutterButton = (ShutterButton) mCameraRootView.findViewById(R.id.shutter_button);
+        mShutterButton = mCameraRootView.findViewById(R.id.shutter_button);
         addShutterListener(mController.getCurrentModuleController());
         addShutterListener(mModeOptionsOverlay);
         addShutterListener(this);
 
-        mGridLines = (GridLines) mCameraRootView.findViewById(R.id.grid_lines);
+        mGridLines = mCameraRootView.findViewById(R.id.grid_lines);
         mTextureViewHelper.addPreviewAreaSizeChangedListener(mGridLines);
 
-        mPreviewOverlay = (PreviewOverlay) mCameraRootView.findViewById(R.id.preview_overlay);
+        mPreviewOverlay = mCameraRootView.findViewById(R.id.preview_overlay);
         mPreviewOverlay.setOnTouchListener(new MyTouchListener());
         mPreviewOverlay.setOnPreviewTouchedListener(mModeOptionsOverlay);
         mAccessibilityUtil = new AccessibilityUtil(mPreviewOverlay, mAccessibilityAffordances);
 
-        mCaptureOverlay = (CaptureAnimationOverlay)
-                mCameraRootView.findViewById(R.id.capture_overlay);
+        mCaptureOverlay = mCameraRootView.findViewById(R.id.capture_overlay);
         mTextureViewHelper.addPreviewAreaSizeChangedListener(mPreviewOverlay);
         mTextureViewHelper.addPreviewAreaSizeChangedListener(mCaptureOverlay);
 
@@ -872,13 +869,13 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
         mController.getSettingsManager().addListener(mIndicatorIconController);
 
         mModeOptionsToggle = mCameraRootView.findViewById(R.id.mode_options_toggle);
-        mFocusRing = (FocusRing) mCameraRootView.findViewById(R.id.focus_ring);
-        mTutorialsPlaceHolderWrapper = (FrameLayout) mCameraRootView
+        mFocusRing = mCameraRootView.findViewById(R.id.focus_ring);
+        mTutorialsPlaceHolderWrapper = mCameraRootView
                 .findViewById(R.id.tutorials_placeholder_wrapper);
-        mStickyBottomCaptureLayout = (StickyBottomCaptureLayout) mAppRootView
+        mStickyBottomCaptureLayout = mAppRootView
                 .findViewById(R.id.sticky_bottom_capture_layout);
         mStickyBottomCaptureLayout.setCaptureLayoutHelper(mCaptureLayoutHelper);
-        mCountdownCancelButton = (ImageButton) mStickyBottomCaptureLayout
+        mCountdownCancelButton = mStickyBottomCaptureLayout
                 .findViewById(R.id.shutter_cancel_button);
 
         mTextureViewHelper.addPreviewAreaSizeChangedListener(mModeListView);
@@ -1158,7 +1155,6 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
        flash animation and post capture animation, consider designating a parameter
        for specifying the type of animation, as well as an animation finished listener
        so that modules can have more knowledge of the status of the animation. */
-
     public FilmstripContentPanel getFilmstripContentPanel() {
         return mFilmstripPanel;
     }
@@ -1803,14 +1799,14 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
     /**
      * The bottom controls on the filmstrip.
      */
-    public static interface BottomPanel {
+    public interface BottomPanel {
         /**
          * Values for the view state of the button.
          */
-        public final int VIEWER_NONE = 0;
-        public final int VIEWER_PHOTO_SPHERE = 1;
-        public final int VIEWER_REFOCUS = 2;
-        public final int VIEWER_OTHER = 3;
+        int VIEWER_NONE = 0;
+        int VIEWER_PHOTO_SPHERE = 1;
+        int VIEWER_REFOCUS = 2;
+        int VIEWER_OTHER = 3;
 
         /**
          * Sets a new or replaces an existing listener for bottom control events.
@@ -1935,37 +1931,37 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
          * Classes implementing this interface can listen for events on the bottom
          * controls.
          */
-        public static interface Listener {
+        interface Listener {
             /**
              * Called when the user pressed the "view" button to e.g. view a photo
              * sphere or RGBZ image.
              */
-            public void onExternalViewer();
+            void onExternalViewer();
 
             /**
              * Called when the "edit" button is pressed.
              */
-            public void onEdit();
+            void onEdit();
 
             /**
              * Called when the "tiny planet" button is pressed.
              */
-            public void onTinyPlanet();
+            void onTinyPlanet();
 
             /**
              * Called when the "delete" button is pressed.
              */
-            public void onDelete();
+            void onDelete();
 
             /**
              * Called when the "share" button is pressed.
              */
-            public void onShare();
+            void onShare();
 
             /**
              * Called when the progress error message is clicked.
              */
-            public void onProgressErrorClicked();
+            void onProgressErrorClicked();
         }
     }
 
@@ -1984,13 +1980,13 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
          *                         the width and height.)
          * @return down-sampled preview frame
          */
-        public Bitmap getPreviewFrame(int downSampleFactor);
+        Bitmap getPreviewFrame(int downSampleFactor);
 
         /**
          * @return the controls and overlays that are currently showing on top of
          * the preview drawn into a bitmap with no scaling applied.
          */
-        public Bitmap getPreviewOverlayAndControls();
+        Bitmap getPreviewOverlayAndControls();
 
         /**
          * Returns a bitmap containing the current screenshot.
@@ -1998,7 +1994,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
          * @param previewDownSampleFactor the downsample factor applied on the
          *                                preview frame when taking the screenshot
          */
-        public Bitmap getScreenShot(int previewDownSampleFactor);
+        Bitmap getScreenShot(int previewDownSampleFactor);
     }
 
     /**
@@ -2006,11 +2002,11 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
      * decor such as status bar and nav bar) has changed.
      */
     public interface NonDecorWindowSizeChangedListener {
-        public void onNonDecorWindowSizeChanged(int width, int height, int rotation);
+        void onNonDecorWindowSizeChanged(int width, int height, int rotation);
     }
 
     public interface AnimationFinishedListener {
-        public void onAnimationFinished(boolean success);
+        void onAnimationFinished(boolean success);
     }
 
     /**
@@ -2229,7 +2225,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
          * when an expsosure button is pressed. This callback can be null.
          */
         public interface ExposureCompensationSetCallback {
-            public void setExposure(int value);
+            void setExposure(int value);
         }
     }
 

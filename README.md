@@ -6,6 +6,7 @@ based on **https://github.com/Yuloran/Camera2** and **https://github.com/iamluci
 Plus the following updates:
 
 - libpeg-turbo static libraries for compatibility with Android 7+ devices **https://developer.android.com/about/versions/nougat/android-7.0-changes**
+- Reformat all codes in the project.
 
 
 ## Original codebase

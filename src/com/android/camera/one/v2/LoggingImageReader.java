@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 final class LoggingImageReader extends ForwardingImageReader {
     private final Logger mLog;
     private final AtomicInteger mNumOpenImages;
+
     public LoggingImageReader(ImageReaderProxy delegate, Logger.Factory logFactory) {
         super(delegate);
         mLog = logFactory.create(new Tag("LoggingImageReader"));

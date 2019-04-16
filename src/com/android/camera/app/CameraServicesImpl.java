@@ -44,6 +44,7 @@ public class CameraServicesImpl implements CameraServices {
     private final RemoteShutterListener mRemoteShutterListener;
     private final MotionManager mMotionManager;
     private final SettingsManager mSettingsManager;
+
     private CameraServicesImpl(Context context) {
         mMediaSaver = new MediaSaverImpl(context.getContentResolver());
         PlaceholderManager mPlaceHolderManager = new PlaceholderManager(context);

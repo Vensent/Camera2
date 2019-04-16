@@ -71,6 +71,7 @@ public class ConcurrentSharedRingBuffer<E> {
     private boolean mClosed = false;
     private Handler mPinStateHandler = null;
     private PinStateListener mPinStateListener = null;
+
     /**
      * Constructs a new ring buffer with the specified capacity.
      *

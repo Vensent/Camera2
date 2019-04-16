@@ -83,6 +83,7 @@ public class ReservableTicketPool implements TicketPool, SafeCloseable {
      */
     @GuardedBy("mLock")
     private int mCapacity;
+
     public ReservableTicketPool(TicketPool parentPool) {
         mParentPool = parentPool;
         mLock = new ReentrantLock(true);

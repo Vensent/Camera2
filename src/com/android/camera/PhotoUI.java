@@ -87,16 +87,16 @@ public class PhotoUI implements PreviewStatusListener,
         mController = controller;
         mRootView = parent;
 
-        ViewGroup moduleRoot = (ViewGroup) mRootView.findViewById(R.id.module_layout);
+        ViewGroup moduleRoot = mRootView.findViewById(R.id.module_layout);
         mActivity.getLayoutInflater().inflate(R.layout.photo_module,
                 moduleRoot, true);
         initIndicators();
-        mFocusRing = (FocusRing) mRootView.findViewById(R.id.focus_ring);
-        mPreviewOverlay = (PreviewOverlay) mRootView.findViewById(R.id.preview_overlay);
-        mCountdownView = (CountDownView) mRootView.findViewById(R.id.count_down_view);
+        mFocusRing = mRootView.findViewById(R.id.focus_ring);
+        mPreviewOverlay = mRootView.findViewById(R.id.preview_overlay);
+        mCountdownView = mRootView.findViewById(R.id.count_down_view);
         // Show faces if we are in debug mode.
         if (DebugPropertyHelper.showCaptureDebugUI()) {
-            mFaceView = (FaceView) mRootView.findViewById(R.id.face_view);
+            mFaceView = mRootView.findViewById(R.id.face_view);
         } else {
             mFaceView = null;
         }
@@ -176,7 +176,7 @@ public class PhotoUI implements PreviewStatusListener,
     }
 
     private void initIntentReviewImageView() {
-        mIntentReviewImageView = (ImageView) mRootView.findViewById(R.id.intent_review_imageview);
+        mIntentReviewImageView = mRootView.findViewById(R.id.intent_review_imageview);
         mActivity.getCameraAppUI().addPreviewAreaChangedListener(
                 new PreviewStatusListener.PreviewAreaChangedListener() {
                     @Override
@@ -300,11 +300,9 @@ public class PhotoUI implements PreviewStatusListener,
         if (mController.isImageCaptureIntent()) {
             mController.onCaptureCancelled();
             return true;
-        } else if (!mController.isCameraIdle()) {
-            // ignore backs while we're taking a picture
-            return true;
-        } else {
-            return false;
+        } else // ignore backs while we're taking a picture
+        {
+            return !mController.isCameraIdle();
         }
     }
 

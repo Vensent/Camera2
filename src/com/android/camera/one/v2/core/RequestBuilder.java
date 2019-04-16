@@ -139,6 +139,7 @@ public class RequestBuilder {
         private final CaptureRequestBuilderProxy mCaptureRequestBuilder;
         private final List<Allocation> mAllocations;
         private final ResponseListener mResponseListener;
+
         public RequestImpl(CaptureRequestBuilderProxy builder, List<Allocation> allocations,
                            ResponseListener responseListener) {
             mCaptureRequestBuilder = builder;

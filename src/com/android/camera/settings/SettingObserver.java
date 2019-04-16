@@ -35,6 +35,7 @@ public final class SettingObserver<T> implements Observable<T> {
     private final String mScope;
     private final String mKey;
     private final Class<T> mTClass;
+
     private SettingObserver(SettingsManager manager, String scope, String key, Class<T> tClass) {
         mSettingsManager = manager;
         mScope = scope;

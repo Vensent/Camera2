@@ -45,6 +45,7 @@ public class ListenerCombiner<Input extends Enum<Input>> {
      * The current output state
      */
     private boolean mOutput;
+
     public ListenerCombiner(Class<Input> clazz, StateChangeListener listener) {
         this(clazz);
         addListener(listener);

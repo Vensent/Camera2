@@ -66,6 +66,7 @@ public class TaskConvertImageToRGBPreview extends TaskImageContainer {
     protected final static Log.Tag TAG = new Log.Tag("TaskRGBPreview");
     protected final ThumbnailShape mThumbnailShape;
     protected final Size mTargetSize;
+
     /**
      * Constructor
      *

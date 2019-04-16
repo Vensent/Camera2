@@ -30,6 +30,7 @@ public abstract class AbstractTutorialOverlay {
     protected final CloseListener mCloseListener;
     private final int mLayoutResId;
     private ViewGroup mPlaceholderWrapper;
+
     /**
      * Create a new overlay.
      *

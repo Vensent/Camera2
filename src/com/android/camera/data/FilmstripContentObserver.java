@@ -27,6 +27,7 @@ public class FilmstripContentObserver extends ContentObserver {
     private ChangeListener mChangeListener;
     private boolean mActivityPaused = false;
     private boolean mMediaDataChangedDuringPause = false;
+
     public FilmstripContentObserver() {
         super(null);
     }

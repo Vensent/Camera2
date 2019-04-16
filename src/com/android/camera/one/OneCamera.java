@@ -420,6 +420,7 @@ public interface OneCamera {
          * Timer duration in seconds or 0 for no timer.
          */
         public final float timerSeconds;
+
         public PhotoCaptureParameters(String title, int orientation, Location location, File
                 debugDataFolder, PictureCallback callback, PictureSaverCallback saverCallback,
                                       int heading, float zoom, float timerSeconds) {

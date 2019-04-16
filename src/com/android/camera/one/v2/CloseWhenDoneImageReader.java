@@ -43,6 +43,7 @@ public final class CloseWhenDoneImageReader extends ForwardingImageReader implem
     private boolean mClosed;
     @GuardedBy("mLock")
     private int mOpenImages;
+
     public CloseWhenDoneImageReader(ImageReaderProxy delegate) {
         super(delegate);
         mLock = new Object();

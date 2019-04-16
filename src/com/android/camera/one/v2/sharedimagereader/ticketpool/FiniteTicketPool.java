@@ -44,6 +44,7 @@ public final class FiniteTicketPool implements TicketPool, SafeCloseable {
     private int mTickets;
     @GuardedBy("mLock")
     private boolean mClosed;
+
     public FiniteTicketPool(int capacity) {
         mMaxCapacity = capacity;
         mLock = new ReentrantLock(true);

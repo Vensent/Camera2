@@ -32,6 +32,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class ConcurrentState<T> implements Updatable<T>, Observable<T> {
     private final Set<ExecutorListenerPair> mListeners;
     private volatile T mValue;
+
     public ConcurrentState(T initialValue) {
         // Callbacks are typically only added and removed at startup/shutdown,
         // but {@link #update} is often called at high-frequency. So, using a

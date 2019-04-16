@@ -34,6 +34,7 @@ public class TinyPlanetPreview extends View {
     private Lock mLock;
     private PreviewSizeListener mPreviewSizeListener;
     private int mSize = 0;
+
     public TinyPlanetPreview(Context context) {
         super(context);
     }

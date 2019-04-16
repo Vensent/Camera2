@@ -52,6 +52,7 @@ public class OneCameraFeatureConfig {
      * The maximum number of images the camera should allocate in the image reader.
      */
     private final int mMaxAllowedImageReaderCount;
+
     OneCameraFeatureConfig(boolean useCaptureModule,
                            Function<CameraCharacteristics, CaptureSupportLevel> captureModeDetector,
                            HdrPlusSupportLevel hdrPlusSupportLevel,

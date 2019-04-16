@@ -33,6 +33,7 @@ import javax.annotation.concurrent.ThreadSafe;
 final class CameraDeviceKey {
     private final ApiType mApiType;
     private final CameraId mCameraId;
+
     /**
      * Create a camera device key with an explicit API version.
      */

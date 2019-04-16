@@ -34,6 +34,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public class MetadataReleasingImageQueue implements BufferQueueController<ImageProxy> {
     private final BufferQueueController<ImageProxy> mOutputQueue;
     private final MetadataPool mMetadataPool;
+
     public MetadataReleasingImageQueue(BufferQueueController<ImageProxy> outputQueue,
                                        MetadataPool metadataPool) {
         mOutputQueue = outputQueue;

@@ -36,6 +36,7 @@ class PreviewStarter {
     private final List<Surface> mOutputSurfaces;
     private final CaptureSessionCreator mCaptureSessionCreator;
     private final CameraCaptureSessionCreatedListener mSessionListener;
+
     /**
      * @param outputSurfaces        The set of output surfaces (except for the preview
      *                              surface) to use.

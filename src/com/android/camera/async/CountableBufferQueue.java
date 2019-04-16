@@ -30,6 +30,7 @@ public class CountableBufferQueue<T> implements BufferQueueController<T>, Buffer
     private final Object mCountLock;
     private final Updatable<Integer> mSizeCallback;
     private int mCount;
+
     /**
      * @param sizeCallback A thread-safe callback to be updated with the size
      *                     of the queue.

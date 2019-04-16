@@ -37,6 +37,7 @@ public class Profilers {
     private final LoggingProfiler mDebugProfiler;
     private final LoggingProfiler mVerboseProfiler;
     private final GuardingProfiler mGuardingProfiler;
+
     private Profilers(LoggingProfiler errorProfiler,
                       LoggingProfiler warningProfiler,
                       LoggingProfiler infoProfiler,
